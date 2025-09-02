@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { BEAR_URL_SCHEME, DEBUG_URL_PREVIEW_LENGTH } from './config.js';
+import { BEAR_URL_SCHEME } from './config.js';
 import { logger, logAndThrow } from './utils.js';
 
 /**

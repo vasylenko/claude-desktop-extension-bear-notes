@@ -2,7 +2,6 @@ export const APP_VERSION = '1.0.0';
 export const BEAR_URL_SCHEME = 'bear://x-callback-url/';
 export const CORE_DATA_EPOCH_OFFSET = 978307200; // 2001-01-01 to Unix epoch
 export const DEFAULT_SEARCH_LIMIT = 50;
-export const DEBUG_URL_PREVIEW_LENGTH = 100;
 
 export const BEAR_DATABASE_PATH =
   'Library/Group Containers/9K33E3U3T4.net.shinyfrog.bear/Application Data/database.sqlite';

@@ -56,3 +56,23 @@ tasks:
     desc: Show bundle info
     cmds:
       - npx dxt info {{.BUNDLE_NAME}}
+      
+  # === Changelog ===
+  
+  changelog:
+    silent: true
+    desc: Extract changelog for specific version
+    vars:
+      VERSION: '{{.VERSION | default "1.0.0"}}'
+    cmds:
+      - |
+        if [ ! -f CHANGELOG.md ]; then
+          echo "CHANGELOG.md not found"
+          exit 1
+        fi
+        
+        # Extract content between ## [VERSION] and next ## section
+        sed -n "/^## \[{{.VERSION}}\]/,/^## \[/p" CHANGELOG.md | \
+        sed '$d' | \
+        tail -n +3 | \
+        sed '/^$/d'

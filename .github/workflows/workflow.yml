@@ -59,11 +59,21 @@ jobs:
         PACKAGE_FILE=$(ls bear-notes-mcpb-*.dxt)
         echo "PACKAGE_FILE=$PACKAGE_FILE" >> $GITHUB_ENV
 
+    - name: Extract changelog
+      run: |
+        VERSION=${GITHUB_REF_NAME#v}
+        CHANGELOG_BODY=$(task changelog VERSION=$VERSION)
+        echo "CHANGELOG_BODY<<EOF" >> $GITHUB_ENV
+        echo "$CHANGELOG_BODY" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
         body: |
-          Bear Notes MCP Bundle
+          ${{ env.CHANGELOG_BODY }}
+          
+          ---
           
           Download and install the .dxt file in Claude Desktop.
         files: ${{ env.PACKAGE_FILE }}

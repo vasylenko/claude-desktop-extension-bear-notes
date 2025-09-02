@@ -1,0 +1,75 @@
+{
+  "dxt_version": "0.1",
+  "name": "bear-notes",
+  "display_name": "Bear Notes",
+  "version": "1.0.0",
+  "icon": "icon.png",
+  "description": "Bear Notes MCP server with TypeScript and native SQLite. Provides comprehensive Bear Notes integration for creating, searching, reading, and modifying notes.",
+  "long_description": "This extension provides comprehensive Bear Notes integration through a TypeScript MCP server using native Node.js SQLite. It enables creating, searching, reading, and modifying Bear notes directly from Claude Desktop with full type safety and modern JavaScript features.",
+  "author": {
+    "name": "Serhii Vasylenko",
+    "email": "serhii@vasylenko.info",
+    "url": "https://devdosvid.blog"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "main.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/main.js"
+      ],
+      "env": {
+        "UI_DEBUG_TOGGLE": "${user_config.debug}",
+        "NODE_OPTIONS": "--experimental-sqlite"
+      }
+    }
+  },
+  "user_config": {
+    "debug": {
+      "type": "boolean",
+      "title": "Debug Logging",
+      "description": "Enable debug logging for troubleshooting",
+      "default": false,
+      "required": false
+    }
+  },
+  "tools": [
+    {
+      "name": "bear-create-note", 
+      "description": "Create a new note in your Bear library with optional title, content, and tags"
+    },
+    {
+      "name": "bear-search-notes",
+      "description": "Find notes in your Bear library by searching text content or filtering by tags"
+    },
+    {
+      "name": "bear-open-note",
+      "description": "Read the full text of a Bear note including all content, formatting, and metadata"
+    },
+    {
+      "name": "bear-add-text-append",
+      "description": "Add text to the end of an existing Bear note or to a specific section within it"
+    },
+    {
+      "name": "bear-add-text-prepend",
+      "description": "Add text to the beginning of an existing Bear note or section within it"
+    }    
+  ],
+  "keywords": [
+    "bear app",
+    "bear notes",
+    "markdown notes",
+    "notes management",
+    "productivity",
+    "typescript",
+    "mcp"
+  ],
+  "license": "MIT",
+  "compatibility": {
+    "platforms": ["darwin"],
+    "runtimes": {
+      "node": ">=22.5.0"
+    }
+  }
+}

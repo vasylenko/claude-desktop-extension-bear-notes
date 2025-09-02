@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bear-notes-local": {
+      "command": "node",
+      "args": ["--experimental-sqlite", "dist/main.js"]
+    }
+  }
+}

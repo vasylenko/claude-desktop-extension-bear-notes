@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(grep:*)",
+      "Bash(npm install:*)",
+      "Bash(npm outdated)",
+      "Bash(npm update:*)",
+      "Bash(find:*)",
+      "mcp__bear-notes-local__bear-search-notes",
+      "mcp__bear-notes-local__bear-open-note",
+      "mcp__bear-notes-local__bear-create-note",
+      "mcp__bear-notes-local__bear-add-text-append",
+      "mcp__bear-notes-local__bear-add-text-prepend",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "enableAllProjectMcpServers": true
+}

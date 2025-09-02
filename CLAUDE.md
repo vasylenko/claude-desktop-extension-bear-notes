@@ -17,10 +17,9 @@ MCP Bundles (.mcpb) are zip archives containing a local MCP server and a manifes
 - Naming: PascalCase for classes/types, camelCase for functions/variables; descriptive self-documenting names for functions and variables
 - Files: Lowercase with hyphens, test files with .test.ts suffix
 - Imports: ES module style, include .js extension, group imports logically
-- Error Handling: Use TypeScript's strict mode, explicit error checking in tests
+- Error Handling: Use TypeScript's strict mode
 - Formatting: 2-space indentation, semicolons required, single quotes preferred
-- Testing: Co-locate tests with source files, use descriptive test names
-- Comments: JSDoc for public APIs, inline comments for complex logic; ALWAYS asnwer "why" behind the functions or code blocks, NEVER "what" or restaring the obvious
+- Comments: JSDoc for public APIs, inline comments for complex logic; All comments, no matter for which part of the code, ALWAYS asnwer "why" behind the functions or code blocks, NEVER "what" or restaring the obvious - they are concise and helpful.
 
 # Core Technical Documentation for this project
 - MCP TypeScript SDK - https://github.com/modelcontextprotocol/typescript-sdk/blob/main/README.md

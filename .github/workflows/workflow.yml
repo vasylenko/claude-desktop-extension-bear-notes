@@ -33,6 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint-and-format
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: write
     
     steps:
     - name: Checkout code
@@ -55,16 +57,12 @@ jobs:
         task pack
         PACKAGE_FILE=$(ls bear-notes-mcpb-*.dxt)
         echo "PACKAGE_FILE=$PACKAGE_FILE" >> $GITHUB_ENV
-        echo "PACKAGE_NAME=${PACKAGE_FILE%.dxt}" >> $GITHUB_ENV
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ github.ref_name }}
-        name: Release ${{ env.PACKAGE_NAME }}
         body: |
-          Bear Notes MCP Bundle - Build ${{ env.PACKAGE_NAME }}
+          Bear Notes MCP Bundle
           
           Download and install the .dxt file in Claude Desktop.
         files: ${{ env.PACKAGE_FILE }}
-        preserve_order: true

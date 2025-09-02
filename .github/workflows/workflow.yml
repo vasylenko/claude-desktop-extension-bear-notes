@@ -3,6 +3,7 @@ name: Supply Chain
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
 
@@ -32,7 +33,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: lint-and-format
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
     

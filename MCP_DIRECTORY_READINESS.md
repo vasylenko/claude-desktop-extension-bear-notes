@@ -22,36 +22,6 @@
 - Token efficiency ✅
 - Local-only operation (privacy-focused) ✅
 
-### Privacy Policy Document  
-**Status**: Not created
-**What's needed**: Formal privacy policy document
-
-**Key points to cover:**
-- Local-only operation (no data transmission)
-- Bear database read-only access explanation  
-- No user data collection or analytics
-- X-callback-url usage for Bear app interaction
-- macOS-only operation requirements
-
-**Suggested location**: `PRIVACY.md` in project root
-
-### Comprehensive Documentation
-**Status**: Basic README exists, needs expansion
-**What's needed**: Complete documentation with troubleshooting
-
-**Structure needed:**
-- Installation guide (DXT bundle process)
-- System requirements (macOS, Bear Notes app, Node.js ≥22.5.0)
-- Setup verification steps
-- All 5 tools documented with examples
-- Common troubleshooting scenarios
-- Bear Notes database location explanation
-- X-callback-url debugging
-
-**Files to create/update**: 
-- Expand `README.md` 
-- Consider `TROUBLESHOOTING.md`
-
 ### Three Example Use Cases
 **Status**: Not documented
 **What's needed**: Three complete workflow examples

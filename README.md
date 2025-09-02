@@ -18,13 +18,8 @@ Ask Claude to search your Bear notes with a query like "Search my Bear notes for
 
 ## MCP Server Tools
 
-Use direct SQLite **readonly** access:
 - **`bear-search-notes`** - Find notes by text content or tags, returns list with IDs for further actions
 - **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata  
-
-(this is because x-callback-url for that tools would require either a server or custom binary to accept `x-success` – both options are potentially risky and fragile)
-
-Use native Bear app x-callback-url API:
 - **`bear-create-note`** - Create new notes with optional title, content, and tags
 - **`bear-add-text-append`** - Add text to the end of existing notes or specific sections
 - **`bear-add-text-prepend`** - Insert text at the beginning of existing notes or sections
@@ -33,6 +28,6 @@ Use native Bear app x-callback-url API:
 
 This server reads your Bear Notes SQLite database directly for search/read operations and uses Bear's X-callback-URL API for write operations. All data processing happens locally on your machine with no external network calls.
 
-### Logs
-- MCP server logs go into `~/Library/Logs/Claude/main.log`, look for `bear-notes-mcp`
-- MCP transport logs go to `~/Library/Logs/Claude/mcp-server-Bear\ Notes.log` 
+## Demo and other details 
+
+Please see [Wiki](../../wiki)!

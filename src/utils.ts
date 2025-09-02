@@ -1,5 +1,6 @@
 import createDebug from 'debug';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+
 import { ERROR_MESSAGES } from './config.js';
 import { getNoteContent } from './database.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';

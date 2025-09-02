@@ -6,6 +6,7 @@
 tmp/**
 build/**
 dist/**
+.DS_Store
 ####
 
 # Logs

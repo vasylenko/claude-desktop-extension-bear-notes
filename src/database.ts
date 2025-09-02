@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
+
 import type { BearNote } from './types.js';
 import {
   BEAR_DATABASE_PATH,
@@ -9,7 +10,7 @@ import {
   DEFAULT_SEARCH_LIMIT,
   ERROR_MESSAGES,
 } from './config.js';
-import { logger, logAndThrow } from './utils.js';
+import { logAndThrow, logger } from './utils.js';
 
 function openBearDatabase(): DatabaseSync {
   const databasePath = getBearDatabasePath();

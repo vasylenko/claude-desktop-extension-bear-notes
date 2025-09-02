@@ -74,6 +74,6 @@ jobs:
           ${{ env.CHANGELOG_BODY }}
           
           ---
-          
-          Download and install the .dxt file in Claude Desktop.
+
+          Download ${{ env.PACKAGE_FILE }} to install the extension.
         files: ${{ env.PACKAGE_FILE }}

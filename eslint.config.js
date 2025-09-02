@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import importPlugin from 'eslint-plugin-import';
 
 export default [
   {
@@ -22,6 +23,7 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tseslint,
+      'import': importPlugin,
     },
     rules: {
       ...js.configs.recommended.rules,
@@ -40,6 +42,14 @@ export default [
       'no-var': 'error',
       'semi': ['error', 'always'],
       'quotes': ['error', 'single', { avoidEscape: true }],
+      'indent': ['error', 2],
+      'import/order': ['error', {
+        'groups': ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+        'newlines-between': 'always'
+      }],
+      'sort-imports': ['error', {
+        'ignoreDeclarationSort': true
+      }],
       
       // Keep it simple - disable overly strict rules
       '@typescript-eslint/no-non-null-assertion': 'off',

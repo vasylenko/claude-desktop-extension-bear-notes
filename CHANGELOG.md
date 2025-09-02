@@ -14,8 +14,8 @@ First release.
 Bear Notes MCP Bundle - Claude Desktop extension for comprehensive Bear Notes integration.
 
 Features:
-- 5 MCP tools: search, read, create, and modify Bear notes
+- 5 MCP tools: search, read, create, and append/prepend to Bear notes
 - Tool annotations for client safety and UX hints
 - Native Node.js SQLite for read oprations
 - Bear's X-callback-URL API integration for write operations
-- Debug logging with UI toggle support
+- Debug logging with UI toggle

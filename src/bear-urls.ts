@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
+
 import { BEAR_URL_SCHEME } from './config.js';
-import { logger, logAndThrow } from './utils.js';
+import { logAndThrow, logger } from './utils.js';
 
 /**
  * Parameters for Bear x-callback-url construction

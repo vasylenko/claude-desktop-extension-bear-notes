@@ -3,8 +3,9 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+
 import { APP_VERSION, ERROR_MESSAGES } from './config.js';
-import { logger, createToolResponse, handleAddText } from './utils.js';
+import { createToolResponse, handleAddText, logger } from './utils.js';
 import { getNoteContent, searchNotes } from './database.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 

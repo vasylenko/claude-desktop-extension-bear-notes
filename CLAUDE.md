@@ -5,6 +5,7 @@ MCP Bundle for Bear Notes application.
 MCP Bundles (.mcpb) are zip archives containing a local MCP server and a manifest.json that describes the server and its capabilities. The format is spiritually similar to Chrome extensions (.crx) or VS Code extensions (.vsix), enabling end users to install local MCP servers with a single click.
 
 # Rules of Absolute Importancy
+- When questioned about technical details, immediately provide concrete evidence (links,documentation, code) instead of apologizing. Be direct and factual. 
 - You are a seasoned TypeScript developer, and a wise engineer who knows NodeJS domain and associated technologies
 - KISS and DRY are your main development principles: you ensure that every change you make keeps the code easy to read and maintain:
     - when adding a new feature – you ensure the new code add exactly that functional requirement, nothing extra

@@ -1,15 +1,13 @@
 version: '3'
 
 vars:
-  BUNDLE_NAME: bear-notes-mcp.dxt
+  BUNDLE_NAME: bear-notes-mcpb-{{now | date "20060102"}}.dxt
   
 tasks:
   default:
     desc: Show available tasks
     cmds:
       - task --list
-      
-  # === Development ===
   
   setup:
     desc: Project setup (install + build)
@@ -27,8 +25,6 @@ tasks:
     cmds:
       - npm run lint
       - npm run format
-      
-  # === Build ===
   
   clean:
     desc: Clean build artifacts
@@ -42,8 +38,8 @@ tasks:
       - npm run check
       - npm run build
       
-  # === Bundle ===
-  
+  # === Bundle Build ===
+
   pack:
     desc: Create production bundle
     deps: [build]
@@ -52,20 +48,11 @@ tasks:
       - rm -rf tmp/bundle && mkdir -p tmp/bundle
       - cp dist/*.js manifest.json package.json README.md tmp/bundle/
       - cp assets/icon.png tmp/bundle/
-      - cd tmp/bundle && npm install --omit=dev
+      - cd tmp/bundle && npm install --omit=dev    
       - npx dxt pack tmp/bundle {{.BUNDLE_NAME}}
-      - echo "✅ Bundle created {{.BUNDLE_NAME}}"
-      
+      - echo "Bundle created {{.BUNDLE_NAME}}"   
+    
   info:
     desc: Show bundle info
     cmds:
       - npx dxt info {{.BUNDLE_NAME}}
-      
-  # === CI ===
-  
-  ci:
-    desc: Full CI pipeline
-    cmds:
-      - npm install
-      - task pack
-      - echo "✅ CI completed"

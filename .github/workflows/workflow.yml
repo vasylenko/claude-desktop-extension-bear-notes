@@ -29,9 +29,10 @@ jobs:
     - name: Run linting and formatting checks
       run: npm run check
 
-  package:
+  release:
     runs-on: ubuntu-latest
     needs: lint-and-format
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
     - name: Checkout code
@@ -50,10 +51,20 @@ jobs:
       run: npm ci
 
     - name: Create package
-      run: task pack
+      run: |
+        task pack
+        PACKAGE_FILE=$(ls bear-notes-mcpb-*.dxt)
+        echo "PACKAGE_FILE=$PACKAGE_FILE" >> $GITHUB_ENV
+        echo "PACKAGE_NAME=${PACKAGE_FILE%.dxt}" >> $GITHUB_ENV
 
-    - name: Upload package artifact
-      uses: actions/upload-artifact@v4
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
       with:
-        name: bear-notes-mcpb-package
-        path: ${{ env.PACKAGE_PATTERN }}
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ env.PACKAGE_NAME }}
+        body: |
+          Bear Notes MCP Bundle - Build ${{ env.PACKAGE_NAME }}
+          
+          Download and install the .dxt file in Claude Desktop.
+        files: ${{ env.PACKAGE_FILE }}
+        preserve_order: true

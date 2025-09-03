@@ -34,6 +34,9 @@ Ask Claude to search your Bear notes with a query like "Search my Bear notes for
 
 This server reads your Bear Notes SQLite database directly for search/read operations and uses Bear's X-callback-URL API for write operations. All data processing happens locally on your machine with no external network calls.
 
+### Platforms Supported
+macOS only because Bear desktop works only on macOS.
+
 ### Logs
 - MCP server logs go into `~/Library/Logs/Claude/main.log`, look for `bear-notes-mcp`
 - MCP transport logs go to `~/Library/Logs/Claude/mcp-server-Bear\ Notes.log` 

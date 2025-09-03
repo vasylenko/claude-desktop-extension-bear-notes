@@ -9,8 +9,15 @@
   "author": {
     "name": "Serhii Vasylenko",
     "email": "serhii@vasylenko.info",
-    "url": "https://devdosvid.blog"
+    "url": "https://devdosvid.blog/about/"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vasylenko/claude-desktop-extension-bear-notes"
+  },  
+  "homepage": "https://github.com/vasylenko/claude-desktop-extension-bear-notes",
+  "documentation": "https://github.com/vasylenko/claude-desktop-extension-bear-notes/blob/main/README.md",
+  "support": "https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues",
   "server": {
     "type": "node",
     "entry_point": "main.js",

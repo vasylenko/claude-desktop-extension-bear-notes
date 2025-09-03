@@ -13,13 +13,8 @@ tasks:
     desc: Project setup (install + build)
     cmds:
       - npm install
-      - npm run build
-      
-  dev:
-    desc: Run development server
-    cmds:
-      - npm run dev
-  
+      - npm run build 
+
   style:
     desc: Runs linter and formatter with fixes
     cmds:

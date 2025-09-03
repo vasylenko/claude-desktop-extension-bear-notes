@@ -7,6 +7,8 @@ Search, read, and update your Bear Notes directly from Claude conversations.
 
 This Claude Desktop extension (bundled MCP server) provides seamless integration between AI assistance and your personal note-taking workflow with complete privacy: local-only operations, no external connections.
 
+![](./docs/demo.gif)
+
 ## Quick Start
 
 **Prerequisites**: [Bear app](https://bear.app/) must be installed and [Claude Desktop](https://claude.ai/download) must be installed.
@@ -31,6 +33,22 @@ Ask Claude to search your Bear notes with a query like "Search my Bear notes for
 
 This server reads your Bear Notes SQLite database directly for search/read operations and uses Bear's X-callback-URL API for write operations. All data processing happens locally on your machine with no external network calls.
 
-## Demo and other details 
+### Logs
+- MCP server logs go into `~/Library/Logs/Claude/main.log`, look for `bear-notes-mcp`
+- MCP transport logs go to `~/Library/Logs/Claude/mcp-server-Bear\ Notes.log` 
 
-Please see [Wiki](../../wiki)!
+## FAQ
+
+### Why SQLite and not just a native Bear app's x-callback-url API?
+
+For read operations (search/open), the x-callback-url API returns the note data in `x-success` response: that would require a server or custom binary to handle x-success responses - both risky and fragile. Direct SQLite read-only access is simpler and more reliable for searching and reading notes.
+
+### Why experimental flag for nodejs?
+
+This is to enable native SQLite support and avoid shipping an SQLite binary from third-party node packages, which poses supply chain risks and blocks the Claude extension from running on macOS.
+
+Anthropic does not sign third-party SQLite binaries (obviously), causing macOS security systems to flag that the Claude process from a binary signed by Anthropic is trying to run another binary signed by a third party. As a result, Claude cannot run the extension. 
+
+### How can I report a bug or contribute? 
+
+Use issues or discussions! I'd be glad to see your feedback or suggestions, or your help to make this extension better! ❤️ 

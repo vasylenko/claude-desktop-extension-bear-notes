@@ -30,4 +30,17 @@ MCP Bundles (.mcpb) are zip archives containing a local MCP server and a manifes
 - Task automation system (build, test, pack, etc) - https://taskfile.dev/docs/guide
 
 # Project Structure
-... to be updated
+```
+├── src/                   # Project source code
+│   ├── main.ts            # MCP server entry point
+│   ├── bear-urls.ts       # Bear app URL scheme handlers
+│   ├── database.ts        # SQLite Bear database interface
+│   ├── config.ts          # Configuration management
+│   ├── types.ts           # Type definitions
+│   └── utils.ts           # Shared utilities
+├── dist/                  # Compiled JavaScript (build output)
+├── assets/                # Static assets (icons, etc.)
+├── manifest.json          # MCPB manifest
+├── Taskfile.yml           # Task automation (build/test/pack)
+└── package.json           # Node.js dependencies and scripts
+```

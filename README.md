@@ -1,6 +1,6 @@
 [![Supply Chain](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/workflow.yml/badge.svg)](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/workflow.yml)
-[![Snyk](https://camo.githubusercontent.com/b03e0d1cbf12051a5d6e2ae0dced15427134face16e47630206f0fcad7be0c62/68747470733a2f2f736e796b2e696f2f746573742f6769746875622f6477796c2f686170692d617574682d6a7774322f62616467652e7376673f74617267657446696c653d7061636b6167652e6a736f6e)](https://snyk.io/test/github/vasylenko/claude-desktop-extension-bear-notes)
-
+[![Snyk](https://snyk.io/test/github/vasylenko/claude-desktop-extension-bear-notes/badge.svg)](https://snyk.io/test/github/vasylenko/claude-desktop-extension-bear-notes)
+    
 # Bear Notes MCP Bundle
 
 Search, read, and update your Bear Notes directly from Claude conversations.
@@ -16,7 +16,8 @@ This Claude Desktop extension (bundled MCP server) provides seamless integration
 1. Download the latest `bear-notes-mcpb.dxt` extension from releases
 2. Make sure your Claude Desktop is running (start if not)
 3. Doubleclick on the extension file – Claude Desktop should show you the installation prompt
-    3.1 If doubleclick does not work for some reason, then open Claude -> Settings -> Extensions -> Advanced Settings -> click "Install Extension".
+
+    If doubleclick does not work for some reason, then open Claude -> Settings -> Extensions -> Advanced Settings -> click "Install Extension".
 4. You're all set!
 
 Ask Claude to search your Bear notes with a query like "Search my Bear notes for 'meeting'" - you should see your notes appear in the response!

@@ -1,11 +1,6 @@
 name: Supply Chain
 
-on:
-  push:
-    branches: [ main ]
-    tags: [ 'v*' ]
-  pull_request:
-    branches: [ main ]
+on: push
 
 env:
   PACKAGE_PATTERN: bear-notes-mcpb-*.dxt
@@ -13,7 +8,6 @@ env:
 jobs:
   lint-and-format:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v5
 
@@ -33,6 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      
       - name: Run Snyk SCA
         uses: snyk/actions/node@master
         env:
@@ -44,6 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
       - name: Run Snyk SAST
         uses: snyk/actions/node@master
         env:
@@ -61,7 +57,6 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
-    
     steps:
       - uses: actions/checkout@v5
 

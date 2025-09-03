@@ -1,7 +1,7 @@
 [![Supply Chain](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/workflow.yml/badge.svg)](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/workflow.yml)
 [![Snyk](https://snyk.io/test/github/vasylenko/claude-desktop-extension-bear-notes/badge.svg)](https://snyk.io/test/github/vasylenko/claude-desktop-extension-bear-notes)
     
-# Bear Notes MCP Bundle
+# Bear Notes Claude Extension (aka MCP Bundle)
 
 Search, read, and update your Bear Notes directly from Claude conversations.
 

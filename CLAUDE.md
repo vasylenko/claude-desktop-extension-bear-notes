@@ -27,7 +27,7 @@ MCP Bundles (.mcpb) are zip archives containing a local MCP server and a manifes
 - MCPB (MCP Bundles) - https://github.com/anthropics/mcpb/blob/main/README.md
 - MCPB manifest.json specificaton - https://github.com/anthropics/mcpb/blob/main/MANIFEST.md
 - MCPB CLI - https://github.com/anthropics/mcpb/blob/main/CLI.md
-- Task automation system (build, test, pack, etc) - https://taskfile.dev/docs/guide
+- Task automation system (build, test, pack, etc) - https://taskfile.dev/docs/guide 
 
 # Project Structure
 ```

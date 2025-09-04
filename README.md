@@ -43,6 +43,9 @@ macOS only because Bear desktop works only on macOS.
 
 ## FAQ
 
+### Could this steal my data?
+**No**. Extension only reads Bear's local database (same data Bear app shows you) and uses Bear's application native API to add text to the notes. No network transmission, no external servers.
+
 ### Why SQLite and not just a native Bear app's x-callback-url API?
 
 For read operations (search/open), the x-callback-url API returns the note data in `x-success` response: that would require a server or custom binary to handle x-success responses - both risky and fragile. Direct SQLite read-only access is simpler and more reliable for searching and reading notes.

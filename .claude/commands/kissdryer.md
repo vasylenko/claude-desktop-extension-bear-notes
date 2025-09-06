@@ -40,6 +40,8 @@ Follow the YAGNI Principle (You Ain't Gonna Need It): Implement features only wh
 
 **REMEMBER**: Sometimes KISS means accepting some duplication when the alternative abstractions make the code harder to understand.
 
+**REMEMBER**: Sometimes, following refactoring rules blindly can make code worse, not better. The original duplication/complexity might be not painful enough to justify the abstraction.
+
 ## Output format
 Provide concise report of possible improvements in the following format:
 ```markdown

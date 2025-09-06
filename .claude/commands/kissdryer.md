@@ -52,6 +52,8 @@ Provide concise report of possible improvements in the following format:
 4 ... etc
 
 <The most impactful improvements with justification why these>
+
+**DISCLAIMER**: This is just a set of suggestion, not rules to follow! Some of them might be missleading or wrong. 
 ```
 
 Example
@@ -62,4 +64,6 @@ Example
 2. **KISS**: users.ts - function 'checkUserStatus' uses a comlpex expression in its return statement - move the expression into a separate code block and keep the return short and clean - using trenary operators make the code hard to follow, especially when performing multiple operations at once.
 
 <The most impactful improvements with justification why these>
+
+**DISCLAIMER**: This is just a set of suggestion, not rules to follow! Some of them might be missleading or wrong. 
 ```

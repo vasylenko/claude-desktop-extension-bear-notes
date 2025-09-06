@@ -38,6 +38,8 @@ Break down problems: Divide large, complex problems into smaller, manageable sub
 Write clear and concise code: Use clear, self-documenting names for variables and functions, keep functions short, and avoid excessive nesting of loops and conditionals. 
 Follow the YAGNI Principle (You Ain't Gonna Need It): Implement features only when they are actually needed, not based on anticipated future requirements, to prevent unnecessary complexity. 
 
+**REMEMBER**: Sometimes KISS means accepting some duplication when the alternative abstractions make the code harder to understand.
+
 ## Output format
 Provide concise report of possible improvements in the following format:
 ```markdown

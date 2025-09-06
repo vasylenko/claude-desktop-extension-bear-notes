@@ -12,6 +12,7 @@
       "Bash(git status:*)",
       "Bash(git branch:*)",
       "Bash(git commit:*)",
+      "Bash(task:*)",
       "mcp__bear-notes-local__bear-search-notes",
       "mcp__bear-notes-local__bear-open-note",
       "mcp__bear-notes-local__bear-create-note",

@@ -153,12 +153,18 @@ export function getNoteContent(identifier: string): BearNote | null {
  * @param searchTerm - Text to search for in note titles and content (optional)
  * @param tag - Tag to filter notes by (optional)
  * @param limit - Maximum number of results to return (default from config)
+ * @param includeFiles - Search within text extracted from attached images and PDF files via OCR (default: false)
  * @returns Array of matching notes without full text content
  * @throws Error if database access fails or no search criteria provided
  */
-export function searchNotes(searchTerm?: string, tag?: string, limit?: number): BearNote[] {
+export function searchNotes(
+  searchTerm?: string,
+  tag?: string,
+  limit?: number,
+  includeFiles?: boolean
+): BearNote[] {
   logger.info(
-    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}`
+    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, includeFiles: ${includeFiles || false}`
   );
 
   // Validate search parameters - at least one must be provided
@@ -173,33 +179,66 @@ export function searchNotes(searchTerm?: string, tag?: string, limit?: number): 
   const queryLimit = limit || DEFAULT_SEARCH_LIMIT;
 
   try {
-    let query = `
-      SELECT ZTITLE as title,
-             ZUNIQUEIDENTIFIER as identifier,
-             ZCREATIONDATE as creationDate,
-             ZMODIFICATIONDATE as modificationDate
-      FROM ZSFNOTE 
-      WHERE ZARCHIVED = 0 
-        AND ZTRASHED = 0 
-        AND ZENCRYPTED = 0`;
-
+    let query: string;
     const queryParams: string[] = [];
 
-    // Add search term filtering (search in title and text)
+    // Choose query based on whether to include files or not
+    if (includeFiles) {
+      // Query with file search - uses LEFT JOIN to include OCR'd content
+      query = `
+        SELECT DISTINCT note.ZTITLE as title,
+               note.ZUNIQUEIDENTIFIER as identifier,
+               note.ZCREATIONDATE as creationDate,
+               note.ZMODIFICATIONDATE as modificationDate
+        FROM ZSFNOTE note
+        LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
+        WHERE note.ZARCHIVED = 0 
+          AND note.ZTRASHED = 0 
+          AND note.ZENCRYPTED = 0`;
+    } else {
+      // Original query without file search for performance
+      query = `
+        SELECT ZTITLE as title,
+               ZUNIQUEIDENTIFIER as identifier,
+               ZCREATIONDATE as creationDate,
+               ZMODIFICATIONDATE as modificationDate
+        FROM ZSFNOTE 
+        WHERE ZARCHIVED = 0 
+          AND ZTRASHED = 0 
+          AND ZENCRYPTED = 0`;
+    }
+
+    // Add search term filtering
     if (hasSearchTerm) {
-      query += ' AND (ZTITLE LIKE ? OR ZTEXT LIKE ?)';
       const searchPattern = `%${searchTerm.trim()}%`;
-      queryParams.push(searchPattern, searchPattern);
+      if (includeFiles) {
+        // Search in note title, text, and file OCR content
+        query += ' AND (note.ZTITLE LIKE ? OR note.ZTEXT LIKE ? OR f.ZSEARCHTEXT LIKE ?)';
+        queryParams.push(searchPattern, searchPattern, searchPattern);
+      } else {
+        // Search only in note title and text
+        query += ' AND (ZTITLE LIKE ? OR ZTEXT LIKE ?)';
+        queryParams.push(searchPattern, searchPattern);
+      }
     }
 
     // Add tag filtering
     if (hasTag) {
-      query += ' AND ZTEXT LIKE ?';
       const tagPattern = `%#${tag.trim()}%`;
+      if (includeFiles) {
+        query += ' AND note.ZTEXT LIKE ?';
+      } else {
+        query += ' AND ZTEXT LIKE ?';
+      }
       queryParams.push(tagPattern);
     }
 
-    query += ' ORDER BY ZMODIFICATIONDATE DESC LIMIT ?';
+    // Add ordering and limit
+    if (includeFiles) {
+      query += ' ORDER BY note.ZMODIFICATIONDATE DESC LIMIT ?';
+    } else {
+      query += ' ORDER BY ZMODIFICATIONDATE DESC LIMIT ?';
+    }
     queryParams.push(queryLimit.toString());
 
     logger.debug(`Executing search query with ${queryParams.length} parameters`);

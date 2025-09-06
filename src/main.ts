@@ -133,6 +133,12 @@ server.registerTool(
       term: z.string().optional().describe('Text to search for in note titles and content'),
       tag: z.string().optional().describe('Tag to filter notes by (without # symbol)'),
       limit: z.number().optional().describe('Maximum number of results to return (default: 50)'),
+      includeFiles: z
+        .boolean()
+        .optional()
+        .describe(
+          'Search within text extracted from attached images and PDF files via OCR (default: false)'
+        ),
     },
     annotations: {
       readOnlyHint: true,
@@ -140,13 +146,13 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ term, tag, limit }): Promise<CallToolResult> => {
+  async ({ term, tag, limit, includeFiles }): Promise<CallToolResult> => {
     logger.info(
-      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}`
+      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}, includeFiles: ${includeFiles || false}`
     );
 
     try {
-      const notes = searchNotes(term, tag, limit);
+      const notes = searchNotes(term, tag, limit, includeFiles);
 
       if (notes.length === 0) {
         const searchCriteria = [];

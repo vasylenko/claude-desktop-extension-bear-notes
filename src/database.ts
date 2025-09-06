@@ -88,11 +88,14 @@ function getBearDatabasePath(): string {
  * Retrieves a Bear note with its full content from the database.
  *
  * @param identifier - The unique identifier of the Bear note
+ * @param includeFiles - Include OCR'd text from images and PDFs attached to this note (default: false)
  * @returns The note with content, or null if not found
  * @throws Error if database access fails or identifier is invalid
  */
-export function getNoteContent(identifier: string): BearNote | null {
-  logger.info(`getNoteContent called with identifier: ${identifier}`);
+export function getNoteContent(identifier: string, includeFiles?: boolean): BearNote | null {
+  logger.info(
+    `getNoteContent called with identifier: ${identifier}, includeFiles: ${includeFiles || false}`
+  );
 
   if (!identifier || typeof identifier !== 'string' || !identifier.trim()) {
     logAndThrow('Database error: Invalid note identifier provided');
@@ -101,35 +104,95 @@ export function getNoteContent(identifier: string): BearNote | null {
   const db = openBearDatabase();
 
   try {
-    const query = `
-      SELECT ZTITLE as title,
-             ZUNIQUEIDENTIFIER as identifier,
-             ZCREATIONDATE as creationDate,
-             ZMODIFICATIONDATE as modificationDate,
-             ZPINNED as pinned,
-             ZTEXT as text
-      FROM ZSFNOTE 
-      WHERE ZUNIQUEIDENTIFIER = ? 
-        AND ZARCHIVED = 0 
-        AND ZTRASHED = 0 
-        AND ZENCRYPTED = 0
-    `;
+    let query: string;
+
+    if (includeFiles) {
+      // Query with file content - includes OCR'd text from attached files
+      query = `
+        SELECT note.ZTITLE as title,
+               note.ZUNIQUEIDENTIFIER as identifier,
+               note.ZCREATIONDATE as creationDate,
+               note.ZMODIFICATIONDATE as modificationDate,
+               note.ZPINNED as pinned,
+               note.ZTEXT as text,
+               f.ZFILENAME as filename,
+               f.ZSEARCHTEXT as fileContent
+        FROM ZSFNOTE note
+        LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
+        WHERE note.ZUNIQUEIDENTIFIER = ? 
+          AND note.ZARCHIVED = 0 
+          AND note.ZTRASHED = 0 
+          AND note.ZENCRYPTED = 0
+      `;
+    } else {
+      // Original query without file content for performance
+      query = `
+        SELECT ZTITLE as title,
+               ZUNIQUEIDENTIFIER as identifier,
+               ZCREATIONDATE as creationDate,
+               ZMODIFICATIONDATE as modificationDate,
+               ZPINNED as pinned,
+               ZTEXT as text
+        FROM ZSFNOTE 
+        WHERE ZUNIQUEIDENTIFIER = ? 
+          AND ZARCHIVED = 0 
+          AND ZTRASHED = 0 
+          AND ZENCRYPTED = 0
+      `;
+    }
 
     logger.debug(`Fetching note content for identifier: ${identifier}`);
 
     // Use parameter binding to prevent SQL injection attacks
     const stmt = db.prepare(query);
-    const row = stmt.get(identifier);
 
-    if (!row) {
-      logger.info(`Note not found for identifier: ${identifier}`);
-      return null;
+    if (includeFiles) {
+      const rows = stmt.all(identifier);
+      if (!rows || rows.length === 0) {
+        logger.info(`Note not found for identifier: ${identifier}`);
+        return null;
+      }
+
+      // Process multiple rows (note + files) into single note object
+      const firstRow = rows[0] as Record<string, unknown>;
+      const formattedNote = formatBearNote(firstRow);
+
+      // Collect file content from all rows
+      const fileContents: string[] = [];
+      for (const row of rows) {
+        const rowData = row as Record<string, unknown>;
+        const filename = rowData.filename as string;
+        const fileContent = rowData.fileContent as string;
+
+        if (filename && fileContent && fileContent.trim()) {
+          fileContents.push(`**${filename}**\n${fileContent.trim()}`);
+        }
+      }
+
+      // Append file content to note text if files exist
+      if (fileContents.length > 0) {
+        const originalText = formattedNote.text || '';
+        const fileSection = `\n\n--- Attached Files ---\n\n${fileContents.join('\n\n')}`;
+        formattedNote.text = originalText + fileSection;
+      }
+
+      logger.info(
+        `Retrieved note content with ${fileContents.length} attached files for: ${formattedNote.title}`
+      );
+      return formattedNote;
+    } else {
+      const row = stmt.get(identifier);
+
+      if (!row) {
+        logger.info(`Note not found for identifier: ${identifier}`);
+        return null;
+      }
+
+      const formattedNote = formatBearNote(row as Record<string, unknown>);
+      logger.info(`Retrieved note content for: ${formattedNote.title}`);
+
+      return formattedNote;
     }
-
-    const formattedNote = formatBearNote(row as Record<string, unknown>);
-    logger.info(`Retrieved note content for: ${formattedNote.title}`);
-
-    return formattedNote;
   } catch (error) {
     logger.error(`SQLite query failed: ${error}`);
     logAndThrow(

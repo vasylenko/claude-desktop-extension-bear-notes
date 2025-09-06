@@ -18,10 +18,15 @@ server.registerTool(
   'bear-open-note',
   {
     title: 'Open Bear Note',
-    description:
-      'Read the full text of a Bear note. Use this after searching to view complete note content including all text, formatting, and metadata.',
+    description: 'Read the full text content of a Bear note from your library.',
     inputSchema: {
       identifier: z.string().describe('Exact note identifier (ID) obtained from bear-search-notes'),
+      includeFiles: z
+        .boolean()
+        .optional()
+        .describe(
+          'Return note content with text extracted from attached images and PDF files appended (default: false)'
+        ),
     },
     annotations: {
       readOnlyHint: true,
@@ -29,15 +34,17 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ identifier }): Promise<CallToolResult> => {
-    logger.info(`bear-open-note called with identifier: ${identifier}`);
+  async ({ identifier, includeFiles }): Promise<CallToolResult> => {
+    logger.info(
+      `bear-open-note called with identifier: ${identifier}, includeFiles: ${includeFiles || false}`
+    );
 
     if (!identifier || !identifier.trim()) {
       throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
     }
 
     try {
-      const noteWithContent = getNoteContent(identifier.trim());
+      const noteWithContent = getNoteContent(identifier.trim(), includeFiles);
 
       if (!noteWithContent) {
         return createToolResponse(`Note with ID '${identifier}' not found. The note may have been deleted, archived, or the ID may be incorrect.

@@ -104,11 +104,9 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
   const db = openBearDatabase();
 
   try {
-    let query: string;
-
-    if (includeFiles) {
-      // Query with file content - includes OCR'd text from attached files
-      query = `
+    const query =
+      includeFiles
+        ? `
         SELECT note.ZTITLE as title,
                note.ZUNIQUEIDENTIFIER as identifier,
                note.ZCREATIONDATE as creationDate,
@@ -123,10 +121,8 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
           AND note.ZARCHIVED = 0 
           AND note.ZTRASHED = 0 
           AND note.ZENCRYPTED = 0
-      `;
-    } else {
-      // Original query without file content for performance
-      query = `
+      `
+        : `
         SELECT ZTITLE as title,
                ZUNIQUEIDENTIFIER as identifier,
                ZCREATIONDATE as creationDate,
@@ -139,7 +135,6 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
           AND ZTRASHED = 0 
           AND ZENCRYPTED = 0
       `;
-    }
 
     logger.debug(`Fetching note content for identifier: ${identifier}`);
 
@@ -243,7 +238,6 @@ export function searchNotes(
 
   try {
     let query: string;
-    const queryParams: string[] = [];
 
     // Choose query based on whether to include files or not
     if (includeFiles) {
@@ -270,6 +264,8 @@ export function searchNotes(
           AND ZTRASHED = 0 
           AND ZENCRYPTED = 0`;
     }
+
+    const queryParams: string[] = [];
 
     // Add search term filtering
     if (hasSearchTerm) {
@@ -315,7 +311,7 @@ export function searchNotes(
       return [];
     }
 
-    const notes = rows.map((row) => formatBearNote(row as Record<string, unknown>));
+    const notes = rows.map((row: Record<string, unknown>) => formatBearNote(row));
     logger.info(`Found ${notes.length} notes matching search criteria`);
 
     return notes;

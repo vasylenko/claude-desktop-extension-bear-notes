@@ -104,9 +104,8 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
   const db = openBearDatabase();
 
   try {
-    const query =
-      includeFiles
-        ? `
+    const query = includeFiles
+      ? `
         SELECT note.ZTITLE as title,
                note.ZUNIQUEIDENTIFIER as identifier,
                note.ZCREATIONDATE as creationDate,
@@ -122,7 +121,7 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
           AND note.ZTRASHED = 0 
           AND note.ZENCRYPTED = 0
       `
-        : `
+      : `
         SELECT ZTITLE as title,
                ZUNIQUEIDENTIFIER as identifier,
                ZCREATIONDATE as creationDate,

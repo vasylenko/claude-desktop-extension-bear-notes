@@ -14,9 +14,6 @@ const server = new McpServer({
   version: APP_VERSION,
 });
 
-logger.info(`Bear Notes MCP Server initializing... Version: ${APP_VERSION}`);
-logger.debug(`DEBUG logs enabled: ${logger.debug.enabled}`);
-
 server.registerTool(
   'bear-open-note',
   {
@@ -230,13 +227,10 @@ server.registerTool(
 );
 
 async function main(): Promise<void> {
-  const debugMode = process.argv.includes('--debug');
-
-  if (debugMode) {
-    logger.info('Starting Bear Notes MCP Server...');
-    logger.info(`Node.js version: ${process.version}`);
-    logger.info(`App version: ${APP_VERSION}`);
-  }
+  logger.info(`Bear Notes MCP Server initializing... Version: ${APP_VERSION}`);
+  logger.debug(`Debug logs enabled: ${logger.debug.enabled}`);
+  logger.debug(`Node.js version: ${process.version}`);
+  logger.debug(`App version: ${APP_VERSION}`);
 
   // Handle process errors
   process.on('uncaughtException', (error) => {

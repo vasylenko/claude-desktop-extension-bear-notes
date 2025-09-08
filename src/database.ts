@@ -108,7 +108,7 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
 
     if (includeFiles) {
       // Query with file content - includes OCR'd text from attached files
-      let query = `
+      const query = `
         SELECT note.ZTITLE as title,
                note.ZUNIQUEIDENTIFIER as identifier,
                note.ZCREATIONDATE as creationDate,
@@ -160,7 +160,7 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
       return formattedNote;
     } else {
       // Original query without file content for less context window pollution when files are not needed
-      let query = `
+      const query = `
         SELECT ZTITLE as title,
                ZUNIQUEIDENTIFIER as identifier,
                ZCREATIONDATE as creationDate,

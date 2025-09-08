@@ -104,11 +104,11 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
   const db = openBearDatabase();
 
   try {
-    let query: string;
+    logger.debug(`Fetching note content for identifier: ${identifier}`);
 
     if (includeFiles) {
       // Query with file content - includes OCR'd text from attached files
-      query = `
+      let query = `
         SELECT note.ZTITLE as title,
                note.ZUNIQUEIDENTIFIER as identifier,
                note.ZCREATIONDATE as creationDate,
@@ -124,29 +124,7 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
           AND note.ZTRASHED = 0 
           AND note.ZENCRYPTED = 0
       `;
-    } else {
-      // Original query without file content for performance
-      query = `
-        SELECT ZTITLE as title,
-               ZUNIQUEIDENTIFIER as identifier,
-               ZCREATIONDATE as creationDate,
-               ZMODIFICATIONDATE as modificationDate,
-               ZPINNED as pinned,
-               ZTEXT as text
-        FROM ZSFNOTE 
-        WHERE ZUNIQUEIDENTIFIER = ? 
-          AND ZARCHIVED = 0 
-          AND ZTRASHED = 0 
-          AND ZENCRYPTED = 0
-      `;
-    }
-
-    logger.debug(`Fetching note content for identifier: ${identifier}`);
-
-    // Use parameter binding to prevent SQL injection attacks
-    const stmt = db.prepare(query);
-
-    if (includeFiles) {
+      const stmt = db.prepare(query);
       const rows = stmt.all(identifier);
       if (!rows || rows.length === 0) {
         logger.info(`Note not found for identifier: ${identifier}`);
@@ -181,6 +159,21 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
       );
       return formattedNote;
     } else {
+      // Original query without file content for less context window pollution when files are not needed
+      let query = `
+        SELECT ZTITLE as title,
+               ZUNIQUEIDENTIFIER as identifier,
+               ZCREATIONDATE as creationDate,
+               ZMODIFICATIONDATE as modificationDate,
+               ZPINNED as pinned,
+               ZTEXT as text
+        FROM ZSFNOTE 
+        WHERE ZUNIQUEIDENTIFIER = ? 
+          AND ZARCHIVED = 0 
+          AND ZTRASHED = 0 
+          AND ZENCRYPTED = 0
+      `;
+      const stmt = db.prepare(query);
       const row = stmt.get(identifier);
 
       if (!row) {

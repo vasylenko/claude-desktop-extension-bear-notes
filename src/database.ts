@@ -4,12 +4,8 @@ import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 
 import type { BearNote } from './types.js';
-import {
-  BEAR_DATABASE_PATH,
-  DEFAULT_SEARCH_LIMIT,
-  ERROR_MESSAGES,
-} from './config.js';
-import { logAndThrow, logger, convertCoreDataTimestamp } from './utils.js';
+import { BEAR_DATABASE_PATH, DEFAULT_SEARCH_LIMIT, ERROR_MESSAGES } from './config.js';
+import { convertCoreDataTimestamp, logAndThrow, logger } from './utils.js';
 
 function openBearDatabase(): DatabaseSync {
   const databasePath = getBearDatabasePath();

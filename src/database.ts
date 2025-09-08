@@ -6,11 +6,10 @@ import { existsSync } from 'node:fs';
 import type { BearNote } from './types.js';
 import {
   BEAR_DATABASE_PATH,
-  CORE_DATA_EPOCH_OFFSET,
   DEFAULT_SEARCH_LIMIT,
   ERROR_MESSAGES,
 } from './config.js';
-import { logAndThrow, logger } from './utils.js';
+import { logAndThrow, logger, convertCoreDataTimestamp } from './utils.js';
 
 function openBearDatabase(): DatabaseSync {
   const databasePath = getBearDatabasePath();
@@ -44,13 +43,8 @@ function formatBearNote(row: Record<string, unknown>): BearNote {
     logAndThrow('Database error: Note date fields are invalid in database row');
   }
 
-  // Convert Core Data timestamps to ISO strings
-  // Bear stores timestamps in seconds since Core Data epoch (2001-01-01)
-  const modificationTimestamp = modificationDate + CORE_DATA_EPOCH_OFFSET;
-  const creationTimestamp = creationDate + CORE_DATA_EPOCH_OFFSET;
-
-  const modification_date = new Date(modificationTimestamp * 1000).toISOString();
-  const creation_date = new Date(creationTimestamp * 1000).toISOString();
+  const modification_date = convertCoreDataTimestamp(modificationDate);
+  const creation_date = convertCoreDataTimestamp(creationDate);
 
   // Bear stores pinned as integer; API expects string literal (only needed when pinned is queried)
   const pin: 'yes' | 'no' = pinned ? 'yes' : 'no';

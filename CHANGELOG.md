@@ -5,19 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2025-09-08
 
 ### Added
 - **File Search**: Extended search functionality to include OCR'd text from images and PDFs ([#4](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/4))
-  - Added optional `includeFiles` parameter to `bear-search-notes` and `bear-open-note` tools
-  - Search now finds content in attached files when enabled (default: false for performance)
-  - Leverages Bear's existing OCR functionality for comprehensive content discovery
-  - Backward compatible - existing integrations continue working unchanged
+
+Prioritize completeness over context window efficiency - better to have full information upfront than incomplete results requiring multiple API calls and confused MCP client or an end user.
+- Always search files: searchNotes() hardcoded to include OCR content from attachments - no includeFiles parameter
+- Always retrieve files: getNoteContent() hardcoded to include OCR content - no includeFiles parameter• Clear content separation: OCR content labeled with `# Attached Files` and `## filename` headers
+- Better LLM experience: Complete context with clear source distinction between note text and file content  
 
 ### Internal
-- Comprehensive Bear database schema documentation
-- Enhanced development tooling with KISS/DRY code validation commands
-- Tool documentation best practices guidelines
+- For Claude Code:
+  - Comprehensive Bear database schema documentation
+  - Enhanced development tooling with KISS/DRY code validation commands
+  - Tool documentation best practices guidelines
+- Small refactoring
 
 ## [1.0.0] - 2025-09-02
 

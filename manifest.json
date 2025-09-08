@@ -48,11 +48,11 @@
     },
     {
       "name": "bear-search-notes",
-      "description": "Find notes in your Bear library by searching text content or filtering by tags"
+      "description": "Find notes in your Bear library by searching text content (including attached files) or filtering by tags"
     },
     {
       "name": "bear-open-note",
-      "description": "Read the full text of a Bear note including all content, formatting, and metadata"
+      "description": "Read the full text of a Bear note including all content (including attached files), formatting, and metadata"
     },
     {
       "name": "bear-add-text-append",

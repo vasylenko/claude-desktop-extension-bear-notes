@@ -14,19 +14,17 @@ const server = new McpServer({
   version: APP_VERSION,
 });
 
+logger.info(`Bear Notes MCP Server initializing... Version: ${APP_VERSION}`);
+logger.debug(`DEBUG logs enabled: ${logger.debug.enabled}`);
+
 server.registerTool(
   'bear-open-note',
   {
     title: 'Open Bear Note',
-    description: 'Read the full text content of a Bear note from your library.',
+    description:
+      'Read the full text content of a Bear note from your library. Always includes text extracted from attached images and PDFs (aka OCR search) with clear labeling.',
     inputSchema: {
       identifier: z.string().describe('Exact note identifier (ID) obtained from bear-search-notes'),
-      includeFiles: z
-        .boolean()
-        .optional()
-        .describe(
-          'Return note content with text extracted from attached images and PDF files appended (default: false)'
-        ),
     },
     annotations: {
       readOnlyHint: true,
@@ -34,17 +32,15 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ identifier, includeFiles }): Promise<CallToolResult> => {
-    logger.info(
-      `bear-open-note called with identifier: ${identifier}, includeFiles: ${includeFiles || false}`
-    );
+  async ({ identifier }): Promise<CallToolResult> => {
+    logger.info(`bear-open-note called with identifier: ${identifier}, includeFiles: always`);
 
     if (!identifier || !identifier.trim()) {
       throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
     }
 
     try {
-      const noteWithContent = getNoteContent(identifier.trim(), includeFiles);
+      const noteWithContent = getNoteContent(identifier.trim());
 
       if (!noteWithContent) {
         return createToolResponse(`Note with ID '${identifier}' not found. The note may have been deleted, archived, or the ID may be incorrect.
@@ -135,17 +131,11 @@ server.registerTool(
   {
     title: 'Find Bear Notes',
     description:
-      'Find notes in your Bear library by searching text content or filtering by tags. Returns a list with titles and IDs - use "Open Bear Note" to read full content.',
+      'Find notes in your Bear library by searching text content or filtering by tags. Always searches within attached images and PDF files via OCR. Returns a list with titles and IDs - use "Open Bear Note" to read full content.',
     inputSchema: {
       term: z.string().optional().describe('Text to search for in note titles and content'),
       tag: z.string().optional().describe('Tag to filter notes by (without # symbol)'),
       limit: z.number().optional().describe('Maximum number of results to return (default: 50)'),
-      includeFiles: z
-        .boolean()
-        .optional()
-        .describe(
-          'Search within text extracted from attached images and PDF files via OCR (default: false)'
-        ),
     },
     annotations: {
       readOnlyHint: true,
@@ -153,13 +143,13 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ term, tag, limit, includeFiles }): Promise<CallToolResult> => {
+  async ({ term, tag, limit }): Promise<CallToolResult> => {
     logger.info(
-      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}, includeFiles: ${includeFiles || false}`
+      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}, includeFiles: always`
     );
 
     try {
-      const notes = searchNotes(term, tag, limit, includeFiles);
+      const notes = searchNotes(term, tag, limit);
 
       if (notes.length === 0) {
         const searchCriteria = [];
@@ -171,7 +161,6 @@ server.registerTool(
 Try different search terms or check if notes exist in Bear Notes.`);
       }
 
-      // Format results as list with key info
       const resultLines = [`Found ${notes.length} note${notes.length === 1 ? '' : 's'}:`, ''];
 
       notes.forEach((note, index) => {

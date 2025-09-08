@@ -88,14 +88,12 @@ function getBearDatabasePath(): string {
  * Retrieves a Bear note with its full content from the database.
  *
  * @param identifier - The unique identifier of the Bear note
- * @param includeFiles - Include OCR'd text from images and PDFs attached to this note (default: false)
  * @returns The note with content, or null if not found
  * @throws Error if database access fails or identifier is invalid
+ * Note: Always includes OCR'd text from attached images and PDFs with clear labeling
  */
-export function getNoteContent(identifier: string, includeFiles?: boolean): BearNote | null {
-  logger.info(
-    `getNoteContent called with identifier: ${identifier}, includeFiles: ${includeFiles || false}`
-  );
+export function getNoteContent(identifier: string): BearNote | null {
+  logger.info(`getNoteContent called with identifier: ${identifier}, includeFiles: always`);
 
   if (!identifier || typeof identifier !== 'string' || !identifier.trim()) {
     logAndThrow('Database error: Invalid note identifier provided');
@@ -104,88 +102,63 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
   const db = openBearDatabase();
 
   try {
-    logger.debug(`Fetching note content for identifier: ${identifier}`);
+    logger.debug(`Fetching the note content from the database, note identifier: ${identifier}`);
 
-    if (includeFiles) {
-      // Query with file content - includes OCR'd text from attached files
-      const query = `
-        SELECT note.ZTITLE as title,
-               note.ZUNIQUEIDENTIFIER as identifier,
-               note.ZCREATIONDATE as creationDate,
-               note.ZMODIFICATIONDATE as modificationDate,
-               note.ZPINNED as pinned,
-               note.ZTEXT as text,
-               f.ZFILENAME as filename,
-               f.ZSEARCHTEXT as fileContent
-        FROM ZSFNOTE note
-        LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
-        WHERE note.ZUNIQUEIDENTIFIER = ? 
-          AND note.ZARCHIVED = 0 
-          AND note.ZTRASHED = 0 
-          AND note.ZENCRYPTED = 0
-      `;
-      const stmt = db.prepare(query);
-      const rows = stmt.all(identifier);
-      if (!rows || rows.length === 0) {
-        logger.info(`Note not found for identifier: ${identifier}`);
-        return null;
-      }
-
-      // Process multiple rows (note + files) into single note object
-      const firstRow = rows[0] as Record<string, unknown>;
-      const formattedNote = formatBearNote(firstRow);
-
-      // Collect file content from all rows
-      const fileContents: string[] = [];
-      for (const row of rows) {
-        const rowData = row as Record<string, unknown>;
-        const filename = rowData.filename as string;
-        const fileContent = rowData.fileContent as string;
-
-        if (filename && fileContent && fileContent.trim()) {
-          fileContents.push(`**${filename}**\n${fileContent.trim()}`);
-        }
-      }
-
-      // Append file content to note text if files exist
-      if (fileContents.length > 0) {
-        const originalText = formattedNote.text || '';
-        const fileSection = `\n\n--- Attached Files ---\n\n${fileContents.join('\n\n')}`;
-        formattedNote.text = originalText + fileSection;
-      }
-
-      logger.info(
-        `Retrieved note content with ${fileContents.length} attached files for: ${formattedNote.title}`
-      );
-      return formattedNote;
-    } else {
-      // Original query without file content for less context window pollution when files are not needed
-      const query = `
-        SELECT ZTITLE as title,
-               ZUNIQUEIDENTIFIER as identifier,
-               ZCREATIONDATE as creationDate,
-               ZMODIFICATIONDATE as modificationDate,
-               ZPINNED as pinned,
-               ZTEXT as text
-        FROM ZSFNOTE 
-        WHERE ZUNIQUEIDENTIFIER = ? 
-          AND ZARCHIVED = 0 
-          AND ZTRASHED = 0 
-          AND ZENCRYPTED = 0
-      `;
-      const stmt = db.prepare(query);
-      const row = stmt.get(identifier);
-
-      if (!row) {
-        logger.info(`Note not found for identifier: ${identifier}`);
-        return null;
-      }
-
-      const formattedNote = formatBearNote(row as Record<string, unknown>);
-      logger.info(`Retrieved note content for: ${formattedNote.title}`);
-
-      return formattedNote;
+    // Query with file content - always includes OCR'd text from attached files with clear labeling
+    const query = `
+      SELECT note.ZTITLE as title,
+             note.ZUNIQUEIDENTIFIER as identifier,
+             note.ZCREATIONDATE as creationDate,
+             note.ZMODIFICATIONDATE as modificationDate,
+             note.ZPINNED as pinned,
+             note.ZTEXT as text,
+             f.ZFILENAME as filename,
+             f.ZSEARCHTEXT as fileContent
+      FROM ZSFNOTE note
+      LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
+      WHERE note.ZUNIQUEIDENTIFIER = ? 
+        AND note.ZARCHIVED = 0 
+        AND note.ZTRASHED = 0 
+        AND note.ZENCRYPTED = 0
+    `;
+    const stmt = db.prepare(query);
+    const rows = stmt.all(identifier);
+    if (!rows || rows.length === 0) {
+      logger.info(`Note not found for identifier: ${identifier}`);
+      return null;
     }
+
+    // Process multiple rows (note + files) into single note object
+    const firstRow = rows[0] as Record<string, unknown>;
+    const formattedNote = formatBearNote(firstRow);
+
+    // Collect file content from all rows with clear source labeling
+    const fileContents: string[] = [];
+    for (const row of rows) {
+      const rowData = row as Record<string, unknown>;
+      const filename = rowData.filename as string;
+      const fileContent = rowData.fileContent as string;
+
+      if (filename && fileContent && fileContent.trim()) {
+        fileContents.push(`##${filename}\n\n${fileContent.trim()}`);
+      }
+    }
+
+    // Always append file content section, even if empty, to show structure
+    const originalText = formattedNote.text || '';
+    const filesSectionHeader = '\n\n---\n\n#Attached Files\n\n';
+    if (fileContents.length > 0) {
+      const fileSection = `${filesSectionHeader}${fileContents.join('\n\n---\n\n')}`;
+      formattedNote.text = originalText + fileSection;
+    } else {
+      // Add a note that no files are attached for clarity
+      formattedNote.text = originalText + `${filesSectionHeader}*No files attached to this note.*`;
+    }
+
+    logger.info(
+      `Retrieved note content with ${fileContents.length} attached files for: ${formattedNote.title}`
+    );
+    return formattedNote;
   } catch (error) {
     logger.error(`SQLite query failed: ${error}`);
     logAndThrow(
@@ -209,18 +182,13 @@ export function getNoteContent(identifier: string, includeFiles?: boolean): Bear
  * @param searchTerm - Text to search for in note titles and content (optional)
  * @param tag - Tag to filter notes by (optional)
  * @param limit - Maximum number of results to return (default from config)
- * @param includeFiles - Search within text extracted from attached images and PDF files via OCR (default: false)
  * @returns Array of matching notes without full text content
  * @throws Error if database access fails or no search criteria provided
+ * Note: Always searches within text extracted from attached images and PDF files via OCR for comprehensive results
  */
-export function searchNotes(
-  searchTerm?: string,
-  tag?: string,
-  limit?: number,
-  includeFiles?: boolean
-): BearNote[] {
+export function searchNotes(searchTerm?: string, tag?: string, limit?: number): BearNote[] {
   logger.info(
-    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, includeFiles: ${includeFiles || false}`
+    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, includeFiles: always`
   );
 
   // Validate search parameters - at least one must be provided
@@ -238,63 +206,35 @@ export function searchNotes(
     let query: string;
     const queryParams: string[] = [];
 
-    // Choose query based on whether to include files or not
-    if (includeFiles) {
-      // Query with file search - uses LEFT JOIN to include OCR'd content
-      query = `
-        SELECT DISTINCT note.ZTITLE as title,
-               note.ZUNIQUEIDENTIFIER as identifier,
-               note.ZCREATIONDATE as creationDate,
-               note.ZMODIFICATIONDATE as modificationDate
-        FROM ZSFNOTE note
-        LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
-        WHERE note.ZARCHIVED = 0 
-          AND note.ZTRASHED = 0 
-          AND note.ZENCRYPTED = 0`;
-    } else {
-      // Original query without file search for performance
-      query = `
-        SELECT ZTITLE as title,
-               ZUNIQUEIDENTIFIER as identifier,
-               ZCREATIONDATE as creationDate,
-               ZMODIFICATIONDATE as modificationDate
-        FROM ZSFNOTE 
-        WHERE ZARCHIVED = 0 
-          AND ZTRASHED = 0 
-          AND ZENCRYPTED = 0`;
-    }
+    // Query with file search - uses LEFT JOIN to include OCR'd content for comprehensive search
+    query = `
+      SELECT DISTINCT note.ZTITLE as title,
+             note.ZUNIQUEIDENTIFIER as identifier,
+             note.ZCREATIONDATE as creationDate,
+             note.ZMODIFICATIONDATE as modificationDate
+      FROM ZSFNOTE note
+      LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
+      WHERE note.ZARCHIVED = 0 
+        AND note.ZTRASHED = 0 
+        AND note.ZENCRYPTED = 0`;
 
     // Add search term filtering
     if (hasSearchTerm) {
       const searchPattern = `%${searchTerm.trim()}%`;
-      if (includeFiles) {
-        // Search in note title, text, and file OCR content
-        query += ' AND (note.ZTITLE LIKE ? OR note.ZTEXT LIKE ? OR f.ZSEARCHTEXT LIKE ?)';
-        queryParams.push(searchPattern, searchPattern, searchPattern);
-      } else {
-        // Search only in note title and text
-        query += ' AND (ZTITLE LIKE ? OR ZTEXT LIKE ?)';
-        queryParams.push(searchPattern, searchPattern);
-      }
+      // Search in note title, text, and file OCR content
+      query += ' AND (note.ZTITLE LIKE ? OR note.ZTEXT LIKE ? OR f.ZSEARCHTEXT LIKE ?)';
+      queryParams.push(searchPattern, searchPattern, searchPattern);
     }
 
     // Add tag filtering
     if (hasTag) {
       const tagPattern = `%#${tag.trim()}%`;
-      if (includeFiles) {
-        query += ' AND note.ZTEXT LIKE ?';
-      } else {
-        query += ' AND ZTEXT LIKE ?';
-      }
+      query += ' AND note.ZTEXT LIKE ?';
       queryParams.push(tagPattern);
     }
 
     // Add ordering and limit
-    if (includeFiles) {
-      query += ' ORDER BY note.ZMODIFICATIONDATE DESC LIMIT ?';
-    } else {
-      query += ' ORDER BY ZMODIFICATIONDATE DESC LIMIT ?';
-    }
+    query += ' ORDER BY note.ZMODIFICATIONDATE DESC LIMIT ?';
     queryParams.push(queryLimit.toString());
 
     logger.debug(`Executing search query with ${queryParams.length} parameters`);

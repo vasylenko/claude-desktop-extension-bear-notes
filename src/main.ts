@@ -19,7 +19,7 @@ server.registerTool(
   {
     title: 'Open Bear Note',
     description:
-      'Read the full text of a Bear note. Use this after searching to view complete note content including all text, formatting, and metadata.',
+      'Read the full text content of a Bear note from your library. Always includes text extracted from attached images and PDFs (aka OCR search) with clear labeling.',
     inputSchema: {
       identifier: z.string().describe('Exact note identifier (ID) obtained from bear-search-notes'),
     },
@@ -30,7 +30,7 @@ server.registerTool(
     },
   },
   async ({ identifier }): Promise<CallToolResult> => {
-    logger.info(`bear-open-note called with identifier: ${identifier}`);
+    logger.info(`bear-open-note called with identifier: ${identifier}, includeFiles: always`);
 
     if (!identifier || !identifier.trim()) {
       throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
@@ -128,7 +128,7 @@ server.registerTool(
   {
     title: 'Find Bear Notes',
     description:
-      'Find notes in your Bear library by searching text content or filtering by tags. Returns a list with titles and IDs - use "Open Bear Note" to read full content.',
+      'Find notes in your Bear library by searching text content or filtering by tags. Always searches within attached images and PDF files via OCR. Returns a list with titles and IDs - use "Open Bear Note" to read full content.',
     inputSchema: {
       term: z.string().optional().describe('Text to search for in note titles and content'),
       tag: z.string().optional().describe('Tag to filter notes by (without # symbol)'),
@@ -142,7 +142,7 @@ server.registerTool(
   },
   async ({ term, tag, limit }): Promise<CallToolResult> => {
     logger.info(
-      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}`
+      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}, includeFiles: always`
     );
 
     try {
@@ -158,7 +158,6 @@ server.registerTool(
 Try different search terms or check if notes exist in Bear Notes.`);
       }
 
-      // Format results as list with key info
       const resultLines = [`Found ${notes.length} note${notes.length === 1 ? '' : 's'}:`, ''];
 
       notes.forEach((note, index) => {
@@ -228,13 +227,10 @@ server.registerTool(
 );
 
 async function main(): Promise<void> {
-  const debugMode = process.argv.includes('--debug');
-
-  if (debugMode) {
-    logger.info('Starting Bear Notes MCP Server...');
-    logger.info(`Node.js version: ${process.version}`);
-    logger.info(`App version: ${APP_VERSION}`);
-  }
+  logger.info(`Bear Notes MCP Server initializing... Version: ${APP_VERSION}`);
+  logger.debug(`Debug logs enabled: ${logger.debug.enabled}`);
+  logger.debug(`Node.js version: ${process.version}`);
+  logger.debug(`App version: ${APP_VERSION}`);
 
   // Handle process errors
   process.on('uncaughtException', (error) => {

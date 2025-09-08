@@ -4,13 +4,8 @@ import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 
 import type { BearNote } from './types.js';
-import {
-  BEAR_DATABASE_PATH,
-  CORE_DATA_EPOCH_OFFSET,
-  DEFAULT_SEARCH_LIMIT,
-  ERROR_MESSAGES,
-} from './config.js';
-import { logAndThrow, logger } from './utils.js';
+import { BEAR_DATABASE_PATH, DEFAULT_SEARCH_LIMIT, ERROR_MESSAGES } from './config.js';
+import { convertCoreDataTimestamp, logAndThrow, logger } from './utils.js';
 
 function openBearDatabase(): DatabaseSync {
   const databasePath = getBearDatabasePath();
@@ -44,13 +39,8 @@ function formatBearNote(row: Record<string, unknown>): BearNote {
     logAndThrow('Database error: Note date fields are invalid in database row');
   }
 
-  // Convert Core Data timestamps to ISO strings
-  // Bear stores timestamps in seconds since Core Data epoch (2001-01-01)
-  const modificationTimestamp = modificationDate + CORE_DATA_EPOCH_OFFSET;
-  const creationTimestamp = creationDate + CORE_DATA_EPOCH_OFFSET;
-
-  const modification_date = new Date(modificationTimestamp * 1000).toISOString();
-  const creation_date = new Date(creationTimestamp * 1000).toISOString();
+  const modification_date = convertCoreDataTimestamp(modificationDate);
+  const creation_date = convertCoreDataTimestamp(creationDate);
 
   // Bear stores pinned as integer; API expects string literal (only needed when pinned is queried)
   const pin: 'yes' | 'no' = pinned ? 'yes' : 'no';
@@ -90,9 +80,10 @@ function getBearDatabasePath(): string {
  * @param identifier - The unique identifier of the Bear note
  * @returns The note with content, or null if not found
  * @throws Error if database access fails or identifier is invalid
+ * Note: Always includes OCR'd text from attached images and PDFs with clear labeling
  */
 export function getNoteContent(identifier: string): BearNote | null {
-  logger.info(`getNoteContent called with identifier: ${identifier}`);
+  logger.info(`getNoteContent called with identifier: ${identifier}, includeFiles: always`);
 
   if (!identifier || typeof identifier !== 'string' || !identifier.trim()) {
     logAndThrow('Database error: Invalid note identifier provided');
@@ -101,34 +92,62 @@ export function getNoteContent(identifier: string): BearNote | null {
   const db = openBearDatabase();
 
   try {
+    logger.debug(`Fetching the note content from the database, note identifier: ${identifier}`);
+
+    // Query with file content - always includes OCR'd text from attached files with clear labeling
     const query = `
-      SELECT ZTITLE as title,
-             ZUNIQUEIDENTIFIER as identifier,
-             ZCREATIONDATE as creationDate,
-             ZMODIFICATIONDATE as modificationDate,
-             ZPINNED as pinned,
-             ZTEXT as text
-      FROM ZSFNOTE 
-      WHERE ZUNIQUEIDENTIFIER = ? 
-        AND ZARCHIVED = 0 
-        AND ZTRASHED = 0 
-        AND ZENCRYPTED = 0
+      SELECT note.ZTITLE as title,
+             note.ZUNIQUEIDENTIFIER as identifier,
+             note.ZCREATIONDATE as creationDate,
+             note.ZMODIFICATIONDATE as modificationDate,
+             note.ZPINNED as pinned,
+             note.ZTEXT as text,
+             f.ZFILENAME as filename,
+             f.ZSEARCHTEXT as fileContent
+      FROM ZSFNOTE note
+      LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
+      WHERE note.ZUNIQUEIDENTIFIER = ? 
+        AND note.ZARCHIVED = 0 
+        AND note.ZTRASHED = 0 
+        AND note.ZENCRYPTED = 0
     `;
-
-    logger.debug(`Fetching note content for identifier: ${identifier}`);
-
-    // Use parameter binding to prevent SQL injection attacks
     const stmt = db.prepare(query);
-    const row = stmt.get(identifier);
-
-    if (!row) {
+    const rows = stmt.all(identifier);
+    if (!rows || rows.length === 0) {
       logger.info(`Note not found for identifier: ${identifier}`);
       return null;
     }
 
-    const formattedNote = formatBearNote(row as Record<string, unknown>);
-    logger.info(`Retrieved note content for: ${formattedNote.title}`);
+    // Process multiple rows (note + files) into single note object
+    const firstRow = rows[0] as Record<string, unknown>;
+    const formattedNote = formatBearNote(firstRow);
 
+    // Collect file content from all rows with clear source labeling
+    const fileContents: string[] = [];
+    for (const row of rows) {
+      const rowData = row as Record<string, unknown>;
+      const filename = rowData.filename as string;
+      const fileContent = rowData.fileContent as string;
+
+      if (filename && fileContent && fileContent.trim()) {
+        fileContents.push(`##${filename}\n\n${fileContent.trim()}`);
+      }
+    }
+
+    // Always append file content section, even if empty, to show structure
+    const originalText = formattedNote.text || '';
+    const filesSectionHeader = '\n\n---\n\n#Attached Files\n\n';
+    if (fileContents.length > 0) {
+      const fileSection = `${filesSectionHeader}${fileContents.join('\n\n---\n\n')}`;
+      formattedNote.text = originalText + fileSection;
+    } else {
+      // Add a note that no files are attached for clarity
+      formattedNote.text = originalText + `${filesSectionHeader}*No files attached to this note.*`;
+    }
+
+    logger.info(
+      `Retrieved note content with ${fileContents.length} attached files for: ${formattedNote.title}`
+    );
     return formattedNote;
   } catch (error) {
     logger.error(`SQLite query failed: ${error}`);
@@ -155,10 +174,11 @@ export function getNoteContent(identifier: string): BearNote | null {
  * @param limit - Maximum number of results to return (default from config)
  * @returns Array of matching notes without full text content
  * @throws Error if database access fails or no search criteria provided
+ * Note: Always searches within text extracted from attached images and PDF files via OCR for comprehensive results
  */
 export function searchNotes(searchTerm?: string, tag?: string, limit?: number): BearNote[] {
   logger.info(
-    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}`
+    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, includeFiles: always`
   );
 
   // Validate search parameters - at least one must be provided
@@ -173,33 +193,38 @@ export function searchNotes(searchTerm?: string, tag?: string, limit?: number): 
   const queryLimit = limit || DEFAULT_SEARCH_LIMIT;
 
   try {
-    let query = `
-      SELECT ZTITLE as title,
-             ZUNIQUEIDENTIFIER as identifier,
-             ZCREATIONDATE as creationDate,
-             ZMODIFICATIONDATE as modificationDate
-      FROM ZSFNOTE 
-      WHERE ZARCHIVED = 0 
-        AND ZTRASHED = 0 
-        AND ZENCRYPTED = 0`;
-
+    let query: string;
     const queryParams: string[] = [];
 
-    // Add search term filtering (search in title and text)
+    // Query with file search - uses LEFT JOIN to include OCR'd content for comprehensive search
+    query = `
+      SELECT DISTINCT note.ZTITLE as title,
+             note.ZUNIQUEIDENTIFIER as identifier,
+             note.ZCREATIONDATE as creationDate,
+             note.ZMODIFICATIONDATE as modificationDate
+      FROM ZSFNOTE note
+      LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
+      WHERE note.ZARCHIVED = 0 
+        AND note.ZTRASHED = 0 
+        AND note.ZENCRYPTED = 0`;
+
+    // Add search term filtering
     if (hasSearchTerm) {
-      query += ' AND (ZTITLE LIKE ? OR ZTEXT LIKE ?)';
       const searchPattern = `%${searchTerm.trim()}%`;
-      queryParams.push(searchPattern, searchPattern);
+      // Search in note title, text, and file OCR content
+      query += ' AND (note.ZTITLE LIKE ? OR note.ZTEXT LIKE ? OR f.ZSEARCHTEXT LIKE ?)';
+      queryParams.push(searchPattern, searchPattern, searchPattern);
     }
 
     // Add tag filtering
     if (hasTag) {
-      query += ' AND ZTEXT LIKE ?';
       const tagPattern = `%#${tag.trim()}%`;
+      query += ' AND note.ZTEXT LIKE ?';
       queryParams.push(tagPattern);
     }
 
-    query += ' ORDER BY ZMODIFICATIONDATE DESC LIMIT ?';
+    // Add ordering and limit
+    query += ' ORDER BY note.ZMODIFICATIONDATE DESC LIMIT ?';
     queryParams.push(queryLimit.toString());
 
     logger.debug(`Executing search query with ${queryParams.length} parameters`);

@@ -1,7 +1,7 @@
 import createDebug from 'debug';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
-import { ERROR_MESSAGES } from './config.js';
+import { CORE_DATA_EPOCH_OFFSET, ERROR_MESSAGES } from './config.js';
 import { getNoteContent } from './database.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 
@@ -32,6 +32,18 @@ logger.info.enabled = true;
 export function logAndThrow(message: string): never {
   logger.error(message);
   throw new Error(message);
+}
+
+/**
+ * Converts Bear's Core Data timestamp to ISO string format.
+ * Bear stores timestamps in seconds since Core Data epoch (2001-01-01).
+ *
+ * @param coreDataTimestamp - Timestamp in seconds since Core Data epoch
+ * @returns ISO string representation of the timestamp
+ */
+export function convertCoreDataTimestamp(coreDataTimestamp: number): string {
+  const unixTimestamp = coreDataTimestamp + CORE_DATA_EPOCH_OFFSET;
+  return new Date(unixTimestamp * 1000).toISOString();
 }
 
 /**

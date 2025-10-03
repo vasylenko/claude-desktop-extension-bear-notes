@@ -433,3 +433,52 @@ Here is the detailed output from the Claude chat:
 
     PDF created successfully
 ```
+
+# Implementation Plan
+
+## Solution Architecture
+
+**Key Insight**: We don't need to trick Claude into encoding files via scripts. The MCP server runs in Node.js on the user's machine with full filesystem access. We simply:
+1. Accept a file path from Claude as a tool parameter
+2. Read and base64-encode the file **in our Node.js code** (efficient, no LLM tokens used)
+3. Pass the encoded content to Bear's `/add-file` API
+
+This follows KISS (Keep It Simple) and reuses our existing architecture pattern.
+
+## Implementation Steps
+
+### 1. Add File Reading Utility (src/utils.ts)
+- Function `readAndEncodeFile(filePath: string): { filename: string, base64Content: string }`
+- Uses Node.js `fs.readFileSync()` and `Buffer.toString('base64')`
+- Extracts filename from path using `path.basename()`
+- Error handling for file not found, permission denied, etc.
+
+### 2. Extend Existing Bear URL Builder (src/bear-urls.ts)
+**Reuse existing `buildBearUrl()` function** (follows DRY principle):
+- Add `file?: string` and `filename?: string` to `BearUrlParams` interface
+- Add `'file'` and `'filename'` to the `stringParams` array
+- No new function needed - existing URLSearchParams encoding handles base64 correctly
+- Works automatically with `add-file` action
+
+### 3. Register New MCP Tool (src/main.ts)
+- Tool name: `bear-add-file`
+- Required params: `file_path` (absolute path), either `id` or `title`
+- For the `mode`, always use append to ensure we add the file at the end of the document; will start simple; and no other extra options for window or other stuff
+- Tool handler: read file → encode → call `buildBearUrl('add-file', {...})` → execute via `executeBearXCallbackApi()`
+- Follows same pattern as existing tools (bear-create-note, bear-add-text-*)
+
+### 4. Error Handling & Validation
+- Path normalization: use `path.resolve()` to convert relative paths to absolute
+- File validation handled by `fs.readFileSync()` - throws clear errors for non-existent/unreadable files
+- Error messages bubble up naturally with descriptive context
+
+## Files to Modify
+- `src/utils.ts` - add file encoding function
+- `src/bear-urls.ts` - extend BearUrlParams interface and stringParams array (2 lines)
+- `src/main.ts` - register new tool
+
+## Non-Goals (YAGNI)
+- ❌ No need to integrate with Claude's file creation feature
+- ❌ No need for scripts or "tricking" Claude
+- ❌ No file size limits initially (Bear will reject if too large)
+- ❌ No file type validation (let Bear handle it)

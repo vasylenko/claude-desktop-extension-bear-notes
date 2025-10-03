@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { basename, resolve } from 'node:path';
+
 import createDebug from 'debug';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
@@ -32,6 +35,25 @@ logger.info.enabled = true;
 export function logAndThrow(message: string): never {
   logger.error(message);
   throw new Error(message);
+}
+
+/**
+ * Reads a file from disk and encodes it as base64 for Bear API transmission.
+ * Handles path resolution to support both absolute and relative file paths.
+ *
+ * @param filePath - Path to the file (absolute or relative to working directory)
+ * @returns Object containing filename and base64-encoded content
+ * @throws Error if file cannot be read (ENOENT, EACCES, EISDIR, etc.)
+ */
+export function readAndEncodeFile(filePath: string): { filename: string; base64Content: string } {
+  const absolutePath = resolve(filePath);
+  const fileBuffer = readFileSync(absolutePath);
+  const filename = basename(absolutePath);
+  const base64Content = fileBuffer.toString('base64');
+
+  logger.debug(`File encoded: ${filename}, size: ${fileBuffer.length} bytes`);
+
+  return { filename, base64Content };
 }
 
 /**

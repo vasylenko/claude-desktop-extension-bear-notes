@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/vasylenko-claude-desktop-extension-bear-notes-badge.png)](https://mseep.ai/app/vasylenko-claude-desktop-extension-bear-notes)
+
 [![Supply Chain](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/workflow.yml/badge.svg)](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/workflow.yml)
 [![Snyk](https://snyk.io/test/github/vasylenko/claude-desktop-extension-bear-notes/badge.svg)](https://snyk.io/test/github/vasylenko/claude-desktop-extension-bear-notes)
     

@@ -19,7 +19,9 @@
       "mcp__bear-notes-local__bear-add-text-append",
       "mcp__bear-notes-local__bear-add-text-prepend",
       "WebSearch",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr view:*)"
     ],
     "deny": [],
     "ask": []

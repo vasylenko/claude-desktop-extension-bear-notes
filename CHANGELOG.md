@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-10-03
+
+### Added
+- **File Attachment Support**: New `bear-add-file` tool for attaching files to Bear notes
+  - Accepts base64-encoded file content (works with Claude Desktop's files feature)
+  - Supports all file types: images, PDFs, Excel, Word, etc.
+  - Automatically strips whitespace from base64 to ensure proper Bear decoding
+
+### Technical
+- Optimized for Claude Desktop's sandbox architecture - no filesystem access required
+- Base64 encoding happens in Claude's sandbox via shell commands
+- Tool streaming passes base64 to the MCP tool call very slow – not a bug, kind of a feature :-(
+
 ## [1.1.0] - 2025-09-08
 
 ### Added

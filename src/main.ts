@@ -5,7 +5,7 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 import { APP_VERSION, ERROR_MESSAGES } from './config.js';
-import { createToolResponse, handleAddText, logger, readAndEncodeFile } from './utils.js';
+import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
 import { getNoteContent, searchNotes } from './database.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 
@@ -231,11 +231,10 @@ server.registerTool(
   {
     title: 'Add File to Note',
     description:
-      'Attach a file (image, PDF, document, etc.) to an existing Bear note. The file will be added at the end of the note. Use "Find Bear Notes" first to get the note ID.',
+      'Attach a file to an existing Bear note. Encode the file to base64 using shell commands (e.g., base64 /path/to/file.xlsx) and provide the encoded content. Use "Find Bear Notes" first to get the note ID.',
     inputSchema: {
-      file_path: z
-        .string()
-        .describe('Path to the file to attach (absolute path or relative to working directory)'),
+      base64_content: z.string().describe('Base64-encoded file content'),
+      filename: z.string().describe('Filename with extension (e.g., budget.xlsx, report.pdf)'),
       id: z
         .string()
         .optional()
@@ -249,13 +248,17 @@ server.registerTool(
       openWorldHint: true,
     },
   },
-  async ({ file_path, id, title }): Promise<CallToolResult> => {
+  async ({ base64_content, filename, id, title }): Promise<CallToolResult> => {
     logger.info(
-      `bear-add-file called with file_path: ${file_path}, id: ${id || 'none'}, title: ${title || 'none'}`
+      `bear-add-file called with base64_content: ${base64_content ? 'provided' : 'none'}, filename: ${filename || 'none'}, id: ${id || 'none'}, title: ${title || 'none'}`
     );
 
-    if (!file_path || !file_path.trim()) {
-      throw new Error('File path is required');
+    if (!base64_content || !base64_content.trim()) {
+      throw new Error('base64_content is required');
+    }
+
+    if (!filename || !filename.trim()) {
+      throw new Error('filename is required');
     }
 
     if (!id && !title) {
@@ -265,8 +268,8 @@ server.registerTool(
     }
 
     try {
-      // Read and encode file server-side (efficient, no LLM tokens used)
-      const { filename, base64Content } = readAndEncodeFile(file_path.trim());
+      // Clean base64 string (remove whitespace/newlines from base64 command output)
+      const cleanedBase64 = cleanBase64(base64_content);
 
       // Verify note exists if ID provided
       if (id) {
@@ -281,17 +284,17 @@ Use bear-search-notes to find the correct note identifier.`);
       const url = buildBearUrl('add-file', {
         id: id?.trim(),
         title: title?.trim(),
-        file: base64Content,
-        filename,
+        file: cleanedBase64,
+        filename: filename.trim(),
         mode: 'append',
       });
 
-      logger.debug(`Executing Bear add-file URL for: ${filename}`);
+      logger.debug(`Executing Bear add-file URL for: ${filename.trim()}`);
       await executeBearXCallbackApi(url);
 
       const noteIdentifier = id ? `Note ID: ${id.trim()}` : `Note title: "${title!.trim()}"`;
 
-      return createToolResponse(`File "${filename}" added successfully!
+      return createToolResponse(`File "${filename.trim()}" added successfully!
 
 ${noteIdentifier}
 

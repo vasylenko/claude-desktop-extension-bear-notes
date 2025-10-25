@@ -1,6 +1,3 @@
-import { readFileSync } from 'node:fs';
-import { basename, resolve } from 'node:path';
-
 import createDebug from 'debug';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
@@ -38,22 +35,15 @@ export function logAndThrow(message: string): never {
 }
 
 /**
- * Reads a file from disk and encodes it as base64 for Bear API transmission.
- * Handles path resolution to support both absolute and relative file paths.
+ * Cleans base64 string by removing whitespace/newlines added by base64 command.
+ * URLSearchParams in buildBearUrl will handle URL encoding of special characters.
  *
- * @param filePath - Path to the file (absolute or relative to working directory)
- * @returns Object containing filename and base64-encoded content
- * @throws Error if file cannot be read (ENOENT, EACCES, EISDIR, etc.)
+ * @param base64String - Raw base64 string (may contain whitespace/newlines)
+ * @returns Cleaned base64 string without whitespace
  */
-export function readAndEncodeFile(filePath: string): { filename: string; base64Content: string } {
-  const absolutePath = resolve(filePath);
-  const fileBuffer = readFileSync(absolutePath);
-  const filename = basename(absolutePath);
-  const base64Content = fileBuffer.toString('base64');
-
-  logger.debug(`File encoded: ${filename}, size: ${fileBuffer.length} bytes`);
-
-  return { filename, base64Content };
+export function cleanBase64(base64String: string): string {
+  // Remove all whitespace/newlines from base64 (base64 command adds line breaks)
+  return base64String.trim().replace(/\s+/g, '');
 }
 
 /**

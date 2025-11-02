@@ -5,7 +5,7 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 import { APP_VERSION, ERROR_MESSAGES } from './config.js';
-import { createToolResponse, handleAddText, logger } from './utils.js';
+import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
 import { getNoteContent, searchNotes } from './database.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 
@@ -223,6 +223,86 @@ server.registerTool(
   },
   async ({ id, text, header }): Promise<CallToolResult> => {
     return handleAddText('prepend', { id, text, header });
+  }
+);
+
+server.registerTool(
+  'bear-add-file',
+  {
+    title: 'Add File to Note',
+    description:
+      'Attach a file to an existing Bear note. Encode the file to base64 using shell commands (e.g., base64 /path/to/file.xlsx) and provide the encoded content. Use "Find Bear Notes" first to get the note ID.',
+    inputSchema: {
+      base64_content: z.string().describe('Base64-encoded file content'),
+      filename: z.string().describe('Filename with extension (e.g., budget.xlsx, report.pdf)'),
+      id: z
+        .string()
+        .optional()
+        .describe('Exact note identifier (ID) obtained from bear-search-notes'),
+      title: z.string().optional().describe('Note title if ID is not available'),
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+  },
+  async ({ base64_content, filename, id, title }): Promise<CallToolResult> => {
+    logger.info(
+      `bear-add-file called with base64_content: ${base64_content ? 'provided' : 'none'}, filename: ${filename || 'none'}, id: ${id || 'none'}, title: ${title || 'none'}`
+    );
+
+    if (!base64_content || !base64_content.trim()) {
+      throw new Error('base64_content is required');
+    }
+
+    if (!filename || !filename.trim()) {
+      throw new Error('filename is required');
+    }
+
+    if (!id && !title) {
+      throw new Error(
+        'Either note ID or title is required. Use bear-search-notes to find the note ID.'
+      );
+    }
+
+    try {
+      // Clean base64 string (remove whitespace/newlines from base64 command output)
+      const cleanedBase64 = cleanBase64(base64_content);
+
+      // Verify note exists if ID provided
+      if (id) {
+        const existingNote = getNoteContent(id.trim());
+        if (!existingNote) {
+          return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
+
+Use bear-search-notes to find the correct note identifier.`);
+        }
+      }
+
+      const url = buildBearUrl('add-file', {
+        id: id?.trim(),
+        title: title?.trim(),
+        file: cleanedBase64,
+        filename: filename.trim(),
+        mode: 'append',
+      });
+
+      logger.debug(`Executing Bear add-file URL for: ${filename.trim()}`);
+      await executeBearXCallbackApi(url);
+
+      const noteIdentifier = id ? `Note ID: ${id.trim()}` : `Note title: "${title!.trim()}"`;
+
+      return createToolResponse(`File "${filename.trim()}" added successfully!
+
+${noteIdentifier}
+
+The file has been attached to your Bear note.`);
+    } catch (error) {
+      logger.error(`bear-add-file failed: ${error}`);
+      throw error;
+    }
   }
 );
 

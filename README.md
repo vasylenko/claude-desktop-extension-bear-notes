@@ -26,10 +26,11 @@ Ask Claude to search your Bear notes with a query like "Search my Bear notes for
 ## MCP Server Tools
 
 - **`bear-search-notes`** - Find notes by text content or tags, returns list with IDs for further actions
-- **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata  
+- **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata
 - **`bear-create-note`** - Create new notes with optional title, content, and tags
 - **`bear-add-text-append`** - Add text to the end of existing notes or specific sections
 - **`bear-add-text-prepend`** - Insert text at the beginning of existing notes or sections
+- **`bear-add-file`** - Attach files (images, PDFs, spreadsheets, etc.) to existing notes
 
 ## Technical Details
 

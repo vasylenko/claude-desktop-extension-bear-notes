@@ -35,6 +35,18 @@ export function logAndThrow(message: string): never {
 }
 
 /**
+ * Cleans base64 string by removing whitespace/newlines added by base64 command.
+ * URLSearchParams in buildBearUrl will handle URL encoding of special characters.
+ *
+ * @param base64String - Raw base64 string (may contain whitespace/newlines)
+ * @returns Cleaned base64 string without whitespace
+ */
+export function cleanBase64(base64String: string): string {
+  // Remove all whitespace/newlines from base64 (base64 command adds line breaks)
+  return base64String.trim().replace(/\s+/g, '');
+}
+
+/**
  * Converts Bear's Core Data timestamp to ISO string format.
  * Bear stores timestamps in seconds since Core Data epoch (2001-01-01).
  *

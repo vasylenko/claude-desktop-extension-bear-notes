@@ -14,7 +14,7 @@ This Claude Desktop extension (bundled MCP server) provides seamless integration
 
 **Prerequisites**: [Bear app](https://bear.app/) must be installed and [Claude Desktop](https://claude.ai/download) must be installed.
 
-1. Download the latest `bear-notes-mcpb.dxt` extension from releases
+1. Download the latest `bear-notes-mcpb.mcpb` extension from releases
 2. Make sure your Claude Desktop is running (start if not)
 3. Doubleclick on the extension file – Claude Desktop should show you the installation prompt
 

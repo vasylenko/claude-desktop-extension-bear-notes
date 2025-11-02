@@ -32,6 +32,7 @@ tasks:
     cmds:
       - npm run check
       - npm run build
+      - npx mcpb validate manifest.json
       
   # === Bundle Build ===
 

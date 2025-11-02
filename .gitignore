@@ -2,7 +2,7 @@
 
 ####
 # Project-specific
-*.dxt
+*.mcpb
 tmp/**
 build/**
 dist/**

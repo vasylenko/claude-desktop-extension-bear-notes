@@ -42,7 +42,7 @@ tasks:
     cmds:
       - npx mcpb validate manifest.json
       - rm -rf tmp/bundle && mkdir -p tmp/bundle
-      - cp dist/*.js manifest.json package.json tmp/bundle/
+      - cp -r dist/*.js manifest.json assets package.json tmp/bundle/
       - cp assets/icon.png tmp/bundle/
       - cd tmp/bundle && npm install --omit=dev    
       - npx mcpb pack tmp/bundle {{.BUNDLE_NAME}}

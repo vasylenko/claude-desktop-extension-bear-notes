@@ -128,11 +128,35 @@ server.registerTool(
   {
     title: 'Find Bear Notes',
     description:
-      'Find notes in your Bear library by searching text content or filtering by tags. Always searches within attached images and PDF files via OCR. Returns a list with titles and IDs - use "Open Bear Note" to read full content.',
+      'Find notes in your Bear library by searching text content, filtering by tags, or date ranges. Always searches within attached images and PDF files via OCR. Returns a list with titles and IDs - use "Open Bear Note" to read full content.',
     inputSchema: {
       term: z.string().optional().describe('Text to search for in note titles and content'),
       tag: z.string().optional().describe('Tag to filter notes by (without # symbol)'),
       limit: z.number().optional().describe('Maximum number of results to return (default: 50)'),
+      createdAfter: z
+        .string()
+        .optional()
+        .describe(
+          'Filter notes created on or after this date. Supports: relative dates ("today", "yesterday", "last week", "start of last month"), ISO format (YYYY-MM-DD). Use "start of last month" for the beginning of the previous month.'
+        ),
+      createdBefore: z
+        .string()
+        .optional()
+        .describe(
+          'Filter notes created on or before this date. Supports: relative dates ("today", "yesterday", "last week", "end of last month"), ISO format (YYYY-MM-DD). Use "end of last month" for the end of the previous month.'
+        ),
+      modifiedAfter: z
+        .string()
+        .optional()
+        .describe(
+          'Filter notes modified on or after this date. Supports: relative dates ("today", "yesterday", "last week", "start of last month"), ISO format (YYYY-MM-DD). Use "start of last month" for the beginning of the previous month.'
+        ),
+      modifiedBefore: z
+        .string()
+        .optional()
+        .describe(
+          'Filter notes modified on or before this date. Supports: relative dates ("today", "yesterday", "last week", "end of last month"), ISO format (YYYY-MM-DD). Use "end of last month" for the end of the previous month.'
+        ),
     },
     annotations: {
       readOnlyHint: true,
@@ -140,22 +164,46 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ term, tag, limit }): Promise<CallToolResult> => {
+  async ({
+    term,
+    tag,
+    limit,
+    createdAfter,
+    createdBefore,
+    modifiedAfter,
+    modifiedBefore,
+  }): Promise<CallToolResult> => {
     logger.info(
-      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}, includeFiles: always`
+      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}, createdAfter: "${createdAfter || 'none'}", createdBefore: "${createdBefore || 'none'}", modifiedAfter: "${modifiedAfter || 'none'}", modifiedBefore: "${modifiedBefore || 'none'}", includeFiles: always`
     );
 
     try {
-      const notes = searchNotes(term, tag, limit);
+      const dateFilter = {
+        ...(createdAfter && { createdAfter }),
+        ...(createdBefore && { createdBefore }),
+        ...(modifiedAfter && { modifiedAfter }),
+        ...(modifiedBefore && { modifiedBefore }),
+      };
+
+      const notes = searchNotes(
+        term,
+        tag,
+        limit,
+        Object.keys(dateFilter).length > 0 ? dateFilter : undefined
+      );
 
       if (notes.length === 0) {
         const searchCriteria = [];
         if (term?.trim()) searchCriteria.push(`term "${term.trim()}"`);
         if (tag?.trim()) searchCriteria.push(`tag "${tag.trim()}"`);
+        if (createdAfter) searchCriteria.push(`created after "${createdAfter}"`);
+        if (createdBefore) searchCriteria.push(`created before "${createdBefore}"`);
+        if (modifiedAfter) searchCriteria.push(`modified after "${modifiedAfter}"`);
+        if (modifiedBefore) searchCriteria.push(`modified before "${modifiedBefore}"`);
 
-        return createToolResponse(`No notes found matching ${searchCriteria.join(' and ')}.
+        return createToolResponse(`No notes found matching ${searchCriteria.join(', ')}.
 
-Try different search terms or check if notes exist in Bear Notes.`);
+Try different search criteria or check if notes exist in Bear Notes.`);
       }
 
       const resultLines = [`Found ${notes.length} note${notes.length === 1 ? '' : 's'}:`, ''];
@@ -163,8 +211,10 @@ Try different search terms or check if notes exist in Bear Notes.`);
       notes.forEach((note, index) => {
         const noteTitle = note.title || 'Untitled';
         const modifiedDate = new Date(note.modification_date).toLocaleDateString();
+        const createdDate = new Date(note.creation_date).toLocaleDateString();
 
         resultLines.push(`${index + 1}. **${noteTitle}**`);
+        resultLines.push(`   Created: ${createdDate}`);
         resultLines.push(`   Modified: ${modifiedDate}`);
         resultLines.push(`   ID: ${note.identifier}`);
         resultLines.push('');

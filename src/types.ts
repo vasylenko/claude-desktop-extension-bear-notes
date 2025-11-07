@@ -10,3 +10,13 @@ export interface BearNote {
   pin: 'yes' | 'no';
   text?: string; // Only present in content queries
 }
+
+/**
+ * Date filter parameters for searching notes by creation or modification date.
+ */
+export interface DateFilter {
+  createdAfter?: string;
+  createdBefore?: string;
+  modifiedAfter?: string;
+  modifiedBefore?: string;
+}

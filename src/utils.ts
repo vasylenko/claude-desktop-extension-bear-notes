@@ -59,6 +59,77 @@ export function convertCoreDataTimestamp(coreDataTimestamp: number): string {
 }
 
 /**
+ * Converts a JavaScript Date object to Bear's Core Data timestamp format.
+ * Core Data timestamps are in seconds since 2001-01-01 00:00:00 UTC.
+ *
+ * @param date - JavaScript Date object
+ * @returns Core Data timestamp in seconds
+ */
+export function convertDateToCoreDataTimestamp(date: Date): number {
+  const unixTimestamp = Math.floor(date.getTime() / 1000);
+  return unixTimestamp - CORE_DATA_EPOCH_OFFSET;
+}
+
+/**
+ * Parses a date string and returns a JavaScript Date object.
+ * Supports relative dates ("today", "yesterday", "last week", "last month") and ISO date strings.
+ *
+ * @param dateString - Date string to parse (e.g., "today", "2024-01-15", "last week")
+ * @returns Parsed Date object
+ * @throws Error if the date string is invalid
+ */
+export function parseDateString(dateString: string): Date {
+  const lowerDateString = dateString.trim().toLowerCase();
+  const now = new Date();
+
+  // Handle relative dates
+  switch (lowerDateString) {
+    case 'today': {
+      const today = new Date(now);
+      today.setHours(0, 0, 0, 0);
+      return today;
+    }
+    case 'yesterday': {
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+      return yesterday;
+    }
+    case 'last week':
+    case 'week ago': {
+      const lastWeek = new Date(now);
+      lastWeek.setDate(lastWeek.getDate() - 7);
+      lastWeek.setHours(0, 0, 0, 0);
+      return lastWeek;
+    }
+    case 'last month':
+    case 'month ago':
+    case 'start of last month': {
+      // Calculate the first day of last month (handles year transitions correctly)
+      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      lastMonth.setHours(0, 0, 0, 0);
+      return lastMonth;
+    }
+    case 'end of last month': {
+      // Calculate the last day of last month (handles year transitions correctly)
+      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      endOfLastMonth.setHours(23, 59, 59, 999);
+      return endOfLastMonth;
+    }
+    default: {
+      // Try parsing as ISO date or other standard formats
+      const parsed = new Date(dateString);
+      if (isNaN(parsed.getTime())) {
+        logAndThrow(
+          `Invalid date format: "${dateString}". Use ISO format (YYYY-MM-DD) or relative dates (today, yesterday, last week, last month, start of last month, end of last month).`
+        );
+      }
+      return parsed;
+    }
+  }
+}
+
+/**
  * Creates a standardized MCP tool response with consistent formatting.
  * Centralizes response structure to follow DRY principles.
  *

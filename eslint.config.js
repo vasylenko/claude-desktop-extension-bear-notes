@@ -42,7 +42,7 @@ export default [
       'no-var': 'error',
       'semi': ['error', 'always'],
       'quotes': ['error', 'single', { avoidEscape: true }],
-      'indent': ['error', 2],
+      'indent': ['error', 2, { SwitchCase: 1 }],
       'import/order': ['error', {
         'groups': ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
         'newlines-between': 'always'

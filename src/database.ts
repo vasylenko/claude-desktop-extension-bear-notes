@@ -3,9 +3,15 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 
-import type { BearNote } from './types.js';
+import type { BearNote, DateFilter } from './types.js';
 import { BEAR_DATABASE_PATH, DEFAULT_SEARCH_LIMIT, ERROR_MESSAGES } from './config.js';
-import { convertCoreDataTimestamp, logAndThrow, logger } from './utils.js';
+import {
+  convertCoreDataTimestamp,
+  convertDateToCoreDataTimestamp,
+  logAndThrow,
+  logger,
+  parseDateString,
+} from './utils.js';
 
 function openBearDatabase(): DatabaseSync {
   const databasePath = getBearDatabasePath();
@@ -172,21 +178,30 @@ export function getNoteContent(identifier: string): BearNote | null {
  * @param searchTerm - Text to search for in note titles and content (optional)
  * @param tag - Tag to filter notes by (optional)
  * @param limit - Maximum number of results to return (default from config)
+ * @param dateFilter - Date range filters for creation and modification dates (optional)
  * @returns Array of matching notes without full text content
  * @throws Error if database access fails or no search criteria provided
  * Note: Always searches within text extracted from attached images and PDF files via OCR for comprehensive results
  */
-export function searchNotes(searchTerm?: string, tag?: string, limit?: number): BearNote[] {
+export function searchNotes(
+  searchTerm?: string,
+  tag?: string,
+  limit?: number,
+  dateFilter?: DateFilter
+): BearNote[] {
   logger.info(
-    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, includeFiles: always`
+    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, dateFilter: ${dateFilter ? JSON.stringify(dateFilter) : 'none'}, includeFiles: always`
   );
 
   // Validate search parameters - at least one must be provided
   const hasSearchTerm = searchTerm && typeof searchTerm === 'string' && searchTerm.trim();
   const hasTag = tag && typeof tag === 'string' && tag.trim();
+  const hasDateFilter = dateFilter && Object.keys(dateFilter).length > 0;
 
-  if (!hasSearchTerm && !hasTag) {
-    logAndThrow('Search error: Please provide either a search term or a tag to search for notes');
+  if (!hasSearchTerm && !hasTag && !hasDateFilter) {
+    logAndThrow(
+      'Search error: Please provide a search term, tag, or date filter to search for notes'
+    );
   }
 
   const db = openBearDatabase();
@@ -194,7 +209,7 @@ export function searchNotes(searchTerm?: string, tag?: string, limit?: number): 
 
   try {
     let query: string;
-    const queryParams: string[] = [];
+    const queryParams: (string | number)[] = [];
 
     // Query with file search - uses LEFT JOIN to include OCR'd content for comprehensive search
     query = `
@@ -204,8 +219,8 @@ export function searchNotes(searchTerm?: string, tag?: string, limit?: number): 
              note.ZMODIFICATIONDATE as modificationDate
       FROM ZSFNOTE note
       LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
-      WHERE note.ZARCHIVED = 0 
-        AND note.ZTRASHED = 0 
+      WHERE note.ZARCHIVED = 0
+        AND note.ZTRASHED = 0
         AND note.ZENCRYPTED = 0`;
 
     // Add search term filtering
@@ -223,9 +238,45 @@ export function searchNotes(searchTerm?: string, tag?: string, limit?: number): 
       queryParams.push(tagPattern);
     }
 
+    // Add date filtering
+    if (hasDateFilter && dateFilter) {
+      if (dateFilter.createdAfter) {
+        const afterDate = parseDateString(dateFilter.createdAfter);
+        // Set to start of day (00:00:00) to include notes from the entire specified day onwards
+        afterDate.setHours(0, 0, 0, 0);
+        const timestamp = convertDateToCoreDataTimestamp(afterDate);
+        query += ' AND note.ZCREATIONDATE >= ?';
+        queryParams.push(timestamp);
+      }
+      if (dateFilter.createdBefore) {
+        const beforeDate = parseDateString(dateFilter.createdBefore);
+        // Set to end of day (23:59:59.999) to include notes through the entire specified day
+        beforeDate.setHours(23, 59, 59, 999);
+        const timestamp = convertDateToCoreDataTimestamp(beforeDate);
+        query += ' AND note.ZCREATIONDATE <= ?';
+        queryParams.push(timestamp);
+      }
+      if (dateFilter.modifiedAfter) {
+        const afterDate = parseDateString(dateFilter.modifiedAfter);
+        // Set to start of day (00:00:00) to include notes from the entire specified day onwards
+        afterDate.setHours(0, 0, 0, 0);
+        const timestamp = convertDateToCoreDataTimestamp(afterDate);
+        query += ' AND note.ZMODIFICATIONDATE >= ?';
+        queryParams.push(timestamp);
+      }
+      if (dateFilter.modifiedBefore) {
+        const beforeDate = parseDateString(dateFilter.modifiedBefore);
+        // Set to end of day (23:59:59.999) to include notes through the entire specified day
+        beforeDate.setHours(23, 59, 59, 999);
+        const timestamp = convertDateToCoreDataTimestamp(beforeDate);
+        query += ' AND note.ZMODIFICATIONDATE <= ?';
+        queryParams.push(timestamp);
+      }
+    }
+
     // Add ordering and limit
     query += ' ORDER BY note.ZMODIFICATIONDATE DESC LIMIT ?';
-    queryParams.push(queryLimit.toString());
+    queryParams.push(queryLimit);
 
     logger.debug(`Executing search query with ${queryParams.length} parameters`);
 

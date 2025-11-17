@@ -242,7 +242,7 @@ export function searchNotes(
     if (hasDateFilter && dateFilter) {
       if (dateFilter.createdAfter) {
         const afterDate = parseDateString(dateFilter.createdAfter);
-        // Set to start of day (00:00:00)
+        // Set to start of day (00:00:00) to include notes from the entire specified day onwards
         afterDate.setHours(0, 0, 0, 0);
         const timestamp = convertDateToCoreDataTimestamp(afterDate);
         query += ' AND note.ZCREATIONDATE >= ?';
@@ -250,7 +250,7 @@ export function searchNotes(
       }
       if (dateFilter.createdBefore) {
         const beforeDate = parseDateString(dateFilter.createdBefore);
-        // Set to end of day (23:59:59.999) to include entire day
+        // Set to end of day (23:59:59.999) to include notes through the entire specified day
         beforeDate.setHours(23, 59, 59, 999);
         const timestamp = convertDateToCoreDataTimestamp(beforeDate);
         query += ' AND note.ZCREATIONDATE <= ?';
@@ -258,7 +258,7 @@ export function searchNotes(
       }
       if (dateFilter.modifiedAfter) {
         const afterDate = parseDateString(dateFilter.modifiedAfter);
-        // Set to start of day (00:00:00)
+        // Set to start of day (00:00:00) to include notes from the entire specified day onwards
         afterDate.setHours(0, 0, 0, 0);
         const timestamp = convertDateToCoreDataTimestamp(afterDate);
         query += ' AND note.ZMODIFICATIONDATE >= ?';
@@ -266,7 +266,7 @@ export function searchNotes(
       }
       if (dateFilter.modifiedBefore) {
         const beforeDate = parseDateString(dateFilter.modifiedBefore);
-        // Set to end of day (23:59:59.999) to include entire day
+        // Set to end of day (23:59:59.999) to include notes through the entire specified day
         beforeDate.setHours(23, 59, 59, 999);
         const timestamp = convertDateToCoreDataTimestamp(beforeDate);
         query += ' AND note.ZMODIFICATIONDATE <= ?';

@@ -82,7 +82,7 @@ export function parseDateString(dateString: string): Date {
   const lowerDateString = dateString.trim().toLowerCase();
   const now = new Date();
 
-  // Handle relative dates
+  // Handle relative dates to provide user-friendly natural language date input
   switch (lowerDateString) {
     case 'today': {
       const today = new Date(now);
@@ -105,19 +105,19 @@ export function parseDateString(dateString: string): Date {
     case 'last month':
     case 'month ago':
     case 'start of last month': {
-      // Calculate the first day of last month (handles year transitions correctly)
+      // Calculate the first day of last month; month arithmetic handles year transitions correctly via JavaScript Date constructor
       const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       lastMonth.setHours(0, 0, 0, 0);
       return lastMonth;
     }
     case 'end of last month': {
-      // Calculate the last day of last month (handles year transitions correctly)
+      // Calculate the last day of last month; day 0 of current month equals last day of previous month
       const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
       endOfLastMonth.setHours(23, 59, 59, 999);
       return endOfLastMonth;
     }
     default: {
-      // Try parsing as ISO date or other standard formats
+      // Try parsing as ISO date or other standard formats as fallback for user-provided explicit dates
       const parsed = new Date(dateString);
       if (isNaN(parsed.getTime())) {
         logAndThrow(

@@ -32,7 +32,6 @@ tasks:
     cmds:
       - npm run check
       - npm run build
-      - npx mcpb validate manifest.json
       
   # === Bundle Build ===
 
@@ -43,7 +42,6 @@ tasks:
       - npx mcpb validate manifest.json
       - rm -rf tmp/bundle && mkdir -p tmp/bundle
       - cp -r dist/*.js manifest.json assets package.json tmp/bundle/
-      - cp assets/icon.png tmp/bundle/
       - cd tmp/bundle && npm install --omit=dev    
       - npx mcpb pack tmp/bundle {{.BUNDLE_NAME}}
       - echo "Bundle created {{.BUNDLE_NAME}}"   

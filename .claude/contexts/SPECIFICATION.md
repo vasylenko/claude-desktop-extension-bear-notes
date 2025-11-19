@@ -3,7 +3,7 @@
 ## Product Overview
 
 **Name:** Bear Notes MCP Bundle
-**Type:** MCP Bundle (.mcpb/.dxt)
+**Type:** MCP Bundle (.mcpb)
 **Platform:** macOS only
 **Repository:** https://github.com/vasylenko/claude-desktop-extension-bear-notes
 
@@ -96,7 +96,7 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 - **Database:** Native Node.js SQLite (node:sqlite)
 - **Validation:** Zod 
 - **Build:** TypeScript compiler (tsc)
-- **Bundling:** @anthropic-ai/dxt 
+- **Bundling:** @anthropic-ai/mcpb 
 
 ### Key Design Decisions
 

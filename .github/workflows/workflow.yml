@@ -3,7 +3,7 @@ name: Supply Chain
 on: push
 
 env:
-  PACKAGE_PATTERN: bear-notes-mcpb-*.dxt
+  PACKAGE_PATTERN: bear-notes-mcpb-*.mcpb
 
 jobs:
   lint-and-format:
@@ -75,7 +75,7 @@ jobs:
       - name: Create package
         run: |
           task pack
-          PACKAGE_FILE=$(ls bear-notes-mcpb-*.dxt)
+          PACKAGE_FILE=$(ls bear-notes-mcpb-*.mcpb)
           echo "PACKAGE_FILE=$PACKAGE_FILE" >> $GITHUB_ENV
 
       - name: Extract changelog

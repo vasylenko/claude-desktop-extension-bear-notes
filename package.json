@@ -24,7 +24,7 @@
   "devDependencies": {
     "@anthropic-ai/dxt": "^0.2.6",
     "@types/debug": "^4.1.12",
-    "@types/node": "^24.9.1",
+    "@types/node": "^24.10.0",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "eslint": "^9.38.0",

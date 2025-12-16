@@ -36,6 +36,9 @@
   "engines": {
     "node": ">=22.5.0"
   },
+  "overrides": {
+    "body-parser": "2.2.1"
+  },
   "keywords": [
     "bear app",
     "bear notes",

@@ -2,7 +2,7 @@ import createDebug from 'debug';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
 import { CORE_DATA_EPOCH_OFFSET, ERROR_MESSAGES } from './config.js';
-import { getNoteContent } from './database.js';
+import { getNoteContent } from './notes.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 
 export const logger = {

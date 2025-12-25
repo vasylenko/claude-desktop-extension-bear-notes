@@ -6,7 +6,8 @@ import { z } from 'zod';
 
 import { APP_VERSION, ERROR_MESSAGES } from './config.js';
 import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
-import { getNoteContent, listTags, searchNotes } from './database.js';
+import { getNoteContent, searchNotes } from './notes.js';
+import { findUntaggedNotes, listTags } from './tags.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 import type { BearTag } from './types.js';
 
@@ -422,6 +423,51 @@ server.registerTool(
       return createToolResponse(header + '\n' + lines.join('\n'));
     } catch (error) {
       logger.error(`bear-list-tags failed: ${error}`);
+      throw error;
+    }
+  }
+);
+
+server.registerTool(
+  'bear-find-untagged-notes',
+  {
+    title: 'Find Untagged Notes',
+    description:
+      'Find notes in your Bear library that have no tags. Useful for organizing and categorizing notes.',
+    inputSchema: {
+      limit: z.number().optional().describe('Maximum number of results (default: 50)'),
+    },
+    annotations: {
+      readOnlyHint: true,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  async ({ limit }): Promise<CallToolResult> => {
+    logger.info(`bear-find-untagged-notes called with limit: ${limit || 'default'}`);
+
+    try {
+      const notes = findUntaggedNotes(limit);
+
+      if (notes.length === 0) {
+        return createToolResponse('No untagged notes found. All your notes have tags!');
+      }
+
+      const lines = [`Found ${notes.length} untagged note${notes.length === 1 ? '' : 's'}:`, ''];
+
+      notes.forEach((note, index) => {
+        const modifiedDate = new Date(note.modification_date).toLocaleDateString();
+        lines.push(`${index + 1}. **${note.title}**`);
+        lines.push(`   Modified: ${modifiedDate}`);
+        lines.push(`   ID: ${note.identifier}`);
+        lines.push('');
+      });
+
+      lines.push('You can also use bear-list-tags to see available tags.');
+
+      return createToolResponse(lines.join('\n'));
+    } catch (error) {
+      logger.error(`bear-find-untagged-notes failed: ${error}`);
       throw error;
     }
   }

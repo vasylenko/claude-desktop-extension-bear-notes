@@ -34,7 +34,7 @@ function buildTagHierarchy(
 
   const tagMap = new Map<string, BearTag>();
 
-  // Create all tag nodes first
+  // Two-pass approach: first create nodes, then link parent-child relationships
   for (const tag of activeTags) {
     tagMap.set(tag.name, {
       name: tag.name,
@@ -53,7 +53,7 @@ function buildTagHierarchy(
     if (tag.isRoot) {
       roots.push(tagNode);
     } else {
-      // Find parent by removing the last path segment
+      // Subtags use path notation (e.g., "career/content"), so extract parent path
       const lastSlash = tag.name.lastIndexOf('/');
       if (lastSlash > 0) {
         const parentName = tag.name.substring(0, lastSlash);

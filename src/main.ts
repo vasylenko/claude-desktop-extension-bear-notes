@@ -307,10 +307,10 @@ server.registerTool(
     }
 
     try {
-      // Clean base64 string (remove whitespace/newlines from base64 command output)
+      // base64 CLI adds line breaks that break URL encoding
       const cleanedBase64 = cleanBase64(base64_content);
 
-      // Verify note exists if ID provided
+      // Fail fast with helpful message rather than cryptic Bear error
       if (id) {
         const existingNote = getNoteContent(id.trim());
         if (!existingNote) {

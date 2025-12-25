@@ -25,6 +25,12 @@ function getBearDatabasePath(): string {
   return defaultPath;
 }
 
+/**
+ * Opens a read-only connection to Bear's SQLite database.
+ *
+ * @returns DatabaseSync instance for querying Bear notes
+ * @throws Error if Bear database is not found or cannot be opened
+ */
 export function openBearDatabase(): DatabaseSync {
   const databasePath = getBearDatabasePath();
   logger.info(`Opening Bear database at: ${databasePath}`);

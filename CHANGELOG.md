@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-12-26
+
+### Changed
+- **Migrated from DXT to MCPB**: Anthropic renamed Desktop Extensions (DXT) to MCP Bundles (MCPB)
+  - Package extension changed from `.dxt` to `.mcpb`
+  - Updated to `@anthropic-ai/mcpb` v2.1.2
+  - Manifest updated to MCPB 0.3 specification
+
+### Internal
+- Updated Taskfile to use `mcpb` CLI commands
+- Added manifest validation task
+- Resized extension icon to 512x512
+
+
+
 ## [1.4.0] - 2025-12-25
 
 ### Added

@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - TBD
+
+### Added
+- **Tag Management Tools**:
+  - `bear-list-tags` - List all tags as hierarchical tree with note counts
+  - `bear-find-untagged-notes` - Find notes without any tags
+  - `bear-add-tag` - Add one or more tags to existing notes
+
+### Changed
+- **Merged text tools**: Combined `bear-add-text-append` and `bear-add-text-prepend` into single `bear-add-text` tool with `position` parameter ('beginning' or 'end')
+
+### Fixed
+- Bear no longer steals focus when executing URL commands (uses `open -g` flag)
+
+### Internal
+- Refactored `database.ts` into separate `notes.ts` and `tags.ts` modules
+- Added UX parameters (`open_note`, `new_window`, `show_window`) to Bear URL builder
+
 ## [1.3.0] - 2025-11-17
 Authored by @bborysenko (_thank you, Borys!_)
 

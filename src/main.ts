@@ -6,8 +6,10 @@ import { z } from 'zod';
 
 import { APP_VERSION, ERROR_MESSAGES } from './config.js';
 import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
-import { getNoteContent, searchNotes } from './database.js';
+import { getNoteContent, searchNotes } from './notes.js';
+import { findUntaggedNotes, listTags } from './tags.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
+import type { BearTag } from './types.js';
 
 const server = new McpServer({
   name: 'bear-notes-mcp',
@@ -231,15 +233,24 @@ Try different search criteria or check if notes exist in Bear Notes.`);
 );
 
 server.registerTool(
-  'bear-add-text-append',
+  'bear-add-text',
   {
     title: 'Add Text to Note',
     description:
-      'Add text to the end of an existing Bear note or to a specific section. Use "Find Bear Notes" first to get the note ID.',
+      'Add text to an existing Bear note at the beginning or end. Can target a specific section using header. Use bear-search-notes first to get the note ID.',
     inputSchema: {
-      id: z.string().describe('Exact note identifier (ID) obtained from bear-search-notes'),
-      text: z.string().describe('Text to append to the note'),
-      header: z.string().optional().describe('Optional header to append text to specific section'),
+      id: z.string().describe('Note identifier (ID) from bear-search-notes'),
+      text: z.string().describe('Text content to add to the note'),
+      header: z
+        .string()
+        .optional()
+        .describe('Optional section header to target (adds text within that section)'),
+      position: z
+        .enum(['beginning', 'end'])
+        .optional()
+        .describe(
+          "Where to insert: 'end' (default) for appending, logs, updates; 'beginning' for prepending, summaries, top of mind, etc."
+        ),
     },
     annotations: {
       readOnlyHint: false,
@@ -248,31 +259,9 @@ server.registerTool(
       openWorldHint: true,
     },
   },
-  async ({ id, text, header }): Promise<CallToolResult> => {
-    return handleAddText('append', { id, text, header });
-  }
-);
-
-server.registerTool(
-  'bear-add-text-prepend',
-  {
-    title: 'Insert Text at Start',
-    description:
-      'Add text to the beginning of an existing Bear note or section. Use "Find Bear Notes" first to get the note ID.',
-    inputSchema: {
-      id: z.string().describe('Exact note identifier (ID) obtained from bear-search-notes'),
-      text: z.string().describe('Text to prepend to the note'),
-      header: z.string().optional().describe('Optional header to prepend text to specific section'),
-    },
-    annotations: {
-      readOnlyHint: false,
-      destructiveHint: true,
-      idempotentHint: false,
-      openWorldHint: true,
-    },
-  },
-  async ({ id, text, header }): Promise<CallToolResult> => {
-    return handleAddText('prepend', { id, text, header });
+  async ({ id, text, header, position }): Promise<CallToolResult> => {
+    const mode = position === 'beginning' ? 'prepend' : 'append';
+    return handleAddText(mode, { id, text, header });
   }
 );
 
@@ -318,10 +307,10 @@ server.registerTool(
     }
 
     try {
-      // Clean base64 string (remove whitespace/newlines from base64 command output)
+      // base64 CLI adds line breaks that break URL encoding
       const cleanedBase64 = cleanBase64(base64_content);
 
-      // Verify note exists if ID provided
+      // Fail fast with helpful message rather than cryptic Bear error
       if (id) {
         const existingNote = getNoteContent(id.trim());
         if (!existingNote) {
@@ -351,6 +340,189 @@ ${noteIdentifier}
 The file has been attached to your Bear note.`);
     } catch (error) {
       logger.error(`bear-add-file failed: ${error}`);
+      throw error;
+    }
+  }
+);
+
+/**
+ * Formats tag hierarchy as tree-style text output.
+ * Uses box-drawing characters for visual tree structure.
+ */
+function formatTagTree(tags: BearTag[], isLast: boolean[] = []): string[] {
+  const lines: string[] = [];
+
+  for (let i = 0; i < tags.length; i++) {
+    const tag = tags[i];
+    const isLastItem = i === tags.length - 1;
+
+    // Build the prefix using box-drawing characters
+    let linePrefix = '';
+    for (let j = 0; j < isLast.length; j++) {
+      linePrefix += isLast[j] ? '    ' : '│   ';
+    }
+    linePrefix += isLastItem ? '└── ' : '├── ';
+
+    lines.push(`${linePrefix}${tag.name} (${tag.noteCount})`);
+
+    if (tag.children.length > 0) {
+      lines.push(...formatTagTree(tag.children, [...isLast, isLastItem]));
+    }
+  }
+
+  return lines;
+}
+
+server.registerTool(
+  'bear-list-tags',
+  {
+    title: 'List Bear Tags',
+    description:
+      'List all tags in your Bear library as a hierarchical tree. Shows tag names with note counts. Useful for understanding your tag structure and finding tags to apply to untagged notes.',
+    inputSchema: {},
+    annotations: {
+      readOnlyHint: true,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  async (): Promise<CallToolResult> => {
+    logger.info('bear-list-tags called');
+
+    try {
+      const { tags, totalCount } = listTags();
+
+      if (totalCount === 0) {
+        return createToolResponse('No tags found in your Bear library.');
+      }
+
+      // Format root tags with their children as trees
+      const lines: string[] = [];
+      for (const rootTag of tags) {
+        lines.push(`${rootTag.name} (${rootTag.noteCount})`);
+        if (rootTag.children.length > 0) {
+          lines.push(...formatTagTree(rootTag.children));
+        }
+      }
+
+      const header = `Found ${totalCount} tag${totalCount === 1 ? '' : 's'}:\n`;
+
+      return createToolResponse(header + '\n' + lines.join('\n'));
+    } catch (error) {
+      logger.error(`bear-list-tags failed: ${error}`);
+      throw error;
+    }
+  }
+);
+
+server.registerTool(
+  'bear-find-untagged-notes',
+  {
+    title: 'Find Untagged Notes',
+    description:
+      'Find notes in your Bear library that have no tags. Useful for organizing and categorizing notes.',
+    inputSchema: {
+      limit: z.number().optional().describe('Maximum number of results (default: 50)'),
+    },
+    annotations: {
+      readOnlyHint: true,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  async ({ limit }): Promise<CallToolResult> => {
+    logger.info(`bear-find-untagged-notes called with limit: ${limit || 'default'}`);
+
+    try {
+      const notes = findUntaggedNotes(limit);
+
+      if (notes.length === 0) {
+        return createToolResponse('No untagged notes found. All your notes have tags!');
+      }
+
+      const lines = [`Found ${notes.length} untagged note${notes.length === 1 ? '' : 's'}:`, ''];
+
+      notes.forEach((note, index) => {
+        const modifiedDate = new Date(note.modification_date).toLocaleDateString();
+        lines.push(`${index + 1}. **${note.title}**`);
+        lines.push(`   Modified: ${modifiedDate}`);
+        lines.push(`   ID: ${note.identifier}`);
+        lines.push('');
+      });
+
+      lines.push('You can also use bear-list-tags to see available tags.');
+
+      return createToolResponse(lines.join('\n'));
+    } catch (error) {
+      logger.error(`bear-find-untagged-notes failed: ${error}`);
+      throw error;
+    }
+  }
+);
+
+server.registerTool(
+  'bear-add-tag',
+  {
+    title: 'Add Tags to Note',
+    description:
+      'Add one or more tags to an existing Bear note. Tags are added at the beginning of the note. Use bear-list-tags to see available tags.',
+    inputSchema: {
+      id: z
+        .string()
+        .describe('Note identifier (ID) from bear-search-notes or bear-find-untagged-notes'),
+      tags: z
+        .array(z.string())
+        .describe('Tag names without # symbol (e.g., ["career", "career/meetings"])'),
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+  },
+  async ({ id, tags }): Promise<CallToolResult> => {
+    logger.info(`bear-add-tag called with id: ${id}, tags: [${tags.join(', ')}]`);
+
+    if (!id || !id.trim()) {
+      throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
+    }
+
+    if (!tags || tags.length === 0) {
+      throw new Error('At least one tag is required');
+    }
+
+    try {
+      const existingNote = getNoteContent(id.trim());
+      if (!existingNote) {
+        return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
+
+Use bear-search-notes to find the correct note identifier.`);
+      }
+
+      const tagsString = tags.join(',');
+
+      const url = buildBearUrl('add-text', {
+        id: id.trim(),
+        tags: tagsString,
+        mode: 'prepend',
+        open_note: 'no',
+        show_window: 'no',
+        new_window: 'no',
+      });
+
+      await executeBearXCallbackApi(url);
+
+      const tagList = tags.map((t) => `#${t}`).join(', ');
+
+      return createToolResponse(`Tags added successfully!
+
+Note: "${existingNote.title}"
+Tags: ${tagList}
+
+The tags have been added to the beginning of the note.`);
+    } catch (error) {
+      logger.error(`bear-add-tag failed: ${error}`);
       throw error;
     }
   }

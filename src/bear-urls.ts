@@ -15,6 +15,9 @@ export interface BearUrlParams {
   mode?: 'append' | 'prepend' | undefined;
   file?: string | undefined;
   filename?: string | undefined;
+  open_note?: 'yes' | 'no' | undefined;
+  new_window?: 'yes' | 'no' | undefined;
+  show_window?: 'yes' | 'no' | undefined;
 }
 
 /**
@@ -48,6 +51,11 @@ export function buildBearUrl(action: string, params: BearUrlParams = {}): string
     urlParams.set('mode', params.mode);
   }
 
+  // UX params with defaults
+  urlParams.set('open_note', params.open_note ?? 'yes');
+  urlParams.set('new_window', params.new_window ?? 'no');
+  urlParams.set('show_window', params.show_window ?? 'yes');
+
   // Add required Bear API parameters for add-text action
   if (action === 'add-text') {
     urlParams.set('new_line', 'yes'); // Ensures text appears on new line
@@ -80,7 +88,7 @@ export function executeBearXCallbackApi(url: string): Promise<void> {
   return new Promise((resolve, reject) => {
     logger.debug('Launching Bear Notes via x-callback-url');
 
-    const child = spawn('open', [url.trim()], {
+    const child = spawn('open', ['-g', url.trim()], {
       stdio: 'pipe',
       detached: false,
     });

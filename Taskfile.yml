@@ -9,6 +9,11 @@ tasks:
     cmds:
       - task --list
   
+  inspector:
+    desc: Run MCP inspector with Web UI
+    cmds:
+      - npx @modelcontextprotocol/inspector node --experimental-sqlite dist/main.js
+      
   setup:
     desc: Project setup (install + build)
     cmds:

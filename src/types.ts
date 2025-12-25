@@ -20,3 +20,15 @@ export interface DateFilter {
   modifiedAfter?: string;
   modifiedBefore?: string;
 }
+
+/**
+ * Represents a Bear tag with hierarchy support.
+ * Tags form a tree structure where nested tags like "career/content/blog"
+ * become children of their parent tags.
+ */
+export interface BearTag {
+  name: string; // Full path: "career/content/blog"
+  displayName: string; // Leaf name only: "blog"
+  noteCount: number;
+  children: BearTag[];
+}

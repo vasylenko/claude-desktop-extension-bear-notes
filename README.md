@@ -10,6 +10,14 @@ This Claude Desktop extension (bundled MCP server) provides seamless integration
 
 ![](./docs/demo.gif)
 
+## Staying Up To Date
+
+Consider to subscribe to release announcements to know when I release a new version of the extenstion:
+
+![](./docs/stay-updated.png)
+
+I also post to [reddit.com/r/bearapp/](https://www.reddit.com/r/bearapp/) when there's a new release.
+
 ## Quick Start
 
 **Prerequisites**: [Bear app](https://bear.app/) must be installed and [Claude Desktop](https://claude.ai/download) must be installed.
@@ -57,6 +65,14 @@ For read operations (search/open), the x-callback-url API returns the note data 
 This is to enable native SQLite support and avoid shipping an SQLite binary from third-party node packages, which poses supply chain risks and blocks the Claude extension from running on macOS.
 
 Anthropic does not sign third-party SQLite binaries (obviously), causing macOS security systems to flag that the Claude process from a binary signed by Anthropic is trying to run another binary signed by a third party. As a result, Claude cannot run the extension. 
+
+### When I install the extension, I see a red warning: "Installing will grant access to everything on your computer." - what does this mean?
+
+This is how Claude for Desktop reacts to the fact that this extension needs access to the Bear SQLite databse on your Mac.
+
+Claude warning system does not distinguish between the need to access only one file (what the extension does) versus the need to access all files (this is NOT what the extention does).
+
+One of the ways to validate this is asking your Claude to analyze the codebase (it is pretty small) before installing the extension and tell you.
 
 ### How can I report a bug or contribute? 
 

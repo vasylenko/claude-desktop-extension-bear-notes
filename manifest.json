@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "bear-notes",
   "display_name": "Bear Notes",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "icon": "icon.png",
   "description": "Bear Notes MCP server with TypeScript and native SQLite. Provides comprehensive Bear Notes integration for creating, searching, reading, and modifying notes.",
   "long_description": "This extension provides comprehensive Bear Notes integration through a TypeScript MCP server using native Node.js SQLite. It enables creating, searching, reading, and modifying Bear notes directly from Claude Desktop with full type safety and modern JavaScript features.",
@@ -43,28 +43,36 @@
   },
   "tools": [
     {
-      "name": "bear-create-note", 
+      "name": "bear-open-note",
+      "description": "Read the full text content of a Bear note including OCR'd text from attached images and PDFs"
+    },
+    {
+      "name": "bear-create-note",
       "description": "Create a new note in your Bear library with optional title, content, and tags"
     },
     {
       "name": "bear-search-notes",
-      "description": "Find notes in your Bear library by searching text content (including attached files) or filtering by tags, or date"
+      "description": "Find notes by searching text content, filtering by tags, or date ranges. Includes OCR search in attachments"
     },
     {
-      "name": "bear-open-note",
-      "description": "Read the full text of a Bear note including all content (including attached files), formatting, and metadata"
-    },
-    {
-      "name": "bear-add-text-append",
-      "description": "Add text to the end of an existing Bear note or to a specific section within it"
-    },
-    {
-      "name": "bear-add-text-prepend",
-      "description": "Add text to the beginning of an existing Bear note or section within it"
+      "name": "bear-add-text",
+      "description": "Add text to an existing Bear note at the beginning or end, optionally targeting a specific section"
     },
     {
       "name": "bear-add-file",
-      "description": "Attach a file (image, PDF, Excel, etc.) to an existing Bear note by providing base64-encoded content"
+      "description": "Attach a file (image, PDF, Excel, etc.) to an existing Bear note using base64-encoded content"
+    },
+    {
+      "name": "bear-list-tags",
+      "description": "List all tags in your Bear library as a hierarchical tree with note counts"
+    },
+    {
+      "name": "bear-find-untagged-notes",
+      "description": "Find notes in your Bear library that have no tags assigned"
+    },
+    {
+      "name": "bear-add-tag",
+      "description": "Add one or more tags to an existing Bear note"
     }
   ],
   "keywords": [

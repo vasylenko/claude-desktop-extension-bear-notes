@@ -22,7 +22,7 @@
     "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
-    "@anthropic-ai/mcpb": "^1.2.0",
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@types/debug": "^4.1.12",
     "@types/node": "^24.10.4",
     "@typescript-eslint/eslint-plugin": "^8.46.3",

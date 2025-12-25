@@ -27,7 +27,7 @@ export interface DateFilter {
  * become children of their parent tags.
  */
 export interface BearTag {
-  name: string;        // Full path: "career/content/blog"
+  name: string; // Full path: "career/content/blog"
   displayName: string; // Leaf name only: "blog"
   noteCount: number;
   children: BearTag[];

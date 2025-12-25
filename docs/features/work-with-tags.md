@@ -115,80 +115,35 @@ Write operations (`/rename-tag`, `/delete-tag`) work as fire-and-forget.
 - We should decode these for display
 - Hierarchical paths use `/` separator
 
-# Main feature implementation plan
+# Implementation
 
 ## Decisions
-- 2 MCP tools (not 4): hierarchy covers listing, existing search covers notes-by-tag
-- No pinned status in output (not needed for the use case)
-- Use DB for reads (richer data, no token needed)
+- DB for reads (richer data, no token needed)
+- URL scheme (add-text) for writes
+- All tag names lowercase (matches Bear UI)
+- Tags with 0 notes hidden from list (matches Bear UI)
 
 ## MCP Tools
 
-### 1. `bear-list-tags`
-Returns all tags as a hierarchical tree with note counts.
+### 1. `bear-list-tags` ✅ DONE
+Hierarchical tree with note counts. Tree-style output.
 
-**Input parameters:** none
+### 2. `bear-find-untagged-notes` ✅ DONE
+Notes without tags. Input: `limit` (default: 50).
 
-**Output:**
-```json
-{
-  "tags": [
-    {
-      "name": "career",
-      "displayName": "career",
-      "noteCount": 42,
-      "children": [
-        {
-          "name": "career/content",
-          "displayName": "content",
-          "noteCount": 11,
-          "children": [
-            {
-              "name": "career/content/blog",
-              "displayName": "blog",
-              "noteCount": 9,
-              "children": []
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "totalCount": 46
-}
-```
+### 3. `bear-add-tag` ✅ DONE
+Add tag(s) to a note using Bear's add-text API with `tags` parameter.
 
-### 2. `bear-find-untagged-notes`
-Find notes that have no tags.
+**Input:**
+- `id` (string, required) - note identifier
+- `tags` (string[], required) - tag names without `#`
 
-**Input parameters:**
-- `limit` (number, default: 50) - max notes to return
+**Notes:**
+- No validation (Bear creates new tags automatically)
+- Multiple tags supported via comma-separated list
+- Uses mode=prepend to add tags at beginning of note
 
-**Output:**
-```json
-{
-  "notes": [
-    {
-      "title": "Note title",
-      "uuid": "...",
-      "createdAt": "...",
-      "modifiedAt": "..."
-    }
-  ],
-  "totalCount": 13
-}
-```
-
-## Implementation Notes
-
-1. **Tag name decoding**: Replace `+` with spaces for display names
-2. **displayName**: Show leaf name only (e.g., "blog" not "career/content/blog")
-3. **Hierarchy building**: Parse path notation, use ZISROOT to identify roots
-4. **Existing code reuse**: Leverage `database.ts` patterns for DB access
-
-# Additional possibilities (based on discovery)
-
-## Future considerations
-- **Tag rename/delete**: Could add via Bear URL scheme (but requires careful UX)
-- **Empty tags detection**: Tags with 0 notes (orphaned after note deletion)
-- **Tag suggestions**: Based on note content analysis (AI-assisted tagging)
+# Future possibilities
+- Tag rename/delete via URL scheme
+- Deduplicate tags in notes
+- Merge append/prepend tools into single tool with position param

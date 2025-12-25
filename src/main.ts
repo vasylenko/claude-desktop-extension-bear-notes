@@ -473,6 +473,74 @@ server.registerTool(
   }
 );
 
+server.registerTool(
+  'bear-add-tag',
+  {
+    title: 'Add Tags to Note',
+    description:
+      'Add one or more tags to an existing Bear note. Tags are added at the beginning of the note. Use bear-list-tags to see available tags.',
+    inputSchema: {
+      id: z
+        .string()
+        .describe('Note identifier (ID) from bear-search-notes or bear-find-untagged-notes'),
+      tags: z
+        .array(z.string())
+        .describe('Tag names without # symbol (e.g., ["career", "career/meetings"])'),
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
+  },
+  async ({ id, tags }): Promise<CallToolResult> => {
+    logger.info(`bear-add-tag called with id: ${id}, tags: [${tags.join(', ')}]`);
+
+    if (!id || !id.trim()) {
+      throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
+    }
+
+    if (!tags || tags.length === 0) {
+      throw new Error('At least one tag is required');
+    }
+
+    try {
+      const existingNote = getNoteContent(id.trim());
+      if (!existingNote) {
+        return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
+
+Use bear-search-notes to find the correct note identifier.`);
+      }
+
+      const tagsString = tags.join(',');
+
+      const url = buildBearUrl('add-text', {
+        id: id.trim(),
+        tags: tagsString,
+        mode: 'prepend',
+        open_note: 'no',
+        show_window: 'no',
+        new_window: 'no',
+      });
+
+      await executeBearXCallbackApi(url);
+
+      const tagList = tags.map((t) => `#${t}`).join(', ');
+
+      return createToolResponse(`Tags added successfully!
+
+Note: "${existingNote.title}"
+Tags: ${tagList}
+
+The tags have been added to the beginning of the note.`);
+    } catch (error) {
+      logger.error(`bear-add-tag failed: ${error}`);
+      throw error;
+    }
+  }
+);
+
 async function main(): Promise<void> {
   logger.info(`Bear Notes MCP Server initializing... Version: ${APP_VERSION}`);
   logger.debug(`Debug logs enabled: ${logger.debug.enabled}`);

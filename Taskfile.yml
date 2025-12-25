@@ -44,9 +44,9 @@ tasks:
     desc: Create production bundle
     deps: [build]
     cmds:
-      - npx mcpb validate manifest.json
       - rm -rf tmp/bundle && mkdir -p tmp/bundle
-      - cp -r dist/*.js manifest.json assets package.json tmp/bundle/
+      - cp -r dist/*.js manifest.json assets/* package.json tmp/bundle/
+      - cd tmp/bundle && npx mcpb validate manifest.json
       - cd tmp/bundle && npm install --omit=dev    
       - npx mcpb pack tmp/bundle {{.BUNDLE_NAME}}
       - echo "Bundle created {{.BUNDLE_NAME}}"   

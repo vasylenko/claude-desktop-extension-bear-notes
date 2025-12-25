@@ -24,13 +24,13 @@
   "devDependencies": {
     "@anthropic-ai/dxt": "^0.2.6",
     "@types/debug": "^4.1.12",
-    "@types/node": "^24.10.0",
+    "@types/node": "^24.10.4",
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.46.3",
-    "eslint": "^9.39.0",
+    "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",
-    "prettier": "^3.6.2",
-    "tsx": "^4.20.6",
+    "prettier": "^3.7.4",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "engines": {

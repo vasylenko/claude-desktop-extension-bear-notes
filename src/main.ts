@@ -6,8 +6,9 @@ import { z } from 'zod';
 
 import { APP_VERSION, ERROR_MESSAGES } from './config.js';
 import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
-import { getNoteContent, searchNotes } from './database.js';
+import { getNoteContent, listTags, searchNotes } from './database.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
+import type { BearTag } from './types.js';
 
 const server = new McpServer({
   name: 'bear-notes-mcp',
@@ -351,6 +352,76 @@ ${noteIdentifier}
 The file has been attached to your Bear note.`);
     } catch (error) {
       logger.error(`bear-add-file failed: ${error}`);
+      throw error;
+    }
+  }
+);
+
+/**
+ * Formats tag hierarchy as tree-style text output.
+ * Uses box-drawing characters for visual tree structure.
+ */
+function formatTagTree(tags: BearTag[], isLast: boolean[] = []): string[] {
+  const lines: string[] = [];
+
+  for (let i = 0; i < tags.length; i++) {
+    const tag = tags[i];
+    const isLastItem = i === tags.length - 1;
+
+    // Build the prefix using box-drawing characters
+    let linePrefix = '';
+    for (let j = 0; j < isLast.length; j++) {
+      linePrefix += isLast[j] ? '    ' : '│   ';
+    }
+    linePrefix += isLastItem ? '└── ' : '├── ';
+
+    lines.push(`${linePrefix}${tag.name} (${tag.noteCount})`);
+
+    if (tag.children.length > 0) {
+      lines.push(...formatTagTree(tag.children, [...isLast, isLastItem]));
+    }
+  }
+
+  return lines;
+}
+
+server.registerTool(
+  'bear-list-tags',
+  {
+    title: 'List Bear Tags',
+    description:
+      'List all tags in your Bear library as a hierarchical tree. Shows tag names with note counts. Useful for understanding your tag structure and finding tags to apply to untagged notes.',
+    inputSchema: {},
+    annotations: {
+      readOnlyHint: true,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  async (): Promise<CallToolResult> => {
+    logger.info('bear-list-tags called');
+
+    try {
+      const { tags, totalCount } = listTags();
+
+      if (totalCount === 0) {
+        return createToolResponse('No tags found in your Bear library.');
+      }
+
+      // Format root tags with their children as trees
+      const lines: string[] = [];
+      for (const rootTag of tags) {
+        lines.push(`${rootTag.name} (${rootTag.noteCount})`);
+        if (rootTag.children.length > 0) {
+          lines.push(...formatTagTree(rootTag.children));
+        }
+      }
+
+      const header = `Found ${totalCount} tag${totalCount === 1 ? '' : 's'}:\n`;
+
+      return createToolResponse(header + '\n' + lines.join('\n'));
+    } catch (error) {
+      logger.error(`bear-list-tags failed: ${error}`);
       throw error;
     }
   }

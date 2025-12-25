@@ -37,7 +37,9 @@ You are world-class NodeJS developer, senior engineer with a vast experience in 
 ├── src/                   # Project source code
 │   ├── main.ts            # MCP server entry point
 │   ├── bear-urls.ts       # Bear app URL scheme handlers
-│   ├── database.ts        # SQLite Bear database interface
+│   ├── database.ts        # SQLite database connection
+│   ├── notes.ts           # Note operations (search, content)
+│   ├── tags.ts            # Tag operations (list, hierarchy)
 │   ├── config.ts          # Configuration management
 │   ├── types.ts           # Type definitions
 │   └── utils.ts           # Shared utilities

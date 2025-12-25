@@ -233,15 +233,24 @@ Try different search criteria or check if notes exist in Bear Notes.`);
 );
 
 server.registerTool(
-  'bear-add-text-append',
+  'bear-add-text',
   {
     title: 'Add Text to Note',
     description:
-      'Add text to the end of an existing Bear note or to a specific section. Use "Find Bear Notes" first to get the note ID.',
+      'Add text to an existing Bear note at the beginning or end. Can target a specific section using header. Use bear-search-notes first to get the note ID.',
     inputSchema: {
-      id: z.string().describe('Exact note identifier (ID) obtained from bear-search-notes'),
-      text: z.string().describe('Text to append to the note'),
-      header: z.string().optional().describe('Optional header to append text to specific section'),
+      id: z.string().describe('Note identifier (ID) from bear-search-notes'),
+      text: z.string().describe('Text content to add to the note'),
+      header: z
+        .string()
+        .optional()
+        .describe('Optional section header to target (adds text within that section)'),
+      position: z
+        .enum(['beginning', 'end'])
+        .optional()
+        .describe(
+          "Where to insert: 'end' (default) for appending, logs, updates; 'beginning' for prepending, summaries, top of mind, etc."
+        ),
     },
     annotations: {
       readOnlyHint: false,
@@ -250,31 +259,9 @@ server.registerTool(
       openWorldHint: true,
     },
   },
-  async ({ id, text, header }): Promise<CallToolResult> => {
-    return handleAddText('append', { id, text, header });
-  }
-);
-
-server.registerTool(
-  'bear-add-text-prepend',
-  {
-    title: 'Insert Text at Start',
-    description:
-      'Add text to the beginning of an existing Bear note or section. Use "Find Bear Notes" first to get the note ID.',
-    inputSchema: {
-      id: z.string().describe('Exact note identifier (ID) obtained from bear-search-notes'),
-      text: z.string().describe('Text to prepend to the note'),
-      header: z.string().optional().describe('Optional header to prepend text to specific section'),
-    },
-    annotations: {
-      readOnlyHint: false,
-      destructiveHint: true,
-      idempotentHint: false,
-      openWorldHint: true,
-    },
-  },
-  async ({ id, text, header }): Promise<CallToolResult> => {
-    return handleAddText('prepend', { id, text, header });
+  async ({ id, text, header, position }): Promise<CallToolResult> => {
+    const mode = position === 'beginning' ? 'prepend' : 'append';
+    return handleAddText(mode, { id, text, header });
   }
 );
 

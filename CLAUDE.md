@@ -50,6 +50,12 @@ You are world-class NodeJS developer, senior engineer with a vast experience in 
 └── package.json           # Node.js dependencies and scripts
 ```
 
+# Additional technical context
+
+1 - Project Specification - .claude/contexts/SPECIFICATION.md - use this to get the details about technologies and implementation of the features
+
+2 - Bear database schema brief - .claude/contexts/BEAR_DATABASE_SCHEMA.md - use this when working with tasks related to database access as a starting point
+
 # MCP Guideline – Tool Documentation Best Practices
 ## Tool Description
 The description field should provide a concise, high-level explanation of what the tool accomplishes:

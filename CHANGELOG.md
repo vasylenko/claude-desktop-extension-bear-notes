@@ -13,14 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated to `@anthropic-ai/mcpb` v2.1.2
   - Manifest updated to MCPB 0.3 specification
 
+mcpb is a core tool for the extension and together with manifest schema update, these changes together mark the v2.0 of the extension
+
 **Features (MCP tools) are the same as in 1.4.0 – no changes to business logic in this release**
 
 If you experience difficulties installing the new extension format *mcpb*, please use [v1.4.0](https://github.com/vasylenko/claude-desktop-extension-bear-notes/releases/tag/v1.4.0) for now and let me know through GitHub issue.
-
-### Internal
-- Updated Taskfile to use `mcpb` CLI commands
-- Added manifest validation task
-- Resized extension icon to 512x512
 
 ## [1.4.0] - 2025-12-25
 

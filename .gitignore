@@ -2,11 +2,12 @@
 
 ####
 # Project-specific
-*.dxt
+*.mcpb
 tmp/**
 build/**
 dist/**
 .DS_Store
+*.dxt
 ####
 
 # Logs

@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  BUNDLE_NAME: bear-notes-mcpb-{{now | date "20060102"}}.dxt
+  BUNDLE_NAME: bear-notes-mcpb-{{now | date "20060102"}}.mcpb
   
 tasks:
   default:
@@ -29,7 +29,7 @@ tasks:
   clean:
     desc: Clean build artifacts
     cmds:
-      - rm -rf dist tmp *.dxt
+      - rm -rf dist tmp *.mcpb
       
   build:
     desc: Build with quality checks
@@ -44,18 +44,17 @@ tasks:
     desc: Create production bundle
     deps: [build]
     cmds:
-      - npx dxt validate manifest.json
       - rm -rf tmp/bundle && mkdir -p tmp/bundle
-      - cp dist/*.js manifest.json package.json tmp/bundle/
-      - cp assets/icon.png tmp/bundle/
+      - cp -r dist/*.js manifest.json assets/* package.json tmp/bundle/
+      - cd tmp/bundle && npx mcpb validate manifest.json
       - cd tmp/bundle && npm install --omit=dev    
-      - npx dxt pack tmp/bundle {{.BUNDLE_NAME}}
+      - npx mcpb pack tmp/bundle {{.BUNDLE_NAME}}
       - echo "Bundle created {{.BUNDLE_NAME}}"   
     
   info:
     desc: Show bundle info
     cmds:
-      - npx dxt info {{.BUNDLE_NAME}}
+      - npx mcpb info {{.BUNDLE_NAME}}
       
   # === Version Management ===
   

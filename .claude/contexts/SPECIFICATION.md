@@ -3,7 +3,7 @@
 ## Product Overview
 
 **Name:** Bear Notes MCP Bundle
-**Type:** MCP Bundle (.mcpb/.dxt)
+**Type:** MCP Bundle (.mcpb)
 **Platform:** macOS only
 **Repository:** https://github.com/vasylenko/claude-desktop-extension-bear-notes
 
@@ -21,11 +21,12 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 ## Core Capabilities
 
 ### 1. Search Notes (`bear-search-notes`)
-**Purpose:** Find notes by content or tags
+**Purpose:** Find notes by content, tags, or date ranges
 **Implementation:** Direct SQLite database query with LEFT JOIN for file content
 **Features:**
 - Full-text search across note titles, content, and OCR'd attachments
 - Tag filtering (without # prefix)
+- Date filtering (created/modified before/after with relative date support)
 - Configurable result limit (default: 50)
 - Returns metadata only for performance
 
@@ -46,8 +47,7 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 **Technical Details:**
 - Read-only, idempotent operation
 - Aggregates multiple rows (note + files) into single response
-- File content labeled as `##filename` sections
-- Always shows "Attached Files" section (even if empty)
+- File content labeled as `## filename` sections
 
 ### 3. Create Note (`bear-create-note`)
 **Purpose:** Create new notes programmatically
@@ -55,18 +55,19 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 **Features:**
 - Optional title, content, tags
 - Returns creation confirmation
-- Opens in Bear app immediately
+- Note available in Bear immediately
 
 **Technical Details:**
 - Non-idempotent, open-world operation
-- Uses subprocess execution (spawn 'open')
+- Uses subprocess execution (spawn 'open' with -g flag to prevent focus steal)
 - URL parameter encoding via URLSearchParams
 
-### 4. Add Text - Append (`bear-add-text-append`)
-**Purpose:** Add content to end of existing notes
-**Implementation:** Bear x-callback-url API with mode=append
+### 4. Add Text (`bear-add-text`)
+**Purpose:** Add content to existing notes at beginning or end
+**Implementation:** Bear x-callback-url API with mode parameter
 **Features:**
-- Append to entire note or specific section (via header)
+- Position parameter: 'beginning' (prepend) or 'end' (append, default)
+- Section targeting via header parameter
 - Automatic new line insertion
 - Requires note ID from search
 
@@ -75,28 +76,69 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 - Uses `new_line=yes` parameter
 - Section targeting via header parameter
 
-### 5. Add Text - Prepend (`bear-add-text-prepend`)
-**Purpose:** Insert content at beginning of notes
-**Implementation:** Bear x-callback-url API with mode=prepend
+### 5. Add File (`bear-add-file`)
+**Purpose:** Attach files to existing notes
+**Implementation:** Bear x-callback-url API with base64-encoded content
 **Features:**
-- Same as append but inserts at start
-- Section targeting supported
+- Accepts base64-encoded file content
+- Supports all file types (images, PDFs, documents, etc.)
+- Can target note by ID or title
 
 **Technical Details:**
-- Same implementation as append with mode parameter change
+- Destructive, non-idempotent operation
+- Base64 content cleaned of line breaks before URL encoding
+- Validates note existence before attempting attachment
+
+### 6. List Tags (`bear-list-tags`)
+**Purpose:** Display all tags in the Bear library
+**Implementation:** Direct SQLite query on ZSFNOTETAG table
+**Features:**
+- Returns hierarchical tree structure
+- Includes note counts per tag
+- Shows nested tags with proper indentation
+
+**Technical Details:**
+- Read-only, idempotent operation
+- Builds tree from flat tag list using path separators
+- Excludes system tags
+
+### 7. Find Untagged Notes (`bear-find-untagged-notes`)
+**Purpose:** Find notes without any tags
+**Implementation:** SQLite query with LEFT JOIN exclusion
+**Features:**
+- Returns notes that have no tags assigned
+- Configurable result limit (default: 50)
+- Useful for organization workflows
+
+**Technical Details:**
+- Read-only, idempotent operation
+- Excludes archived, trashed, and encrypted notes
+
+### 8. Add Tag (`bear-add-tag`)
+**Purpose:** Add tags to existing notes
+**Implementation:** Bear x-callback-url API with tags parameter
+**Features:**
+- Add one or more tags at once
+- Tags added at beginning of note
+- Supports nested tags (e.g., "work/meetings")
+
+**Technical Details:**
+- Non-destructive, non-idempotent operation
+- Validates note existence before adding tags
+- Uses prepend mode with tags parameter
 
 ---
 
 ## Technical Architecture
 
 ### Technology Stack
-- **Language:** TypeScript 
-- **Runtime:** Node.js (with --experimental-sqlite flag)
-- **MCP SDK:** @modelcontextprotocol/sdk 
+- **Language:** TypeScript
+- **Runtime:** Node.js >=22.5.0 (with --experimental-sqlite flag)
+- **MCP SDK:** @modelcontextprotocol/sdk
 - **Database:** Native Node.js SQLite (node:sqlite)
-- **Validation:** Zod 
+- **Validation:** Zod
 - **Build:** TypeScript compiler (tsc)
-- **Bundling:** @anthropic-ai/dxt 
+- **Bundling:** @anthropic-ai/mcpb
 
 ### Key Design Decisions
 
@@ -111,11 +153,15 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
    - Rationale: x-success callback would require server/binary
 
 3. **File content always included**
-   - OCR'd text from images/PDFs appended to notes
+   - OCR'd text from images/PDFs included in search and read
    - Labeled clearly with filename headers
    - Rationale: Maximize search comprehensiveness
 
-4. **Error handling strategy**
+4. **Background execution for writes**
+   - Uses `open -g` flag to prevent Bear from stealing focus
+   - Better UX when working in Claude Desktop
+
+5. **Error handling strategy**
    - Database errors thrown immediately
    - URL execution errors captured from stderr
    - All errors logged with debug logger
@@ -123,20 +169,17 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 
 ---
 
-
 ## Known Limitations & Constraints
 
 ### Functional Limitations
 - No note deletion (intentional - destructive operation)
-- No tag management (could be added via x-callback-url)
-- No note editing (only append/prepend)
 - No support for encrypted notes (excluded from queries)
 - x-callback-url has no response parsing (fire-and-forget)
 
 ### Technical Constraints
 - Experimental SQLite flag required (Node.js limitation)
 - No automated testing (database access requires real Bear DB)
-- No cross-platform support (Bear limitation)
+- No cross-platform support (Bear is macOS only)
 
 ## Success Metrics
 
@@ -159,12 +202,11 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 
 ### Documentation
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/README.md)
-- [MCPB Specification](https://github.com/anthropics/mcpb/blob/main/README.md)
-- [MCPB Manifest](https://github.com/anthropics/mcpb/blob/main/MANIFEST.md)
-- [MCPB CLI](https://github.com/anthropics/mcpb/blob/main/CLI.md)
+- [MCPB Specification](https://github.com/modelcontextprotocol/mcpb/blob/main/README.md)
+- [MCPB Manifest](https://github.com/modelcontextprotocol/mcpb/blob/main/MANIFEST.md)
+- [MCPB CLI](https://github.com/modelcontextprotocol/mcpb/blob/main/CLI.md)
 - [Taskfile Documentation](https://taskfile.dev/docs/guide)
 
 ### Bear Notes API
 - [Bear x-callback-url API](https://bear.app/faq/X-callback-url%20Scheme%20documentation/)
 - Bear Database Schema: Internal reverse-engineering
-

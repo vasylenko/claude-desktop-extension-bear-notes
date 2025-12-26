@@ -270,7 +270,7 @@ server.registerTool(
   {
     title: 'Add File to Note',
     description:
-      'Attach a file to an existing Bear note. Encode the file to base64 using shell commands (e.g., base64 /path/to/file.xlsx) and provide the encoded content. Use "Find Bear Notes" first to get the note ID.',
+      'Attach a file to an existing Bear note. Encode the file to base64 using shell commands (e.g., base64 /path/to/file.xlsx) and provide the encoded content. Use bear-search-notes first to get the note ID.',
     inputSchema: {
       base64_content: z.string().describe('Base64-encoded file content'),
       filename: z.string().describe('Filename with extension (e.g., budget.xlsx, report.pdf)'),

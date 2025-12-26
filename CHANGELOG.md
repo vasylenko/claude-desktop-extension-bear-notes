@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-12-26
+
+### Changed
+- **Migrated from DXT to MCPB**: Anthropic renamed Desktop Extensions (DXT) to MCP Bundles (MCPB)
+  - Package extension changed from `.dxt` to `.mcpb`
+  - Updated to `@anthropic-ai/mcpb` v2.1.2
+  - Manifest updated to MCPB 0.3 specification
+
+mcpb is a core tool for the extension and together with manifest schema update, these changes together mark the v2.0 of the extension
+
+**Features (MCP tools) are the same as in 1.4.0 – no changes to business logic in this release**
+
+If you experience difficulties installing the new extension format *mcpb*, please use [v1.4.0](https://github.com/vasylenko/claude-desktop-extension-bear-notes/releases/tag/v1.4.0) for now and let me know through GitHub issue.
+
 ## [1.4.0] - 2025-12-25
 
 ### Added

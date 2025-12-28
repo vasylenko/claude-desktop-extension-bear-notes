@@ -1,6 +1,6 @@
 {
   "name": "bear-notes-mcp",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Bear Notes MCP server with TypeScript and native SQLite",
   "type": "module",
   "main": "dist/main.js",
@@ -58,7 +58,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vasylenko/claude-desktop-extension-bear-notes.git"
+    "url": "git+https://github.com/vasylenko/claude-desktop-extension-bear-notes.git"
   },
   "bugs": {
     "url": "https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues"

@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "bear-notes",
   "display_name": "Bear Notes",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "icon": "icon.png",
   "description": "Bear Notes MCP server with TypeScript and native SQLite. Provides comprehensive Bear Notes integration for creating, searching, reading, and modifying notes.",
   "long_description": "This extension provides comprehensive Bear Notes integration through a TypeScript MCP server using native Node.js SQLite. It enables creating, searching, reading, and modifying Bear notes directly from Claude Desktop with full type safety and modern JavaScript features.",

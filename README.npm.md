@@ -6,9 +6,18 @@ Want to use this Bear Notes MCP server with Claude Code, Cursor, Codex, or other
 
 **Read more about the project here -- [claude-desktop-extension-bear-notes](https://github.com/vasylenko/claude-desktop-extension-bear-notes)**
 
+## Tools
+
+- **`bear-search-notes`** - Find notes by text content or tags, returns list with IDs for further actions
+- **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata
+- **`bear-create-note`** - Create new notes with optional title, content, and tags
+- **`bear-add-text-append`** - Add text to the end of existing notes or specific sections
+- **`bear-add-text-prepend`** - Insert text at the beginning of existing notes or sections
+- **`bear-add-file`** - Attach files (images, PDFs, spreadsheets, etc.) to existing notes
+
 **Requirements**: Node.js 22.13.0+
 
-### Quick Start - Claude Code (One Command)
+## Quick Start - Claude Code (One Command)
 
 **For Node.js 22.13.0+ / 23.4.0+ / 24.x+ / 25.x+ (recommended):**
 ```bash
@@ -22,7 +31,7 @@ claude mcp add bear-notes --transport stdio --env NODE_OPTIONS="--experimental-s
 
 That's it! The server will be downloaded from npm and configured automatically.
 
-### Quick Start - Other AI Assistants
+## Quick Start - Other AI Assistants
 
 **Check your Node.js version:** `node --version`
 
@@ -53,7 +62,7 @@ That's it! The server will be downloaded from npm and configured automatically.
 }
 ```
 
-### Advanced: Local Development Build
+## Advanced: Local Development Build
 
 **Step 1: Clone and build**
 ```bash

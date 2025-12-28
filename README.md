@@ -43,11 +43,11 @@ Ask Claude to search your Bear notes with a query like "Search my Bear notes for
 
 ## Standalone MCP Server Installation
 
-Want to use this Bear Notes MCP server with Claude Code, Cline, Continue, or other AI assistants?
+Want to use this Bear Notes MCP server with Claude Code, Cursor, Codex, or other AI assistants?
 
 You can run it as a standalone MCP server.
 
-**Requirements**: Node.js 22.5.0+
+**Requirements**: Node.js 22.13.0+
 
 ### Quick Start - Claude Code (One Command)
 

@@ -53,5 +53,24 @@
     "email": "serhii@vasylenko.info",
     "url": "https://devdosvid.blog"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vasylenko/claude-desktop-extension-bear-notes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues"
+  },
+  "homepage": "https://github.com/vasylenko/claude-desktop-extension-bear-notes#readme",
+  "bin": {
+    "bear-notes-mcp": "dist/main.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

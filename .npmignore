@@ -23,7 +23,6 @@ Taskfile.yml
 # Documentation (keep only README and LICENSE via files field)
 CHANGELOG.md
 CLAUDE.md
-.github/
 
 # IDE
 .vscode/

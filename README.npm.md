@@ -4,6 +4,7 @@ Search, read, and update your Bear Notes
 
 Want to use this Bear Notes MCP server with Claude Code, Cursor, Codex, or other AI assistants? You can run it as a standalone MCP server.
 
+**Read more about the project here -- [claude-desktop-extension-bear-notes](https://github.com/vasylenko/claude-desktop-extension-bear-notes)**
 
 **Requirements**: Node.js 22.13.0+
 
@@ -11,19 +12,19 @@ Want to use this Bear Notes MCP server with Claude Code, Cursor, Codex, or other
 
 **For Node.js 22.13.0+ / 23.4.0+ / 24.x+ / 25.x+ (recommended):**
 ```bash
-claude mcp add bear-notes --transport stdio -- npx -y bear-notes-mcp
+claude mcp add bear-notes --transport stdio -- npx -y bear-notes-mcp@latest
 ```
-
-Read more here -- [README.npm.md](./README.npm.md)
 
 **For Node.js 22.5.0-22.12.x or 23.0.0-23.3.x (older versions):**
 ```bash
-claude mcp add bear-notes --transport stdio --env NODE_OPTIONS="--experimental-sqlite" -- npx -y bear-notes-mcp
+claude mcp add bear-notes --transport stdio --env NODE_OPTIONS="--experimental-sqlite" -- npx -y bear-notes-mcp@latest
 ```
 
 That's it! The server will be downloaded from npm and configured automatically.
 
 ### Quick Start - Other AI Assistants
+
+**Check your Node.js version:** `node --version`
 
 **For Node.js 22.13.0+ / 23.4.0+ / 24.x+ / 25.x+ (recommended):**
 ```json
@@ -31,7 +32,7 @@ That's it! The server will be downloaded from npm and configured automatically.
   "mcpServers": {
     "bear-notes": {
       "command": "npx",
-      "args": ["-y", "bear-notes-mcp"]
+      "args": ["-y", "bear-notes-mcp@latest"]
     }
   }
 }
@@ -43,7 +44,7 @@ That's it! The server will be downloaded from npm and configured automatically.
   "mcpServers": {
     "bear-notes": {
       "command": "npx",
-      "args": ["-y", "bear-notes-mcp"],
+      "args": ["-y", "bear-notes-mcp@latest"],
       "env": {
         "NODE_OPTIONS": "--experimental-sqlite"
       }
@@ -52,17 +53,7 @@ That's it! The server will be downloaded from npm and configured automatically.
 }
 ```
 
-**Config file locations:**
-- **Claude Desktop**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Cline**: VS Code Settings → Extensions → Cline → MCP Settings
-- **Continue**: `~/.continue/config.json`
-- **Cursor**: Settings → Cursor Settings → MCP
-
-**Check your Node.js version:** `node --version`
-
 ### Advanced: Local Development Build
-
-If you want to contribute or modify the code:
 
 **Step 1: Clone and build**
 ```bash

@@ -18,7 +18,16 @@ Consider to subscribe to release announcements to know when I release a new vers
 
 I also post to [reddit.com/r/bearapp/](https://www.reddit.com/r/bearapp/) when there's a new release.
 
-## Quick Start
+## Tools
+
+- **`bear-search-notes`** - Find notes by text content or tags, returns list with IDs for further actions
+- **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata
+- **`bear-create-note`** - Create new notes with optional title, content, and tags
+- **`bear-add-text-append`** - Add text to the end of existing notes or specific sections
+- **`bear-add-text-prepend`** - Insert text at the beginning of existing notes or sections
+- **`bear-add-file`** - Attach files (images, PDFs, spreadsheets, etc.) to existing notes
+
+## Claude Desktop Extension Installation
 
 **Prerequisites**: [Bear app](https://bear.app/) must be installed and [Claude Desktop](https://claude.ai/download) must be installed.
 
@@ -27,13 +36,16 @@ I also post to [reddit.com/r/bearapp/](https://www.reddit.com/r/bearapp/) when t
 3. Doubleclick on the extension file – Claude Desktop should show you the installation prompt
 
     If doubleclick does not work for some reason, then open Claude -> Settings -> Extensions -> Advanced Settings -> click "Install Extension".
-4. You're all set!
+
+4. DONE!
 
 Ask Claude to search your Bear notes with a query like "Search my Bear notes for 'meeting'" - you should see your notes appear in the response!
 
-## Standalone MCP Server Usage
+## Standalone MCP Server Installation
 
-Want to use this Bear Notes MCP server with Claude Code, Cline, Continue, or other AI assistants? You can run it as a standalone MCP server.
+Want to use this Bear Notes MCP server with Claude Code, Cline, Continue, or other AI assistants?
+
+You can run it as a standalone MCP server.
 
 **Requirements**: Node.js 22.5.0+
 
@@ -41,109 +53,12 @@ Want to use this Bear Notes MCP server with Claude Code, Cline, Continue, or oth
 
 **For Node.js 22.13.0+ / 23.4.0+ / 24.x+ / 25.x+ (recommended):**
 ```bash
-claude mcp add bear-notes --transport stdio -- npx -y bear-notes-mcp
-```
-
-**For Node.js 22.5.0-22.12.x or 23.0.0-23.3.x (older versions):**
-```bash
-claude mcp add bear-notes --transport stdio --env NODE_OPTIONS="--experimental-sqlite" -- npx -y bear-notes-mcp
+claude mcp add bear-notes --transport stdio -- npx -y bear-notes-mcp@latest
 ```
 
 That's it! The server will be downloaded from npm and configured automatically.
 
-### Quick Start - Other AI Assistants
-
-**For Node.js 22.13.0+ / 23.4.0+ / 24.x+ / 25.x+ (recommended):**
-```json
-{
-  "mcpServers": {
-    "bear-notes": {
-      "command": "npx",
-      "args": ["-y", "bear-notes-mcp"]
-    }
-  }
-}
-```
-
-**For Node.js 22.5.0-22.12.x or 23.0.0-23.3.x (older versions):**
-```json
-{
-  "mcpServers": {
-    "bear-notes": {
-      "command": "npx",
-      "args": ["-y", "bear-notes-mcp"],
-      "env": {
-        "NODE_OPTIONS": "--experimental-sqlite"
-      }
-    }
-  }
-}
-```
-
-**Config file locations:**
-- **Claude Desktop**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Cline**: VS Code Settings → Extensions → Cline → MCP Settings
-- **Continue**: `~/.continue/config.json`
-- **Cursor**: Settings → Cursor Settings → MCP
-
-**Check your Node.js version:** `node --version`
-
-### Advanced: Local Development Build
-
-If you want to contribute or modify the code:
-
-**Step 1: Clone and build**
-```bash
-git clone https://github.com/vasylenko/claude-desktop-extension-bear-notes.git
-cd claude-desktop-extension-bear-notes
-npm install
-npm run build
-```
-
-**Step 2: Configure with local path**
-
-For Claude Code (Node.js 22.13.0+):
-```bash
-claude mcp add bear-notes --transport stdio -- node /absolute/path/to/dist/main.js
-```
-
-For Claude Code (Node.js 22.5.0-22.12.x):
-```bash
-claude mcp add bear-notes --transport stdio -- node --experimental-sqlite /absolute/path/to/dist/main.js
-```
-
-For other AI assistants (Node.js 22.13.0+):
-```json
-{
-  "mcpServers": {
-    "bear-notes": {
-      "command": "node",
-      "args": ["/absolute/path/to/dist/main.js"]
-    }
-  }
-}
-```
-
-For other AI assistants (Node.js 22.5.0-22.12.x):
-```json
-{
-  "mcpServers": {
-    "bear-notes": {
-      "command": "node",
-      "args": ["--experimental-sqlite", "/absolute/path/to/dist/main.js"]
-    }
-  }
-}
-```
-
-## MCP Server Tools
-
-- **`bear-search-notes`** - Find notes by text content or tags, returns list with IDs for further actions
-- **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata
-- **`bear-create-note`** - Create new notes with optional title, content, and tags
-- **`bear-add-text-append`** - Add text to the end of existing notes or specific sections
-- **`bear-add-text-prepend`** - Insert text at the beginning of existing notes or sections
-- **`bear-add-file`** - Attach files (images, PDFs, spreadsheets, etc.) to existing notes
+**More standalone MCP server installation guides here -- [README.npm.md](./README.npm.md)**
 
 ## Technical Details
 

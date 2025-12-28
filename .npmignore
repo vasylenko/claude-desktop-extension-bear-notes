@@ -32,3 +32,6 @@ CLAUDE.md
 .DS_Store
 
 # Lock files (keep package-lock for reproducible installs)
+
+# misc
+README.npm.md

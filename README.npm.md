@@ -4,12 +4,12 @@ A Model Context Protocol (MCP) server for Bear Notes app integration with Claude
 
 ## Features
 
-- 🔍 **Search notes** by text content, tags, or date ranges (includes OCR search)
-- 📖 **Read full note content** with formatting and metadata
-- ✍️ **Create new notes** with optional title, content, and tags
-- ➕ **Add text** to existing notes (append/prepend)
-- 📎 **Attach files** (images, PDFs, Excel, etc.) to notes
-- 🏷️ **Manage tags** (list hierarchy, find untagged notes, add tags)
+- **Search notes** by text content, tags, or date ranges (includes OCR search)
+- **Read full note content** with formatting and metadata
+- **Create new notes** with optional title, content, and tags
+- **Add text** to existing notes (append/prepend)
+- **Attach files** (images, PDFs, Excel, etc.) to notes
+- **Manage tags** (list hierarchy, find untagged notes, add tags)
 
 ## Installation
 

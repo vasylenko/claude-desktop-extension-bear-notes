@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Use bear-mcp-server standalone**: You can now use the MCP server from this extension separately, e.g., for your Claude Code, Cursor, Codex or other AI tool
   - npmjs publishing with additional GH action
-  - updated task for versions to process version chagnes in package-lock.json
+  - updated task for versions to process version changes in package-lock.json
 
 Standalone MCP usage instructions -- [README.npm.md](./README.npm.md)
 

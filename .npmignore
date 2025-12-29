@@ -4,6 +4,9 @@ src/
 !*.d.ts
 tsconfig*.json
 
+# Temporary files
+README.md.backup
+
 # Development
 .github/
 .claude/

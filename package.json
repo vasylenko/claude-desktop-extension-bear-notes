@@ -14,8 +14,8 @@
     "format:check": "prettier --check src",
     "check": "npm run lint:check && npm run format:check",
     "fix": "npm run lint && npm run format",
-    "prepublishOnly": "npm run build && cp README.npm.md README.md",
-    "postpublish": "git checkout README.md"    
+    "prepublishOnly": "npm run build && cp README.md README.md.backup && cp README.npm.md README.md",
+    "postpublish": "mv README.md.backup README.md"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",

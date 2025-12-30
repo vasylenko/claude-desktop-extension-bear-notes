@@ -4,9 +4,17 @@
     
 # Bear Notes Claude Extension (aka MCP Bundle)
 
-Search, read, and update your Bear Notes directly from Claude conversations.
+Search, read, create, and update your Bear Notes directly from Claude conversations.
 
-This Claude Desktop extension (bundled MCP server) provides seamless integration between AI assistance and your personal note-taking workflow with complete privacy: local-only operations, no external connections.
+This **local-only** extension reads Bear's SQLite database for fast search with OCR support, and uses Bear's native API for writes. Complete privacy: no external connections, all processing on your Mac.
+
+Example prompts:
+
+> Find my Bear notes about the last trip to Norway
+
+> Go through my untagged notes and suggest how to tag them 
+
+> Summarize our conversation and create a new Bear note with it
 
 ![](./docs/demo.gif)
 
@@ -23,9 +31,11 @@ I also post to [reddit.com/r/bearapp/](https://www.reddit.com/r/bearapp/) when t
 - **`bear-search-notes`** - Find notes by text content or tags, returns list with IDs for further actions
 - **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata
 - **`bear-create-note`** - Create new notes with optional title, content, and tags
-- **`bear-add-text-append`** - Add text to the end of existing notes or specific sections
-- **`bear-add-text-prepend`** - Insert text at the beginning of existing notes or sections
+- **`bear-add-text`** - Add text to an existing note at the beginning or end, optionally targeting a specific section
 - **`bear-add-file`** - Attach files (images, PDFs, spreadsheets, etc.) to existing notes
+- **`bear-list-tags`** - List all tags in your Bear library as a hierarchical tree with note counts
+- **`bear-find-untagged-notes`** - Find notes that have no tags assigned
+- **`bear-add-tag`** - Add one or more tags to an existing note
 
 ## Claude Desktop Extension Installation
 

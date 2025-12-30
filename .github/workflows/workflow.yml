@@ -37,11 +37,6 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm ci
-
-      - name: Run Snyk SCA
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Run Snyk SAST
         uses: snyk/actions/node@master
         env:

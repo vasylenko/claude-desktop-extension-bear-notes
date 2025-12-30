@@ -20,14 +20,14 @@
     "@modelcontextprotocol/sdk": "^1.25.1",
     "debug": "^4.4.3",
     "zod": "^3.25.76",
-    "zod-to-json-schema": "^3.24.6"
+    "zod-to-json-schema": "^3.25.1"
   },
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2",
     "@types/debug": "^4.1.12",
     "@types/node": "^24.10.4",
-    "@typescript-eslint/eslint-plugin": "^8.46.3",
-    "@typescript-eslint/parser": "^8.46.3",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/parser": "^8.51.0",
     "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",
     "prettier": "^3.7.4",

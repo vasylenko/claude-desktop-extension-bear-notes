@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-12-30
+
+### Added
+- **Use bear-mcp-server standalone**: You can now use the MCP server from this extension separately, e.g., for your Claude Code, Cursor, Codex or other AI tool
+  - npmjs publishing with additional GH action
+  - updated task for versions to process version changes in package-lock.json
+
+Standalone MCP usage instructions -- [NPM.md](./docs/NPM.md)
+
+**No features/tools changes in this release**
+
 ## [2.0.0] - 2025-12-26
 
 ### Changed

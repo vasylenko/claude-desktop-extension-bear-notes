@@ -37,11 +37,6 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm ci
-
-      - name: Run Snyk SCA
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Run Snyk SAST
         uses: snyk/actions/node@master
         env:
@@ -91,8 +86,44 @@ jobs:
         with:
           body: |
             ${{ env.CHANGELOG_BODY }}
-            
+
             ---
 
             Download ${{ env.PACKAGE_FILE }} to install the extension.
           files: ${{ env.PACKAGE_FILE }}
+
+  npm-publish:
+    runs-on: ubuntu-latest
+    needs:
+      - lint-and-format
+      - security
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: read
+      id-token: write  # Required for OIDC
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Verify version matches tag
+        run: |
+          TAG_VERSION=${GITHUB_REF_NAME#v}
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag v$TAG_VERSION doesn't match package.json version $PKG_VERSION"
+            exit 1
+          fi
+          echo "Version verified: $PKG_VERSION"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish to npm
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

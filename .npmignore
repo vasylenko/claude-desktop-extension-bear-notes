@@ -1,0 +1,40 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+tsconfig*.json
+
+# Temporary files
+README.md.backup
+
+# Development
+.github/
+.claude/
+docs/
+tmp/
+*.mcpb
+
+# Build artifacts
+Taskfile.yml
+.eslintrc*
+.prettierrc*
+
+# Testing
+*.test.js
+*.spec.js
+
+# Documentation (keep only README and LICENSE via files field)
+CHANGELOG.md
+CLAUDE.md
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Lock files (keep package-lock for reproducible installs)
+
+# misc
+README.npm.md

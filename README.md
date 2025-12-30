@@ -18,7 +18,16 @@ Consider to subscribe to release announcements to know when I release a new vers
 
 I also post to [reddit.com/r/bearapp/](https://www.reddit.com/r/bearapp/) when there's a new release.
 
-## Quick Start
+## Tools
+
+- **`bear-search-notes`** - Find notes by text content or tags, returns list with IDs for further actions
+- **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata
+- **`bear-create-note`** - Create new notes with optional title, content, and tags
+- **`bear-add-text-append`** - Add text to the end of existing notes or specific sections
+- **`bear-add-text-prepend`** - Insert text at the beginning of existing notes or sections
+- **`bear-add-file`** - Attach files (images, PDFs, spreadsheets, etc.) to existing notes
+
+## Claude Desktop Extension Installation
 
 **Prerequisites**: [Bear app](https://bear.app/) must be installed and [Claude Desktop](https://claude.ai/download) must be installed.
 
@@ -27,18 +36,29 @@ I also post to [reddit.com/r/bearapp/](https://www.reddit.com/r/bearapp/) when t
 3. Doubleclick on the extension file – Claude Desktop should show you the installation prompt
 
     If doubleclick does not work for some reason, then open Claude -> Settings -> Extensions -> Advanced Settings -> click "Install Extension".
-4. You're all set!
+
+4. DONE!
 
 Ask Claude to search your Bear notes with a query like "Search my Bear notes for 'meeting'" - you should see your notes appear in the response!
 
-## MCP Server Tools
+## Standalone MCP Server Installation
 
-- **`bear-search-notes`** - Find notes by text content or tags, returns list with IDs for further actions
-- **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata
-- **`bear-create-note`** - Create new notes with optional title, content, and tags
-- **`bear-add-text-append`** - Add text to the end of existing notes or specific sections
-- **`bear-add-text-prepend`** - Insert text at the beginning of existing notes or sections
-- **`bear-add-file`** - Attach files (images, PDFs, spreadsheets, etc.) to existing notes
+Want to use this Bear Notes MCP server with Claude Code, Cursor, Codex, or other AI assistants?
+
+You can run it as a standalone MCP server.
+
+**Requirements**: Node.js 22.13.0+
+
+### Quick Start - Claude Code (One Command)
+
+**For Node.js 22.13.0+ / 23.4.0+ / 24.x+ / 25.x+ (recommended):**
+```bash
+claude mcp add bear-notes --transport stdio -- npx -y bear-notes-mcp@latest
+```
+
+That's it! The server will be downloaded from npm and configured automatically.
+
+**More standalone MCP server installation guides here -- [NPM.md](./docs/NPM.md)**
 
 ## Technical Details
 

@@ -1,6 +1,6 @@
 {
   "name": "bear-notes-mcp",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Bear Notes MCP server with TypeScript and native SQLite",
   "type": "module",
   "main": "dist/main.js",
@@ -13,7 +13,8 @@
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "check": "npm run lint:check && npm run format:check",
-    "fix": "npm run lint && npm run format"
+    "fix": "npm run lint && npm run format",
+    "prepublishOnly": "npm run build && mv docs/NPM.md README.md"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
@@ -53,5 +54,24 @@
     "email": "serhii@vasylenko.info",
     "url": "https://devdosvid.blog"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vasylenko/claude-desktop-extension-bear-notes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues"
+  },
+  "homepage": "https://github.com/vasylenko/claude-desktop-extension-bear-notes#readme",
+  "bin": {
+    "bear-notes-mcp": "dist/main.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

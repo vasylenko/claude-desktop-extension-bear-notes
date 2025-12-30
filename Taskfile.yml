@@ -77,6 +77,7 @@ tasks:
         sed -i '' "s/export const APP_VERSION = '[^']*'/export const APP_VERSION = '{{.VERSION}}'/" src/config.ts
         
         echo "Version updated to {{.VERSION}} in package.json, manifest.json, and src/config.ts"
+      - npm install --package-lock-only
 
   # === Changelog ===
   

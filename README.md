@@ -4,9 +4,9 @@
     
 # Bear Notes Claude Extension (aka MCP Bundle)
 
-Search, read, and update your Bear Notes directly from Claude conversations.
+Search, read, create, and update your Bear Notes directly from Claude conversations.
 
-This Claude Desktop extension (bundled MCP server) provides seamless integration between AI assistance and your personal note-taking workflow with complete privacy: local-only operations, no external connections.
+This **local-only** extension reads Bear's SQLite database for fast search with OCR support, and uses Bear's native API for writes. Complete privacy: no external connections, all processing on your Mac.
 
 Example prompts:
 

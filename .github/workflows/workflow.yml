@@ -1,6 +1,7 @@
 name: Supply Chain
 
-on: push
+on:
+  workflow_dispatch:
 
 env:
   PACKAGE_PATTERN: bear-notes-mcpb-*.mcpb

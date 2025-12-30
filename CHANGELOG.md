@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - npmjs publishing with additional GH action
   - updated task for versions to process version changes in package-lock.json
 
-Standalone MCP usage instructions -- [README.npm.md](./README.npm.md)
+Standalone MCP usage instructions -- [NPM.md](./docs/NPM.md)
 
 **No features/tools changes in this release**
 

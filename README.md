@@ -1,4 +1,4 @@
-[![Supply Chain](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/ci.yml/badge.svg)](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/workflow.yml)
+[![Supply Chain](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/ci.yml/badge.svg)](https://github.com/vasylenko/claude-desktop-extension-bear-notes/actions/workflows/ci.yml)
 [![Snyk](https://snyk.io/test/github/vasylenko/claude-desktop-extension-bear-notes/badge.svg)](https://snyk.io/test/github/vasylenko/claude-desktop-extension-bear-notes)
 [![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/34d7b12a-3983-40a3-876f-3cdd2ccfe3f2)
     

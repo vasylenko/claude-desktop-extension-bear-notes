@@ -8,6 +8,14 @@ Search, read, and update your Bear Notes directly from Claude conversations.
 
 This Claude Desktop extension (bundled MCP server) provides seamless integration between AI assistance and your personal note-taking workflow with complete privacy: local-only operations, no external connections.
 
+Example prompts:
+
+> Find my Bear notes about the last trip to Norway
+
+> Go through my untagged notes and suggest how to tag them 
+
+> Summarize our conversation and create a new Bear note with it
+
 ![](./docs/demo.gif)
 
 ## Staying Up To Date

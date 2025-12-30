@@ -58,7 +58,7 @@ claude mcp add bear-notes --transport stdio -- npx -y bear-notes-mcp@latest
 
 That's it! The server will be downloaded from npm and configured automatically.
 
-**More standalone MCP server installation guides here -- [README.npm.md](./README.npm.md)**
+**More standalone MCP server installation guides here -- [NPM.md](./docs/NPM.md)**
 
 ## Technical Details
 

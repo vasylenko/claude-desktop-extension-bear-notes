@@ -174,7 +174,7 @@ export function searchNotes(
     let query: string;
     const queryParams: (string | number)[] = [];
 
-    // Query with file search - uses LEFT JOIN to include OCR'd content for comprehensive search
+    // Base query with file search - uses LEFT JOIN to include OCR'd content for comprehensive search
     query = `
       SELECT DISTINCT note.ZTITLE as title,
              note.ZUNIQUEIDENTIFIER as identifier,
@@ -182,7 +182,16 @@ export function searchNotes(
              note.ZMODIFICATIONDATE as modificationDate,
              note.ZPINNED as pinned
       FROM ZSFNOTE note
-      LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
+      LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK`;
+
+    // Tag-pinned search requires joining the pinned-in-tags relationship tables
+    if (hasPinnedFilter && hasTag) {
+      query += `
+      JOIN Z_5PINNEDINTAGS pt ON pt.Z_5PINNEDNOTES = note.Z_PK
+      JOIN ZSFNOTETAG t ON t.Z_PK = pt.Z_13PINNEDINTAGS`;
+    }
+
+    query += `
       WHERE note.ZARCHIVED = 0
         AND note.ZTRASHED = 0
         AND note.ZENCRYPTED = 0`;
@@ -195,8 +204,17 @@ export function searchNotes(
       queryParams.push(searchPattern, searchPattern, searchPattern);
     }
 
-    // Add tag filtering
-    if (hasTag) {
+    // Pinned and tag filtering - behavior depends on combination
+    if (hasPinnedFilter && hasTag) {
+      // Notes pinned within specific tag view (via Z_5PINNEDINTAGS)
+      const tagPattern = `%${tag.trim()}%`;
+      query += ' AND t.ZTITLE LIKE ?';
+      queryParams.push(tagPattern);
+    } else if (hasPinnedFilter) {
+      // Globally pinned notes
+      query += ' AND note.ZPINNED = 1';
+    } else if (hasTag) {
+      // Text-based tag search
       const tagPattern = `%#${tag.trim()}%`;
       query += ' AND note.ZTEXT LIKE ?';
       queryParams.push(tagPattern);
@@ -236,11 +254,6 @@ export function searchNotes(
         query += ' AND note.ZMODIFICATIONDATE <= ?';
         queryParams.push(timestamp);
       }
-    }
-
-    // Add pinned filtering
-    if (hasPinnedFilter) {
-      query += ' AND note.ZPINNED = 1';
     }
 
     // Add ordering and limit

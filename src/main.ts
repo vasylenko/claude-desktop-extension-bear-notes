@@ -159,6 +159,7 @@ server.registerTool(
         .describe(
           'Filter notes modified on or before this date. Supports: relative dates ("today", "yesterday", "last week", "end of last month"), ISO format (YYYY-MM-DD). Use "end of last month" for the end of the previous month.'
         ),
+      pinned: z.boolean().optional().describe('Set to true to return only pinned notes'),
     },
     annotations: {
       readOnlyHint: true,
@@ -174,9 +175,10 @@ server.registerTool(
     createdBefore,
     modifiedAfter,
     modifiedBefore,
+    pinned,
   }): Promise<CallToolResult> => {
     logger.info(
-      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}, createdAfter: "${createdAfter || 'none'}", createdBefore: "${createdBefore || 'none'}", modifiedAfter: "${modifiedAfter || 'none'}", modifiedBefore: "${modifiedBefore || 'none'}", includeFiles: always`
+      `bear-search-notes called with term: "${term || 'none'}", tag: "${tag || 'none'}", limit: ${limit || 'default'}, createdAfter: "${createdAfter || 'none'}", createdBefore: "${createdBefore || 'none'}", modifiedAfter: "${modifiedAfter || 'none'}", modifiedBefore: "${modifiedBefore || 'none'}", pinned: ${pinned ?? 'none'}, includeFiles: always`
     );
 
     try {
@@ -191,7 +193,8 @@ server.registerTool(
         term,
         tag,
         limit,
-        Object.keys(dateFilter).length > 0 ? dateFilter : undefined
+        Object.keys(dateFilter).length > 0 ? dateFilter : undefined,
+        pinned
       );
 
       if (notes.length === 0) {
@@ -202,6 +205,7 @@ server.registerTool(
         if (createdBefore) searchCriteria.push(`created before "${createdBefore}"`);
         if (modifiedAfter) searchCriteria.push(`modified after "${modifiedAfter}"`);
         if (modifiedBefore) searchCriteria.push(`modified before "${modifiedBefore}"`);
+        if (pinned) searchCriteria.push('pinned only');
 
         return createToolResponse(`No notes found matching ${searchCriteria.join(', ')}.
 

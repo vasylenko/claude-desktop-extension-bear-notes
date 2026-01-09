@@ -139,6 +139,7 @@ export function getNoteContent(identifier: string): BearNote | null {
  * @param tag - Tag to filter notes by (optional)
  * @param limit - Maximum number of results to return (default from config)
  * @param dateFilter - Date range filters for creation and modification dates (optional)
+ * @param pinned - Filter to only pinned notes (optional)
  * @returns Array of matching notes without full text content
  * @throws Error if database access fails or no search criteria provided
  * Note: Always searches within text extracted from attached images and PDF files via OCR for comprehensive results
@@ -147,20 +148,22 @@ export function searchNotes(
   searchTerm?: string,
   tag?: string,
   limit?: number,
-  dateFilter?: DateFilter
+  dateFilter?: DateFilter,
+  pinned?: boolean
 ): BearNote[] {
   logger.info(
-    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, dateFilter: ${dateFilter ? JSON.stringify(dateFilter) : 'none'}, includeFiles: always`
+    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, dateFilter: ${dateFilter ? JSON.stringify(dateFilter) : 'none'}, pinned: ${pinned ?? 'none'}, includeFiles: always`
   );
 
   // Validate search parameters - at least one must be provided
   const hasSearchTerm = searchTerm && typeof searchTerm === 'string' && searchTerm.trim();
   const hasTag = tag && typeof tag === 'string' && tag.trim();
   const hasDateFilter = dateFilter && Object.keys(dateFilter).length > 0;
+  const hasPinnedFilter = pinned === true;
 
-  if (!hasSearchTerm && !hasTag && !hasDateFilter) {
+  if (!hasSearchTerm && !hasTag && !hasDateFilter && !hasPinnedFilter) {
     logAndThrow(
-      'Search error: Please provide a search term, tag, or date filter to search for notes'
+      'Search error: Please provide a search term, tag, date filter, or pinned filter to search for notes'
     );
   }
 
@@ -176,7 +179,8 @@ export function searchNotes(
       SELECT DISTINCT note.ZTITLE as title,
              note.ZUNIQUEIDENTIFIER as identifier,
              note.ZCREATIONDATE as creationDate,
-             note.ZMODIFICATIONDATE as modificationDate
+             note.ZMODIFICATIONDATE as modificationDate,
+             note.ZPINNED as pinned
       FROM ZSFNOTE note
       LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
       WHERE note.ZARCHIVED = 0
@@ -232,6 +236,11 @@ export function searchNotes(
         query += ' AND note.ZMODIFICATIONDATE <= ?';
         queryParams.push(timestamp);
       }
+    }
+
+    // Add pinned filtering
+    if (hasPinnedFilter) {
+      query += ' AND note.ZPINNED = 1';
     }
 
     // Add ordering and limit

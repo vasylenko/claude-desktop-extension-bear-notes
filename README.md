@@ -69,19 +69,6 @@ That's it! The server will be downloaded from npm and configured automatically.
 
 **More standalone MCP server installation guides here -- [NPM.md](./docs/NPM.md)**
 
-### Docker
-
-Run the MCP server in a Docker container:
-
-```bash
-docker run -i --rm \
-  -v ~/Library/Group\ Containers/9K33E3U3T4.net.shinyfrog.bear/Application\ Data:/data:ro \
-  -e BEAR_DB_PATH=/data/database.sqlite \
-  mcp/bear-notes:latest
-```
-
-The container requires read-only access to the Bear Notes database directory mounted at `/data`.
-
 ## Technical Details
 
 This server reads your Bear Notes SQLite database directly for search/read operations and uses Bear's X-callback-URL API for write operations. All data processing happens locally on your machine with no external network calls.

@@ -98,24 +98,3 @@ tasks:
         sed '$d' | \
         tail -n +3 | \
         sed '/^$/d'
-
-  # === Docker Build ===
-
-  docker:build:
-    desc: Build Docker image
-    cmds:
-      - docker build -t bear-notes-mcp:latest .
-      - echo "Docker image built successfully"
-
-  docker:run:
-    desc: Run Docker container (requires BEAR_DB_PATH mount)
-    cmds:
-      - |
-        echo "Running Bear Notes MCP in Docker..."
-        echo "Note: You must mount the Bear database directory"
-        echo ""
-        echo "Example:"
-        echo "  docker run -i --rm \\"
-        echo "    -v ~/Library/Group\\ Containers/9K33E3U3T4.net.shinyfrog.bear/Application\\ Data:/data:ro \\"
-        echo "    -e BEAR_DB_PATH=/data/database.sqlite \\"
-        echo "    bear-notes-mcp:latest"

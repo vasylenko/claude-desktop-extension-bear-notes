@@ -159,7 +159,12 @@ server.registerTool(
         .describe(
           'Filter notes modified on or before this date. Supports: relative dates ("today", "yesterday", "last week", "end of last month"), ISO format (YYYY-MM-DD). Use "end of last month" for the end of the previous month.'
         ),
-      pinned: z.boolean().optional().describe('Set to true to return only pinned notes: if combined with tag, will return pinned notes with that tag, otherwise only globally pinned notes.'),
+      pinned: z
+        .boolean()
+        .optional()
+        .describe(
+          'Set to true to return only pinned notes: if combined with tag, will return pinned notes with that tag, otherwise only globally pinned notes.'
+        ),
     },
     annotations: {
       readOnlyHint: true,

@@ -211,8 +211,9 @@ export function searchNotes(
       query += ' AND t.ZTITLE LIKE ?';
       queryParams.push(tagPattern);
     } else if (hasPinnedFilter) {
-      // Globally pinned notes
-      query += ' AND note.ZPINNED = 1';
+      // All pinned notes: globally pinned OR pinned in any tag (matches Bear's "Pinned" section)
+      query +=
+        ' AND (note.ZPINNED = 1 OR EXISTS (SELECT 1 FROM Z_5PINNEDINTAGS pt WHERE pt.Z_5PINNEDNOTES = note.Z_PK))';
     } else if (hasTag) {
       // Text-based tag search
       const tagPattern = `%#${tag.trim()}%`;

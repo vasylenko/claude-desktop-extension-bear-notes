@@ -139,6 +139,7 @@ export function getNoteContent(identifier: string): BearNote | null {
  * @param tag - Tag to filter notes by (optional)
  * @param limit - Maximum number of results to return (default from config)
  * @param dateFilter - Date range filters for creation and modification dates (optional)
+ * @param pinned - Filter to only pinned notes (optional)
  * @returns Array of matching notes without full text content
  * @throws Error if database access fails or no search criteria provided
  * Note: Always searches within text extracted from attached images and PDF files via OCR for comprehensive results
@@ -147,20 +148,22 @@ export function searchNotes(
   searchTerm?: string,
   tag?: string,
   limit?: number,
-  dateFilter?: DateFilter
+  dateFilter?: DateFilter,
+  pinned?: boolean
 ): BearNote[] {
   logger.info(
-    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, dateFilter: ${dateFilter ? JSON.stringify(dateFilter) : 'none'}, includeFiles: always`
+    `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, dateFilter: ${dateFilter ? JSON.stringify(dateFilter) : 'none'}, pinned: ${pinned ?? 'none'}, includeFiles: always`
   );
 
   // Validate search parameters - at least one must be provided
   const hasSearchTerm = searchTerm && typeof searchTerm === 'string' && searchTerm.trim();
   const hasTag = tag && typeof tag === 'string' && tag.trim();
   const hasDateFilter = dateFilter && Object.keys(dateFilter).length > 0;
+  const hasPinnedFilter = pinned === true;
 
-  if (!hasSearchTerm && !hasTag && !hasDateFilter) {
+  if (!hasSearchTerm && !hasTag && !hasDateFilter && !hasPinnedFilter) {
     logAndThrow(
-      'Search error: Please provide a search term, tag, or date filter to search for notes'
+      'Search error: Please provide a search term, tag, date filter, or pinned filter to search for notes'
     );
   }
 
@@ -171,14 +174,24 @@ export function searchNotes(
     let query: string;
     const queryParams: (string | number)[] = [];
 
-    // Query with file search - uses LEFT JOIN to include OCR'd content for comprehensive search
+    // Base query with file search - uses LEFT JOIN to include OCR'd content for comprehensive search
     query = `
       SELECT DISTINCT note.ZTITLE as title,
              note.ZUNIQUEIDENTIFIER as identifier,
              note.ZCREATIONDATE as creationDate,
-             note.ZMODIFICATIONDATE as modificationDate
+             note.ZMODIFICATIONDATE as modificationDate,
+             note.ZPINNED as pinned
       FROM ZSFNOTE note
-      LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK
+      LEFT JOIN ZSFNOTEFILE f ON f.ZNOTE = note.Z_PK`;
+
+    // Tag-pinned search requires joining the pinned-in-tags relationship tables
+    if (hasPinnedFilter && hasTag) {
+      query += `
+      JOIN Z_5PINNEDINTAGS pt ON pt.Z_5PINNEDNOTES = note.Z_PK
+      JOIN ZSFNOTETAG t ON t.Z_PK = pt.Z_13PINNEDINTAGS`;
+    }
+
+    query += `
       WHERE note.ZARCHIVED = 0
         AND note.ZTRASHED = 0
         AND note.ZENCRYPTED = 0`;
@@ -191,8 +204,18 @@ export function searchNotes(
       queryParams.push(searchPattern, searchPattern, searchPattern);
     }
 
-    // Add tag filtering
-    if (hasTag) {
+    // Pinned and tag filtering - behavior depends on combination
+    if (hasPinnedFilter && hasTag) {
+      // Notes pinned within specific tag view (via Z_5PINNEDINTAGS)
+      const tagPattern = `%${tag.trim()}%`;
+      query += ' AND t.ZTITLE LIKE ?';
+      queryParams.push(tagPattern);
+    } else if (hasPinnedFilter) {
+      // All pinned notes: globally pinned OR pinned in any tag (matches Bear's "Pinned" section)
+      query +=
+        ' AND (note.ZPINNED = 1 OR EXISTS (SELECT 1 FROM Z_5PINNEDINTAGS pt WHERE pt.Z_5PINNEDNOTES = note.Z_PK))';
+    } else if (hasTag) {
+      // Text-based tag search
       const tagPattern = `%#${tag.trim()}%`;
       query += ' AND note.ZTEXT LIKE ?';
       queryParams.push(tagPattern);

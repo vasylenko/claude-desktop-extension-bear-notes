@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsx src/main.ts --debug",
-    "start": "node --experimental-sqlite dist/main.js",
+    "start": "node dist/main.js",
     "lint": "eslint src --fix",
     "lint:check": "eslint src",
     "format": "prettier --write src",
@@ -35,7 +35,7 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=22.13.0"
   },
   "overrides": {
     "body-parser": "2.2.1"

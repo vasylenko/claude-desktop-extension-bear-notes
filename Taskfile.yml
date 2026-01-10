@@ -12,7 +12,7 @@ tasks:
   inspector:
     desc: Run MCP inspector with Web UI
     cmds:
-      - npx @modelcontextprotocol/inspector node --experimental-sqlite dist/main.js
+      - npx @modelcontextprotocol/inspector node dist/main.js
       
   setup:
     desc: Project setup (install + build)

@@ -18,6 +18,4 @@ RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
-ENV NODE_OPTIONS="--experimental-sqlite"
-
 ENTRYPOINT ["node", "dist/main.js"]

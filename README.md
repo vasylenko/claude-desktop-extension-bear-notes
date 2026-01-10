@@ -61,7 +61,6 @@ You can run it as a standalone MCP server.
 
 ### Quick Start - Claude Code (One Command)
 
-**For Node.js 22.13.0+ / 23.4.0+ / 24.x+ / 25.x+ (recommended):**
 ```bash
 claude mcp add bear-notes --transport stdio -- npx -y bear-notes-mcp@latest
 ```
@@ -103,11 +102,9 @@ macOS only because Bear desktop works only on macOS.
 
 For read operations (search/open), the x-callback-url API returns the note data in `x-success` response: that would require a server or custom binary to handle x-success responses - both risky and fragile. Direct SQLite read-only access is simpler and more reliable for searching and reading notes.
 
-### Why experimental flag for nodejs?
+### Why native SQLite instead of third-party packages?
 
-This is to enable native SQLite support and avoid shipping an SQLite binary from third-party node packages, which poses supply chain risks and blocks the Claude extension from running on macOS.
-
-Anthropic does not sign third-party SQLite binaries (obviously), causing macOS security systems to flag that the Claude process from a binary signed by Anthropic is trying to run another binary signed by a third party. As a result, Claude cannot run the extension. 
+Using Node.js built-in SQLite avoids shipping third-party SQLite binaries, which would pose supply chain risks and cause macOS security issues. Anthropic cannot sign third-party binaries, so macOS security systems would block Claude from running extensions that include unsigned binaries.
 
 ### When I install the extension, I see a red warning: "Installing will grant access to everything on your computer." - what does this mean?
 

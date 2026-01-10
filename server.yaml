@@ -19,7 +19,7 @@ about:
   icon: https://raw.githubusercontent.com/vasylenko/claude-desktop-extension-bear-notes/main/assets/icon.png
 source:
   project: https://github.com/vasylenko/claude-desktop-extension-bear-notes
-  commit: d99dc63ea757fb80ac35fdf9c2a084421a75cb6f
+  dockerfile: Dockerfile
 config:
   description: >-
     Mount the Bear Notes database directory from your macOS host.

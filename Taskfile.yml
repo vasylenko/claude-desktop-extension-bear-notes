@@ -12,7 +12,7 @@ tasks:
   inspector:
     desc: Run MCP inspector with Web UI
     cmds:
-      - npx @modelcontextprotocol/inspector node --experimental-sqlite dist/main.js
+      - npx @modelcontextprotocol/inspector node dist/main.js
       
   setup:
     desc: Project setup (install + build)
@@ -92,7 +92,7 @@ tasks:
           echo "CHANGELOG.md not found"
           exit 1
         fi
-        
+
         # Extract content between ## [VERSION] and next ## section
         sed -n "/^## \[{{.VERSION}}\]/,/^## \[/p" CHANGELOG.md | \
         sed '$d' | \

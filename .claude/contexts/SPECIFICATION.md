@@ -14,7 +14,7 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 - **Privacy-first**: All operations are local-only, zero network transmission
 - **Full-text search**: Includes OCR'd content from attached images and PDFs
 - **Type-safe**: Built with TypeScript for reliability
-- **Supply chain secure**: Uses Node.js native SQLite (experimental) instead of third-party binaries
+- **Supply chain secure**: Uses Node.js native SQLite instead of third-party binaries
 
 ---
 
@@ -133,7 +133,7 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 
 ### Technology Stack
 - **Language:** TypeScript
-- **Runtime:** Node.js >=22.5.0 (with --experimental-sqlite flag)
+- **Runtime:** Node.js >=22.13.0
 - **MCP SDK:** @modelcontextprotocol/sdk
 - **Database:** Native Node.js SQLite (node:sqlite)
 - **Validation:** Zod
@@ -144,7 +144,6 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 
 1. **Native SQLite over third-party packages**
    - Rationale: Avoid macOS security blocks on unsigned binaries
-   - Trade-off: Requires Node.js experimental flag
    - Benefit: Supply chain security, no binary distribution
 
 2. **Hybrid approach (SQLite + x-callback-url)**
@@ -177,7 +176,6 @@ Provides seamless integration between Claude Desktop and Bear Notes app, enablin
 - x-callback-url has no response parsing (fire-and-forget)
 
 ### Technical Constraints
-- Experimental SQLite flag required (Node.js limitation)
 - No automated testing (database access requires real Bear DB)
 - No cross-platform support (Bear is macOS only)
 

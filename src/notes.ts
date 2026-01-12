@@ -140,7 +140,7 @@ export function getNoteContent(identifier: string): BearNote | null {
  * @param limit - Maximum number of results to return (default from config)
  * @param dateFilter - Date range filters for creation and modification dates (optional)
  * @param pinned - Filter to only pinned notes (optional)
- * @returns Array of matching notes without full text content
+ * @returns Object with matching notes and total count (before limit applied)
  * @throws Error if database access fails or no search criteria provided
  * Note: Always searches within text extracted from attached images and PDF files via OCR for comprehensive results
  */
@@ -150,7 +150,7 @@ export function searchNotes(
   limit?: number,
   dateFilter?: DateFilter,
   pinned?: boolean
-): BearNote[] {
+): { notes: BearNote[]; totalCount: number } {
   logger.info(
     `searchNotes called with term: "${searchTerm || 'none'}", tag: "${tag || 'none'}", limit: ${limit || DEFAULT_SEARCH_LIMIT}, dateFilter: ${dateFilter ? JSON.stringify(dateFilter) : 'none'}, pinned: ${pinned ?? 'none'}, includeFiles: always`
   );
@@ -171,11 +171,11 @@ export function searchNotes(
   const queryLimit = limit || DEFAULT_SEARCH_LIMIT;
 
   try {
-    let query: string;
     const queryParams: (string | number)[] = [];
 
-    // Base query with file search - uses LEFT JOIN to include OCR'd content for comprehensive search
-    query = `
+    // Build inner query that handles filtering and DISTINCT
+    // CTE ensures window function counts distinct notes, not duplicated rows from JOIN
+    let innerQuery = `
       SELECT DISTINCT note.ZTITLE as title,
              note.ZUNIQUEIDENTIFIER as identifier,
              note.ZCREATIONDATE as creationDate,
@@ -186,12 +186,12 @@ export function searchNotes(
 
     // Tag-pinned search requires joining the pinned-in-tags relationship tables
     if (hasPinnedFilter && hasTag) {
-      query += `
+      innerQuery += `
       JOIN Z_5PINNEDINTAGS pt ON pt.Z_5PINNEDNOTES = note.Z_PK
       JOIN ZSFNOTETAG t ON t.Z_PK = pt.Z_13PINNEDINTAGS`;
     }
 
-    query += `
+    innerQuery += `
       WHERE note.ZARCHIVED = 0
         AND note.ZTRASHED = 0
         AND note.ZENCRYPTED = 0`;
@@ -200,7 +200,7 @@ export function searchNotes(
     if (hasSearchTerm) {
       const searchPattern = `%${searchTerm.trim()}%`;
       // Search in note title, text, and file OCR content
-      query += ' AND (note.ZTITLE LIKE ? OR note.ZTEXT LIKE ? OR f.ZSEARCHTEXT LIKE ?)';
+      innerQuery += ' AND (note.ZTITLE LIKE ? OR note.ZTEXT LIKE ? OR f.ZSEARCHTEXT LIKE ?)';
       queryParams.push(searchPattern, searchPattern, searchPattern);
     }
 
@@ -208,16 +208,16 @@ export function searchNotes(
     if (hasPinnedFilter && hasTag) {
       // Notes pinned within specific tag view (via Z_5PINNEDINTAGS)
       const tagPattern = `%${tag.trim()}%`;
-      query += ' AND t.ZTITLE LIKE ?';
+      innerQuery += ' AND t.ZTITLE LIKE ?';
       queryParams.push(tagPattern);
     } else if (hasPinnedFilter) {
       // All pinned notes: globally pinned OR pinned in any tag (matches Bear's "Pinned" section)
-      query +=
+      innerQuery +=
         ' AND (note.ZPINNED = 1 OR EXISTS (SELECT 1 FROM Z_5PINNEDINTAGS pt WHERE pt.Z_5PINNEDNOTES = note.Z_PK))';
     } else if (hasTag) {
       // Text-based tag search
       const tagPattern = `%#${tag.trim()}%`;
-      query += ' AND note.ZTEXT LIKE ?';
+      innerQuery += ' AND note.ZTEXT LIKE ?';
       queryParams.push(tagPattern);
     }
 
@@ -228,7 +228,7 @@ export function searchNotes(
         // Set to start of day (00:00:00) to include notes from the entire specified day onwards
         afterDate.setHours(0, 0, 0, 0);
         const timestamp = convertDateToCoreDataTimestamp(afterDate);
-        query += ' AND note.ZCREATIONDATE >= ?';
+        innerQuery += ' AND note.ZCREATIONDATE >= ?';
         queryParams.push(timestamp);
       }
       if (dateFilter.createdBefore) {
@@ -236,7 +236,7 @@ export function searchNotes(
         // Set to end of day (23:59:59.999) to include notes through the entire specified day
         beforeDate.setHours(23, 59, 59, 999);
         const timestamp = convertDateToCoreDataTimestamp(beforeDate);
-        query += ' AND note.ZCREATIONDATE <= ?';
+        innerQuery += ' AND note.ZCREATIONDATE <= ?';
         queryParams.push(timestamp);
       }
       if (dateFilter.modifiedAfter) {
@@ -244,7 +244,7 @@ export function searchNotes(
         // Set to start of day (00:00:00) to include notes from the entire specified day onwards
         afterDate.setHours(0, 0, 0, 0);
         const timestamp = convertDateToCoreDataTimestamp(afterDate);
-        query += ' AND note.ZMODIFICATIONDATE >= ?';
+        innerQuery += ' AND note.ZMODIFICATIONDATE >= ?';
         queryParams.push(timestamp);
       }
       if (dateFilter.modifiedBefore) {
@@ -252,13 +252,18 @@ export function searchNotes(
         // Set to end of day (23:59:59.999) to include notes through the entire specified day
         beforeDate.setHours(23, 59, 59, 999);
         const timestamp = convertDateToCoreDataTimestamp(beforeDate);
-        query += ' AND note.ZMODIFICATIONDATE <= ?';
+        innerQuery += ' AND note.ZMODIFICATIONDATE <= ?';
         queryParams.push(timestamp);
       }
     }
 
-    // Add ordering and limit
-    query += ' ORDER BY note.ZMODIFICATIONDATE DESC LIMIT ?';
+    // Wrap in CTE: inner query gets distinct notes, outer query adds total count and applies limit
+    const query = `
+      WITH filtered_notes AS (${innerQuery})
+      SELECT *, COUNT(*) OVER() as totalCount
+      FROM filtered_notes
+      ORDER BY modificationDate DESC
+      LIMIT ?`;
     queryParams.push(queryLimit);
 
     logger.debug(`Executing search query with ${queryParams.length} parameters`);
@@ -269,13 +274,17 @@ export function searchNotes(
 
     if (!rows || rows.length === 0) {
       logger.info('No notes found matching search criteria');
-      return [];
+      return { notes: [], totalCount: 0 };
     }
 
-    const notes = rows.map((row) => formatBearNote(row as Record<string, unknown>));
-    logger.info(`Found ${notes.length} notes matching search criteria`);
+    // Extract totalCount from first row (window function adds same value to all rows)
+    const firstRow = rows[0] as Record<string, unknown>;
+    const totalCount = (firstRow.totalCount as number) || rows.length;
 
-    return notes;
+    const notes = rows.map((row) => formatBearNote(row as Record<string, unknown>));
+    logger.info(`Found ${notes.length} notes (${totalCount} total) matching search criteria`);
+
+    return { notes, totalCount };
   } catch (error) {
     logAndThrow(
       `SQLite search query failed: ${error instanceof Error ? error.message : String(error)}`
@@ -289,5 +298,5 @@ export function searchNotes(
     }
   }
 
-  return [];
+  return { notes: [], totalCount: 0 };
 }

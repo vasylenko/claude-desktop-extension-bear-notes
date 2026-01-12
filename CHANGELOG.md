@@ -14,6 +14,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `pinned: true` with `tag` returns notes pinned within that tag
   - Combines with other filters (search term, dates) for refined searches
 
+- **Total Count in Search Results**: Search tools now report total matching count when results are truncated ([#36](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/36)).
+
+  AI agents can now make informed decisions about fetching more results instead of guessing.
+
+  **Before:**
+  ```
+  Found 50 notes:
+  1. Meeting Notes
+     ...
+  ```
+
+  **After:**
+  ```
+  Found 50 notes (114 total matching):
+  1. Meeting Notes
+     ...
+
+  Use bear-search-notes with limit: 114 to get all results.
+  ```
+
+  Applies to `bear-search-notes` and `bear-find-untagged-notes`.
+
+  _Implementation: Uses SQLite window function `COUNT(*) OVER()` with CTE for accurate distinct count in a single query – no extra database round trip. Pagination was considered but skipped (YAGNI) – exposing total count lets agents simply request higher limit when needed, no code complications._
+
 ## [2.1.1] - 2025-12-30
 
 ### Internal

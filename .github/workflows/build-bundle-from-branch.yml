@@ -1,0 +1,41 @@
+name: Build MCPB Bundle From Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build from'
+        required: true
+        type: string
+        default: 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Task
+        uses: arduino/setup-task@v2
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create bundle
+        run: task pack
+
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcpb-bundle-${{ inputs.branch }}
+          path: bear-notes-mcpb-*.mcpb
+          retention-days: 14

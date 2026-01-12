@@ -194,7 +194,7 @@ server.registerTool(
         ...(modifiedBefore && { modifiedBefore }),
       };
 
-      const notes = searchNotes(
+      const { notes, totalCount } = searchNotes(
         term,
         tag,
         limit,
@@ -217,7 +217,13 @@ server.registerTool(
 Try different search criteria or check if notes exist in Bear Notes.`);
       }
 
-      const resultLines = [`Found ${notes.length} note${notes.length === 1 ? '' : 's'}:`, ''];
+      // Show total count when results are truncated
+      const hasMore = totalCount > notes.length;
+      const countDisplay = hasMore
+        ? `${notes.length} notes (${totalCount} total matching)`
+        : `${notes.length} note${notes.length === 1 ? '' : 's'}`;
+
+      const resultLines = [`Found ${countDisplay}:`, ''];
 
       notes.forEach((note, index) => {
         const noteTitle = note.title || 'Untitled';
@@ -232,6 +238,10 @@ Try different search criteria or check if notes exist in Bear Notes.`);
       });
 
       resultLines.push('Use bear-open-note with an ID to read the full content of any note.');
+
+      if (hasMore) {
+        resultLines.push(`Use bear-search-notes with limit: ${totalCount} to get all results.`);
+      }
 
       return createToolResponse(resultLines.join('\n'));
     } catch (error) {
@@ -443,13 +453,19 @@ server.registerTool(
     logger.info(`bear-find-untagged-notes called with limit: ${limit || 'default'}`);
 
     try {
-      const notes = findUntaggedNotes(limit);
+      const { notes, totalCount } = findUntaggedNotes(limit);
 
       if (notes.length === 0) {
         return createToolResponse('No untagged notes found. All your notes have tags!');
       }
 
-      const lines = [`Found ${notes.length} untagged note${notes.length === 1 ? '' : 's'}:`, ''];
+      // Show total count when results are truncated
+      const hasMore = totalCount > notes.length;
+      const countDisplay = hasMore
+        ? `${notes.length} untagged notes (${totalCount} total)`
+        : `${notes.length} untagged note${notes.length === 1 ? '' : 's'}`;
+
+      const lines = [`Found ${countDisplay}:`, ''];
 
       notes.forEach((note, index) => {
         const modifiedDate = new Date(note.modification_date).toLocaleDateString();
@@ -460,6 +476,10 @@ server.registerTool(
       });
 
       lines.push('You can also use bear-list-tags to see available tags.');
+
+      if (hasMore) {
+        lines.push(`Use bear-find-untagged-notes with limit: ${totalCount} to get all results.`);
+      }
 
       return createToolResponse(lines.join('\n'));
     } catch (error) {

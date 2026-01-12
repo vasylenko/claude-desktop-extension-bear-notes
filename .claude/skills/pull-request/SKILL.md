@@ -1,6 +1,6 @@
 ---
-name: pr-description
-description: Write pull request descriptions for this project. Use when creating PRs or when asked to write/improve PR descriptions.
+name: pull-request
+description: Guidelines for pull requests descriptions. Use when asked to create a PR, or decided to create one by yourself, or when asked to write/improve PR description.
 ---
 
 # PR Description Guidelines

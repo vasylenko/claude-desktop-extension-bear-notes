@@ -1,4 +1,4 @@
-name: Build MCPB Bundle
+name: Build MCPB Bundle From Branch
 
 on:
   workflow_dispatch:

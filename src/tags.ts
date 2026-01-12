@@ -146,19 +146,21 @@ export function listTags(): { tags: BearTag[]; totalCount: number } {
  * Finds notes that have no tags assigned.
  *
  * @param limit - Maximum number of results (default: 50)
- * @returns Array of untagged notes
+ * @returns Object with untagged notes and total count (before limit applied)
  */
-export function findUntaggedNotes(limit: number = 50): BearNote[] {
+export function findUntaggedNotes(limit: number = 50): { notes: BearNote[]; totalCount: number } {
   logger.info(`findUntaggedNotes called with limit: ${limit}`);
 
   const db = openBearDatabase();
 
   try {
+    // COUNT(*) OVER() calculates total matching rows BEFORE LIMIT is applied
     const query = `
       SELECT ZTITLE as title,
              ZUNIQUEIDENTIFIER as identifier,
              ZCREATIONDATE as creationDate,
-             ZMODIFICATIONDATE as modificationDate
+             ZMODIFICATIONDATE as modificationDate,
+             COUNT(*) OVER() as totalCount
       FROM ZSFNOTE
       WHERE ZARCHIVED = 0 AND ZTRASHED = 0 AND ZENCRYPTED = 0
         AND Z_PK NOT IN (SELECT Z_5NOTES FROM Z_5TAGS)
@@ -172,7 +174,16 @@ export function findUntaggedNotes(limit: number = 50): BearNote[] {
       identifier: string;
       creationDate: number;
       modificationDate: number;
+      totalCount: number;
     }>;
+
+    if (rows.length === 0) {
+      logger.info('No untagged notes found');
+      return { notes: [], totalCount: 0 };
+    }
+
+    // Extract totalCount from first row (window function adds same value to all rows)
+    const totalCount = rows[0].totalCount || rows.length;
 
     const notes: BearNote[] = rows.map((row) => ({
       title: row.title || 'Untitled',
@@ -182,8 +193,8 @@ export function findUntaggedNotes(limit: number = 50): BearNote[] {
       pin: 'no' as const,
     }));
 
-    logger.info(`Found ${notes.length} untagged notes`);
-    return notes;
+    logger.info(`Found ${notes.length} untagged notes (${totalCount} total)`);
+    return { notes, totalCount };
   } catch (error) {
     logAndThrow(
       `Database error: Failed to find untagged notes: ${error instanceof Error ? error.message : String(error)}`
@@ -197,5 +208,5 @@ export function findUntaggedNotes(limit: number = 50): BearNote[] {
     }
   }
 
-  return [];
+  return { notes: [], totalCount: 0 };
 }

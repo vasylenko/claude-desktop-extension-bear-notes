@@ -1,0 +1,14 @@
+node_modules
+dist
+tmp
+*.mcpb
+.git
+.github
+.claude
+docs
+screenshots
+*.md
+!README.md
+.eslintrc*
+.prettierrc*
+.vscode

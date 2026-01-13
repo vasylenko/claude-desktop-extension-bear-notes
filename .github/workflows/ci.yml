@@ -25,6 +25,16 @@ jobs:
       - name: Run linting and formatting checks
         run: npm run check
 
+  docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Validate Dockerfile builds
+        run: docker build -t bear-notes-mcp:ci .
+
   security:
     runs-on: ubuntu-latest
     permissions:

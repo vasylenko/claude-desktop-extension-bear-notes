@@ -28,8 +28,7 @@
         "${__dirname}/main.js"
       ],
       "env": {
-        "UI_DEBUG_TOGGLE": "${user_config.debug}",
-        "NODE_OPTIONS": "--experimental-sqlite"
+        "UI_DEBUG_TOGGLE": "${user_config.debug}"
       }
     }
   },

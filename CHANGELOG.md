@@ -38,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   _Implementation: Uses SQLite window function `COUNT(*) OVER()` with CTE for accurate distinct count in a single query – no extra database round trip. Pagination was considered but skipped (YAGNI) – exposing total count lets agents simply request higher limit when needed, no code complications._
 
+### Removed
+- **`--experimental-sqlite` flag**: No longer required b/c Claude ships with 22.21.1 (as of Jan'26) that has SQLite enabled by default.
+
 ## [2.1.1] - 2025-12-30
 
 ### Internal

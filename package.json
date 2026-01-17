@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsx src/main.ts --debug",
-    "start": "node --experimental-sqlite dist/main.js",
+    "start": "node dist/main.js",
     "lint": "eslint src --fix",
     "lint:check": "eslint src",
     "format": "prettier --write src",
@@ -36,9 +36,6 @@
   },
   "engines": {
     "node": ">=22.5.0"
-  },
-  "overrides": {
-    "body-parser": "2.2.1"
   },
   "keywords": [
     "bear app",

@@ -36,6 +36,7 @@ tasks:
     deps: [clean]
     cmds:
       - npm run check
+      - npm run test
       - npm run build
       
   # === Bundle Build ===

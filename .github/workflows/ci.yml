@@ -3,6 +3,7 @@ name: Run CI Checks
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
 
@@ -24,6 +25,9 @@ jobs:
 
       - name: Run linting and formatting checks
         run: npm run check
+
+      - name: Run tests
+        run: npm run test
 
   security:
     runs-on: ubuntu-latest

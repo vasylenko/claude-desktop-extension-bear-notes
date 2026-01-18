@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.2.0] - YYYY-MM-DD
+## [2.2.0] - 2026-01-18
 
 ### Added
 - **Pinned Notes Filter**: New `pinned` parameter for `bear-search-notes` tool ([#37](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/37)).
@@ -38,8 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   _Implementation: Uses SQLite window function `COUNT(*) OVER()` with CTE for accurate distinct count in a single query – no extra database round trip. Pagination was considered but skipped (YAGNI) – exposing total count lets agents simply request higher limit when needed, no code complications._
 
+### Changed 
+- Dependencies and dev dependencies; notably - zod package
+
 ### Removed
 - **`--experimental-sqlite` flag**: No longer required b/c Claude ships with 22.21.1 (as of Jan'26) that has SQLite enabled by default.
+
 
 ## [2.1.1] - 2025-12-30
 

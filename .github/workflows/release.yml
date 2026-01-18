@@ -1,4 +1,5 @@
 name: Release MCP Bundle and publish standalone MCP server to NPM
+run-name: Release ${{ inputs.tag }}
 
 on:
   workflow_dispatch:

@@ -5,9 +5,9 @@
  */
 
 import { parseArgs } from 'node:util';
-import { getNoteContent, searchNotes } from '../../dist/notes.js';
-import { listTags, findUntaggedNotes } from '../../dist/tags.js';
-import { buildBearUrl, executeBearXCallbackApi } from '../../dist/bear-urls.js';
+import { getNoteContent, searchNotes } from '../dist/notes.js';
+import { listTags, findUntaggedNotes } from '../dist/tags.js';
+import { buildBearUrl, executeBearXCallbackApi } from '../dist/bear-urls.js';
 
 const commands = {
   search: searchNotesCommand,

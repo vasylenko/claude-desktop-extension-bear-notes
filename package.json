@@ -16,7 +16,10 @@
     "format:check": "prettier --check src",
     "check": "npm run lint:check && npm run format:check",
     "fix": "npm run lint && npm run format",
-    "prepublishOnly": "npm run build && mv docs/NPM.md README.md"
+    "prepublishOnly": "npm run build && mv docs/NPM.md README.md",
+    "skill:install": "bash scripts/install-skill.sh",
+    "skill:uninstall": "rm -rf ~/.claude/skills/bear-notes",
+    "skill:test": "node ~/.claude/skills/bear-notes/scripts/bear-cli.js --help"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.2",

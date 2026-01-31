@@ -70,6 +70,56 @@ That's it! The server will be downloaded from npm and configured automatically.
 
 **More standalone MCP server installation guides here -- [NPM.md](./docs/NPM.md)**
 
+## Claude Skill Installation (For Restricted Environments)
+
+If you can't use MCP servers (e.g., workplace restrictions), you can install this as a **Claude Skill** instead. Skills provide the same functionality without requiring MCP server infrastructure.
+
+**Requirements**: Node.js 22.13.0+, Bear Notes installed
+
+### Quick Install
+
+```bash
+# Clone or download this repository
+git clone https://github.com/vasylenko/claude-desktop-extension-bear-notes.git
+cd claude-desktop-extension-bear-notes
+
+# Install dependencies and build
+npm install
+npm run build
+
+# Install the skill
+npm run skill:install
+```
+
+That's it! The skill is now installed to `~/.claude/skills/bear-notes/`.
+
+### Usage
+
+In Claude Code, invoke the skill:
+
+```
+/bear-notes search for my meeting notes from last week
+```
+
+Or Claude will automatically use it when you ask about Bear Notes:
+
+```
+Show me all notes tagged with "work" from this month
+```
+
+### Features
+
+The skill has **all the same capabilities** as the MCP server:
+- ✅ Full-text search with natural language date filtering
+- ✅ Tag management and hierarchical tag trees
+- ✅ Create and modify notes
+- ✅ File attachments
+- ✅ OCR search in images and PDFs
+
+**How it works**: The skill wraps the MCP server code as a CLI tool, preserving all the sophisticated logic (date parsing, validation, error handling) while working in environments where MCP servers aren't allowed.
+
+See [skill/README.md](./skill/README.md) for detailed documentation.
+
 ## Technical Details
 
 This server reads your Bear Notes SQLite database directly for search/read operations and uses Bear's X-callback-URL API for write operations. All data processing happens locally on your machine with no external network calls.

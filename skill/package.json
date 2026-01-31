@@ -1,0 +1,11 @@
+{
+  "name": "bear-notes-skill",
+  "version": "2.2.0",
+  "description": "Bear Notes Claude Skill with CLI wrapper",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "zod": "^4.3.5",
+    "debug": "^4.4.3"
+  }
+}

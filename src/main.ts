@@ -608,6 +608,59 @@ The note has been moved to Bear's archive.`);
   }
 );
 
+server.registerTool(
+  'bear-archive-note',
+  {
+    title: 'Archive Bear Note',
+    description:
+      'Move a note to Bear\'s archive. The note will no longer appear in regular searches but can be found in Bear\'s Archive section. Use bear-search-notes first to get the note ID.',
+    inputSchema: {
+      id: z
+        .string()
+        .describe('Note identifier (ID) from bear-search-notes or bear-open-note'),
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  async ({ id }): Promise<CallToolResult> => {
+    logger.info(`bear-archive-note called with id: ${id}`);
+
+    if (!id || !id.trim()) {
+      throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
+    }
+
+    try {
+      const existingNote = getNoteContent(id.trim());
+      if (!existingNote) {
+        return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
+
+Use bear-search-notes to find the correct note identifier.`);
+      }
+
+      const url = buildBearUrl('archive', {
+        id: id.trim(),
+        show_window: 'no',
+      });
+
+      await executeBearXCallbackApi(url);
+
+      return createToolResponse(`Note archived successfully!
+
+Note: "${existingNote.title}"
+ID: ${id.trim()}
+
+The note has been moved to Bear's archive.`);
+    } catch (error) {
+      logger.error(`bear-archive-note failed: ${error}`);
+      throw error;
+    }
+  }
+);
+
 async function main(): Promise<void> {
   logger.info(`Bear Notes MCP Server initializing... Version: ${APP_VERSION}`);
   logger.debug(`Debug logs enabled: ${logger.debug.enabled}`);

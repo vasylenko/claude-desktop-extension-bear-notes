@@ -613,7 +613,7 @@ server.registerTool(
   {
     title: 'Archive Bear Note',
     description:
-      'Move a note to Bear\'s archive. The note will no longer appear in regular searches but can be found in Bear\'s Archive section. Use bear-search-notes first to get the note ID.',
+      "Move a note to Bear's archive. The note will no longer appear in regular searches but can be found in Bear's Archive section. Use bear-search-notes first to get the note ID.",
     inputSchema: {
       id: z
         .string()

@@ -617,6 +617,8 @@ server.registerTool(
     inputSchema: {
       id: z
         .string()
+        .trim()
+        .min(1, 'Note ID is required')
         .describe('Note identifier (ID) from bear-search-notes or bear-open-note'),
     },
     annotations: {
@@ -629,12 +631,8 @@ server.registerTool(
   async ({ id }): Promise<CallToolResult> => {
     logger.info(`bear-archive-note called with id: ${id}`);
 
-    if (!id || !id.trim()) {
-      throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
-    }
-
     try {
-      const existingNote = getNoteContent(id.trim());
+      const existingNote = getNoteContent(id);
       if (!existingNote) {
         return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
 
@@ -642,7 +640,7 @@ Use bear-search-notes to find the correct note identifier.`);
       }
 
       const url = buildBearUrl('archive', {
-        id: id.trim(),
+        id,
         show_window: 'no',
       });
 
@@ -651,11 +649,11 @@ Use bear-search-notes to find the correct note identifier.`);
       return createToolResponse(`Note archived successfully!
 
 Note: "${existingNote.title}"
-ID: ${id.trim()}
+ID: ${id}
 
 The note has been moved to Bear's archive.`);
     } catch (error) {
-      logger.error(`bear-archive-note failed: ${error}`);
+      logger.error('bear-archive-note failed:', error);
       throw error;
     }
   }

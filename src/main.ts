@@ -61,7 +61,7 @@ Use bear-search-notes to find the correct note identifier.`);
 
 ${noteText}`);
     } catch (error) {
-      logger.error(`bear-open-note failed: ${error}`);
+      logger.error('bear-open-note failed:', error);
       throw error;
     }
   }
@@ -119,7 +119,7 @@ server.registerTool(
 
 The note has been added to your Bear Notes library.`);
     } catch (error) {
-      logger.error(`bear-create-note failed: ${error}`);
+      logger.error('bear-create-note failed:', error);
       throw error;
     }
   }
@@ -245,7 +245,7 @@ Try different search criteria or check if notes exist in Bear Notes.`);
 
       return createToolResponse(resultLines.join('\n'));
     } catch (error) {
-      logger.error(`bear-search-notes failed: ${error}`);
+      logger.error('bear-search-notes failed:', error);
       throw error;
     }
   }
@@ -358,7 +358,7 @@ ${noteIdentifier}
 
 The file has been attached to your Bear note.`);
     } catch (error) {
-      logger.error(`bear-add-file failed: ${error}`);
+      logger.error('bear-add-file failed:', error);
       throw error;
     }
   }
@@ -428,7 +428,7 @@ server.registerTool(
 
       return createToolResponse(header + '\n' + lines.join('\n'));
     } catch (error) {
-      logger.error(`bear-list-tags failed: ${error}`);
+      logger.error('bear-list-tags failed:', error);
       throw error;
     }
   }
@@ -483,7 +483,7 @@ server.registerTool(
 
       return createToolResponse(lines.join('\n'));
     } catch (error) {
-      logger.error(`bear-find-untagged-notes failed: ${error}`);
+      logger.error('bear-find-untagged-notes failed:', error);
       throw error;
     }
   }
@@ -551,7 +551,7 @@ Tags: ${tagList}
 
 The tags have been added to the beginning of the note.`);
     } catch (error) {
-      logger.error(`bear-add-tag failed: ${error}`);
+      logger.error('bear-add-tag failed:', error);
       throw error;
     }
   }

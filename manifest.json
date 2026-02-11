@@ -73,6 +73,10 @@
     {
       "name": "bear-add-tag",
       "description": "Add one or more tags to an existing Bear note"
+    },
+    {
+      "name": "bear-archive-note",
+      "description": "Archive a Bear note to remove it from active lists without deleting it"
     }
   ],
   "keywords": [

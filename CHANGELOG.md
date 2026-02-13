@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.3.0] - 2026-02-13
 
 ### Added
 - **bear-archive-note** tool -- archive a Bear note to remove it from active lists without deleting it. Authored by [@wasuregusa18](https://github.com/wasuregusa18)

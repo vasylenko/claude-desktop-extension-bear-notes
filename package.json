@@ -1,6 +1,6 @@
 {
   "name": "bear-notes-mcp",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Bear Notes MCP server with TypeScript and native SQLite",
   "type": "module",
   "main": "dist/main.js",
@@ -19,23 +19,23 @@
     "prepublishOnly": "npm run build && mv docs/NPM.md README.md"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.2",
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "debug": "^4.4.3",
-    "zod": "^4.3.5",
+    "zod": "^4.3.6",
     "zod-to-json-schema": "^3.25.1"
   },
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2",
     "@types/debug": "^4.1.12",
-    "@types/node": "^24.10.9",
-    "@typescript-eslint/eslint-plugin": "^8.53.0",
-    "@typescript-eslint/parser": "^8.53.0",
+    "@types/node": "^24.10.13",
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "@typescript-eslint/parser": "^8.55.0",
     "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0",
-    "prettier": "^3.8.0",
+    "prettier": "^3.8.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.17"
+    "vitest": "^4.0.18"
   },
   "engines": {
     "node": ">=24.13.0"

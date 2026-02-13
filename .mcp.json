@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "bear-notes": {
+    "bear-notes-project-local": {
       "command": "npx",
       "args": ["tsx", "src/main.ts"]
     }

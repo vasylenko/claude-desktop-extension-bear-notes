@@ -28,7 +28,8 @@
         "${__dirname}/main.js"
       ],
       "env": {
-        "UI_DEBUG_TOGGLE": "${user_config.debug}"
+        "UI_DEBUG_TOGGLE": "${user_config.debug}",
+        "ALLOW_DESTRUCTIVE_ACTIONS": "${user_config.allow_destructive_actions}"
       }
     }
   },
@@ -37,6 +38,13 @@
       "type": "boolean",
       "title": "Debug Logging",
       "description": "Enable debug logging for troubleshooting",
+      "default": false,
+      "required": false
+    },
+    "allow_destructive_actions": {
+      "type": "boolean",
+      "title": "Allow Destructive Actions",
+      "description": "Enable tools that can modify or remove existing notes (replace content, archive notes). When disabled, only read and additive operations are available.",
       "default": false,
       "required": false
     }
@@ -73,6 +81,10 @@
     {
       "name": "bear-add-tag",
       "description": "Add one or more tags to an existing Bear note"
+    },
+    {
+      "name": "bear-replace-note",
+      "description": "Replace the content of an existing Bear note in-place, preserving the note ID"
     },
     {
       "name": "bear-archive-note",

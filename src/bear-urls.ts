@@ -12,7 +12,7 @@ export interface BearUrlParams {
   tags?: string | undefined;
   id?: string | undefined;
   header?: string | undefined;
-  mode?: 'append' | 'prepend' | undefined;
+  mode?: 'append' | 'prepend' | 'replace' | 'replace_all' | undefined;
   file?: string | undefined;
   filename?: string | undefined;
   open_note?: 'yes' | 'no' | undefined;

@@ -4,8 +4,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
-import { APP_VERSION, ERROR_MESSAGES } from './config.js';
-import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
+import { APP_VERSION, DESTRUCTIVE_ACTIONS_ENABLED, ERROR_MESSAGES } from './config.js';
+import { cleanBase64, createToolResponse, handleAddText, logger, noteNotFoundResponse } from './utils.js';
 import { getNoteContent, searchNotes } from './notes.js';
 import { findUntaggedNotes, listTags } from './tags.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
@@ -42,9 +42,7 @@ server.registerTool(
       const noteWithContent = getNoteContent(identifier.trim());
 
       if (!noteWithContent) {
-        return createToolResponse(`Note with ID '${identifier}' not found. The note may have been deleted, archived, or the ID may be incorrect.
-
-Use bear-search-notes to find the correct note identifier.`);
+        return noteNotFoundResponse(identifier);
       }
 
       const noteInfo = [
@@ -333,9 +331,7 @@ server.registerTool(
       if (id) {
         const existingNote = getNoteContent(id.trim());
         if (!existingNote) {
-          return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
-
-Use bear-search-notes to find the correct note identifier.`);
+          return noteNotFoundResponse(id);
         }
       }
 
@@ -524,9 +520,7 @@ server.registerTool(
     try {
       const existingNote = getNoteContent(id.trim());
       if (!existingNote) {
-        return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
-
-Use bear-search-notes to find the correct note identifier.`);
+        return noteNotFoundResponse(id);
       }
 
       const tagsString = tags.join(',');
@@ -557,60 +551,132 @@ The tags have been added to the beginning of the note.`);
   }
 );
 
-server.registerTool(
-  'bear-archive-note',
-  {
-    title: 'Archive Bear Note',
-    description:
-      "Move a note to Bear's archive. The note will no longer appear in regular searches but can be found in Bear's Archive section. Use bear-search-notes first to get the note ID.",
-    inputSchema: {
-      id: z
-        .string()
-        .trim()
-        .min(1, 'Note ID is required')
-        .describe('Note identifier (ID) from bear-search-notes or bear-open-note'),
-    },
-    annotations: {
-      readOnlyHint: false,
-      destructiveHint: true,
-      idempotentHint: true,
-      openWorldHint: true,
-    },
-  },
-  async ({ id }): Promise<CallToolResult> => {
-    logger.info(`bear-archive-note called with id: ${id}`);
+if (DESTRUCTIVE_ACTIONS_ENABLED) {
+  logger.info('Destructive actions enabled — registering replace-note and archive-note tools');
 
-    try {
-      const existingNote = getNoteContent(id);
-      if (!existingNote) {
-        return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
+  server.registerTool(
+    'bear-replace-note',
+    {
+      title: 'Replace Bear Note Content',
+      description:
+        'Replace the content of an existing Bear note in-place, preserving the note ID. Use bear-search-notes first to get the note ID.',
+      inputSchema: {
+        id: z
+          .string()
+          .trim()
+          .min(1, 'Note ID is required')
+          .describe('Note identifier (ID) from bear-search-notes or bear-open-note'),
+        text: z
+          .string()
+          .min(1, 'Replacement text is required — cannot replace with empty content')
+          .describe('New note content in markdown format'),
+        title: z
+          .string()
+          .optional()
+          .describe(
+            'New title for the note. When provided, replaces title and body; when omitted, only replaces the body'
+          ),
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    async ({ id, text, title }): Promise<CallToolResult> => {
+      logger.info(
+        `bear-replace-note called with id: ${id}, title: ${title ? '"' + title + '"' : 'none'}`
+      );
 
-Use bear-search-notes to find the correct note identifier.`);
+      try {
+        const existingNote = getNoteContent(id);
+        if (!existingNote) {
+          return noteNotFoundResponse(id);
+        }
+
+        const mode = title !== undefined ? 'replace_all' : 'replace';
+
+        const url = buildBearUrl('add-text', {
+          id,
+          text: title !== undefined ? `# ${title}\n${text}` : text,
+          mode,
+          open_note: 'no',
+          show_window: 'no',
+        });
+
+        await executeBearXCallbackApi(url);
+
+        const responseLines = [
+          'Note content replaced successfully!',
+          '',
+          `Note: "${title ?? existingNote.title}"`,
+          `ID: ${id}`,
+          `Mode: ${mode === 'replace_all' ? 'title and body replaced' : 'body replaced, title kept'}`,
+        ];
+
+        return createToolResponse(responseLines.join('\n'));
+      } catch (error) {
+        logger.error('bear-replace-note failed:', error);
+        throw error;
       }
+    }
+  );
 
-      const url = buildBearUrl('archive', {
-        id,
-        show_window: 'no',
-      });
+  server.registerTool(
+    'bear-archive-note',
+    {
+      title: 'Archive Bear Note',
+      description:
+        "Move a note to Bear's archive. The note will no longer appear in regular searches but can be found in Bear's Archive section. Use bear-search-notes first to get the note ID.",
+      inputSchema: {
+        id: z
+          .string()
+          .trim()
+          .min(1, 'Note ID is required')
+          .describe('Note identifier (ID) from bear-search-notes or bear-open-note'),
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
+    },
+    async ({ id }): Promise<CallToolResult> => {
+      logger.info(`bear-archive-note called with id: ${id}`);
 
-      await executeBearXCallbackApi(url);
+      try {
+        const existingNote = getNoteContent(id);
+        if (!existingNote) {
+          return noteNotFoundResponse(id);
+        }
 
-      return createToolResponse(`Note archived successfully!
+        const url = buildBearUrl('archive', {
+          id,
+          show_window: 'no',
+        });
+
+        await executeBearXCallbackApi(url);
+
+        return createToolResponse(`Note archived successfully!
 
 Note: "${existingNote.title}"
 ID: ${id}
 
 The note has been moved to Bear's archive.`);
-    } catch (error) {
-      logger.error('bear-archive-note failed:', error);
-      throw error;
+      } catch (error) {
+        logger.error('bear-archive-note failed:', error);
+        throw error;
+      }
     }
-  }
-);
+  );
+}
 
 async function main(): Promise<void> {
   logger.info(`Bear Notes MCP Server initializing... Version: ${APP_VERSION}`);
   logger.debug(`Debug logs enabled: ${logger.debug.enabled}`);
+  logger.debug(`Destructive actions: ${DESTRUCTIVE_ACTIONS_ENABLED ? 'enabled' : 'disabled'}`);
   logger.debug(`Node.js version: ${process.version}`);
   logger.debug(`App version: ${APP_VERSION}`);
 

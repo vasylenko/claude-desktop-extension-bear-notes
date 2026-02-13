@@ -148,6 +148,12 @@ export function createToolResponse(text: string): Pick<CallToolResult, 'content'
   };
 }
 
+export function noteNotFoundResponse(id: string): Pick<CallToolResult, 'content'> {
+  return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
+
+Use bear-search-notes to find the correct note identifier.`);
+}
+
 /**
  * Shared handler for adding text to Bear notes (append or prepend).
  * Consolidates common validation, execution, and response logic.
@@ -177,9 +183,7 @@ export async function handleAddText(
     const existingNote = getNoteContent(id.trim());
 
     if (!existingNote) {
-      return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
-
-Use bear-search-notes to find the correct note identifier.`);
+      return noteNotFoundResponse(id);
     }
 
     // Strip markdown header syntax from header parameter for Bear API

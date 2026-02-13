@@ -6,6 +6,8 @@ export const DEFAULT_SEARCH_LIMIT = 50;
 export const BEAR_DATABASE_PATH =
   'Library/Group Containers/9K33E3U3T4.net.shinyfrog.bear/Application Data/database.sqlite';
 
+export const DESTRUCTIVE_ACTIONS_ENABLED = process.env.ALLOW_DESTRUCTIVE_ACTIONS === 'true';
+
 export const ERROR_MESSAGES = {
   BEAR_DATABASE_NOT_FOUND:
     'Bear database not found. Please ensure Bear Notes is installed and has been opened at least once.',

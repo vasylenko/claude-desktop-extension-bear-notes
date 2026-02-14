@@ -9,7 +9,7 @@ const FIXTURE_TEXT = readFileSync(
   'utf-8'
 );
 
-const TEST_PREFIX = '[ST-conv]';
+const TEST_PREFIX = '[Bear-MCP-stest-note-convention]';
 
 function uniqueTitle(label: string): string {
   return `${TEST_PREFIX} ${label} ${Date.now()}`;
@@ -87,7 +87,7 @@ describe('note conventions via MCP Inspector CLI', () => {
     try {
       callTool({
         toolName: 'bear-create-note',
-        args: { title, text: FIXTURE_TEXT, tags: 'work,platform/infra' },
+        args: { title, text: FIXTURE_TEXT, tags: 'system-test,system-test/system-test' },
         env: { UI_ENABLE_NEW_NOTE_CONVENTION: 'true' },
       });
 
@@ -100,12 +100,8 @@ describe('note conventions via MCP Inspector CLI', () => {
 
       const noteBody = extractNoteBody(openResult);
 
-      // Tags should be embedded in Bear inline syntax with closing hash for slash-tag
-      expect(noteBody).toContain('#work #platform/infra#');
-      // Separator between tag line and content
-      expect(noteBody).toContain('---');
-      // Fixture content follows after the separator
-      expect(noteBody).toContain('Quarterly Infrastructure Review');
+      // Verify structure: tag line → separator → fixture content (in that order)
+      expect(noteBody).toMatch(/#system-test #system-test\/system-test#\n---\n[\s\S]*Quarterly Infrastructure Review/);
     } finally {
       if (noteId) archiveNote(noteId);
     }
@@ -118,7 +114,7 @@ describe('note conventions via MCP Inspector CLI', () => {
     try {
       callTool({
         toolName: 'bear-create-note',
-        args: { title, tags: 'meetings' },
+        args: { title, tags: 'system-test' },
         env: { UI_ENABLE_NEW_NOTE_CONVENTION: 'true' },
       });
 
@@ -132,7 +128,7 @@ describe('note conventions via MCP Inspector CLI', () => {
       const noteBody = extractNoteBody(openResult);
 
       // Just the tag line, no separator (no text body to separate from)
-      expect(noteBody).toContain('#meetings');
+      expect(noteBody).toContain('#system-test');
       // No separator since there's no text content
       expect(noteBody).not.toContain('---\n');
     } finally {

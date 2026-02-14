@@ -3,9 +3,10 @@
  * at the start of the text body, rather than passing them as URL parameters
  * (which places them at the bottom of the note).
  */
-export function applyNoteConventions(
-  input: { text: string | undefined; tags: string | undefined },
-): { text: string | undefined; tags: undefined } {
+export function applyNoteConventions(input: {
+  text: string | undefined;
+  tags: string | undefined;
+}): { text: string | undefined; tags: undefined } {
   if (!input.tags?.trim()) {
     return { text: input.text, tags: undefined };
   }
@@ -23,9 +24,7 @@ export function applyNoteConventions(
     return { text: input.text, tags: undefined };
   }
 
-  const text = input.text?.trim()
-    ? `${tagLine}\n---\n${input.text}`
-    : tagLine;
+  const text = input.text?.trim() ? `${tagLine}\n---\n${input.text}` : tagLine;
 
   return { text, tags: undefined };
 }

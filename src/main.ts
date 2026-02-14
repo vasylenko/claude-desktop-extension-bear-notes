@@ -85,10 +85,7 @@ server.registerTool(
         .describe(
           'Note content in markdown format. Do not include a title heading — Bear adds it automatically from the title parameter.'
         ),
-      tags: z
-        .string()
-        .optional()
-        .describe('Tags separated by commas, e.g., "work,project,urgent"'),
+      tags: z.string().optional().describe('Tags separated by commas, e.g., "work,project,urgent"'),
     },
     annotations: {
       readOnlyHint: false,

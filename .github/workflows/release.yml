@@ -1,4 +1,4 @@
-name: Release MCP Bundle and publish standalone MCP server to NPM
+name: "Release: MCP Bundle and MCP server"
 run-name: Release ${{ inputs.tag }}
 
 on:
@@ -36,7 +36,7 @@ jobs:
             exit 1
           fi
 
-          echo "✓ CI passed for tag ${{ inputs.tag }}"
+          echo "CI passed for tag ${{ inputs.tag }}"
 
   release:
     needs: verify-ci

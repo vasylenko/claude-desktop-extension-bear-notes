@@ -7,7 +7,7 @@ export function applyNoteConventions(input: {
   text: string | undefined;
   tags: string | undefined;
 }): { text: string | undefined; tags: undefined } {
-  if (!input.tags?.trim()) {
+  if (!input.tags) {
     return { text: input.text, tags: undefined };
   }
 
@@ -24,8 +24,7 @@ export function applyNoteConventions(input: {
     return { text: input.text, tags: undefined };
   }
 
-  const body = input.text?.trim();
-  const text = body ? `${tagLine}\n---\n${body}` : tagLine;
+  const text = input.text ? `${tagLine}\n---\n${input.text}` : tagLine;
 
   return { text, tags: undefined };
 }

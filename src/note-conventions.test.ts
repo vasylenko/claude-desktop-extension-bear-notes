@@ -16,12 +16,6 @@ describe('applyNoteConventions', () => {
       expect(result).toEqual({ text: 'hello', tags: undefined });
     });
 
-    it('whitespace-only tags returns text unchanged', () => {
-      const result = applyNoteConventions({ text: 'hello', tags: '   ' });
-
-      expect(result).toEqual({ text: 'hello', tags: undefined });
-    });
-
     it('both text and tags undefined returns both unchanged', () => {
       const result = applyNoteConventions({ text: undefined, tags: undefined });
 
@@ -52,12 +46,6 @@ describe('applyNoteConventions', () => {
 
     it('single tag and text joined with separator', () => {
       const result = applyNoteConventions({ text: 'body', tags: 'work' });
-
-      expect(result).toEqual({ text: '#work\n---\nbody', tags: undefined });
-    });
-
-    it('text with leading/trailing whitespace is trimmed', () => {
-      const result = applyNoteConventions({ text: '  body  ', tags: 'work' });
 
       expect(result).toEqual({ text: '#work\n---\nbody', tags: undefined });
     });

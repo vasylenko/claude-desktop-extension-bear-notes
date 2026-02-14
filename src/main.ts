@@ -108,11 +108,7 @@ server.registerTool(
         ? applyNoteConventions({ text, tags })
         : { text, tags };
 
-      const url = buildBearUrl('create', {
-        title,
-        ...(createText !== undefined && { text: createText }),
-        ...(createTags !== undefined && { tags: createTags }),
-      });
+      const url = buildBearUrl('create', { title, text: createText, tags: createTags });
 
       await executeBearXCallbackApi(url);
 

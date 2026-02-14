@@ -24,7 +24,9 @@ server.registerTool(
     description:
       'Read the full text content of a Bear note from your library. Always includes text extracted from attached images and PDFs (aka OCR search) with clear labeling.',
     inputSchema: {
-      id: z.string().trim()
+      id: z
+        .string()
+        .trim()
         .min(1, 'Note ID is required')
         .describe('Exact note identifier (ID) obtained from bear-search-notes'),
     },
@@ -73,13 +75,22 @@ server.registerTool(
     description:
       'Create a new note in your Bear library with optional title, content, and tags. The note will be immediately available in Bear app.',
     inputSchema: {
-      title: z.string().trim().optional()
+      title: z
+        .string()
+        .trim()
+        .optional()
         .describe('Note title, e.g., "Meeting Notes" or "Research Ideas"'),
-      text: z.string().trim().optional()
+      text: z
+        .string()
+        .trim()
+        .optional()
         .describe(
           'Note content in markdown format. Do not include a title heading — Bear adds it automatically from the title parameter.'
         ),
-      tags: z.string().trim().optional()
+      tags: z
+        .string()
+        .trim()
+        .optional()
         .describe('Tags separated by commas, e.g., "work,project,urgent"'),
     },
     annotations: {
@@ -138,28 +149,36 @@ server.registerTool(
     description:
       'Find notes in your Bear library by searching text content, filtering by tags, or date ranges. Always searches within attached images and PDF files via OCR. Returns a list with titles and IDs - use "Open Bear Note" to read full content.',
     inputSchema: {
-      term: z.string().trim().optional()
-      .describe('Text to search for in note titles and content'),
-      tag: z.string().trim().optional()
-      .describe('Tag to filter notes by (without # symbol)'),
+      term: z.string().trim().optional().describe('Text to search for in note titles and content'),
+      tag: z.string().trim().optional().describe('Tag to filter notes by (without # symbol)'),
       limit: z.number().optional().describe('Maximum number of results to return (default: 50)'),
-      createdAfter: z.string().optional()
+      createdAfter: z
+        .string()
+        .optional()
         .describe(
           'Filter notes created on or after this date. Supports: relative dates ("today", "yesterday", "last week", "start of last month"), ISO format (YYYY-MM-DD). Use "start of last month" for the beginning of the previous month.'
         ),
-      createdBefore: z.string().optional()
+      createdBefore: z
+        .string()
+        .optional()
         .describe(
           'Filter notes created on or before this date. Supports: relative dates ("today", "yesterday", "last week", "end of last month"), ISO format (YYYY-MM-DD). Use "end of last month" for the end of the previous month.'
         ),
-      modifiedAfter: z.string().optional()
+      modifiedAfter: z
+        .string()
+        .optional()
         .describe(
           'Filter notes modified on or after this date. Supports: relative dates ("today", "yesterday", "last week", "start of last month"), ISO format (YYYY-MM-DD). Use "start of last month" for the beginning of the previous month.'
         ),
-      modifiedBefore: z.string().optional()
+      modifiedBefore: z
+        .string()
+        .optional()
         .describe(
           'Filter notes modified on or before this date. Supports: relative dates ("today", "yesterday", "last week", "end of last month"), ISO format (YYYY-MM-DD). Use "end of last month" for the end of the previous month.'
         ),
-      pinned: z.boolean().optional()
+      pinned: z
+        .boolean()
+        .optional()
         .describe(
           'Set to true to return only pinned notes: if combined with tag, will return pinned notes with that tag, otherwise only globally pinned notes.'
         ),
@@ -256,13 +275,20 @@ server.registerTool(
     description:
       'Add text to an existing Bear note at the beginning or end. Can target a specific section using header. Use bear-search-notes first to get the note ID.',
     inputSchema: {
-      id: z.string().trim()
+      id: z
+        .string()
+        .trim()
         .min(1, 'Note ID is required')
         .describe('Note identifier (ID) from bear-search-notes'),
-      text: z.string().trim()
+      text: z
+        .string()
+        .trim()
         .min(1, 'Text content is required')
         .describe('Text content to add to the note'),
-      header: z.string().trim().optional()
+      header: z
+        .string()
+        .trim()
+        .optional()
         .describe('Optional section header to target (adds text within that section)'),
       position: z
         .enum(['beginning', 'end'])
@@ -291,13 +317,20 @@ server.registerTool(
     description:
       'Attach a file to an existing Bear note. Encode the file to base64 using shell commands (e.g., base64 /path/to/file.xlsx) and provide the encoded content. Use bear-search-notes first to get the note ID.',
     inputSchema: {
-      base64_content: z.string().trim()
+      base64_content: z
+        .string()
+        .trim()
         .min(1, 'Base64 file content is required')
         .describe('Base64-encoded file content'),
-      filename: z.string().trim()
+      filename: z
+        .string()
+        .trim()
         .min(1, 'Filename is required')
         .describe('Filename with extension (e.g., budget.xlsx, report.pdf)'),
-      id: z.string().trim().optional()
+      id: z
+        .string()
+        .trim()
+        .optional()
         .describe('Exact note identifier (ID) obtained from bear-search-notes'),
       title: z.string().trim().optional().describe('Note title if ID is not available'),
     },
@@ -435,8 +468,7 @@ server.registerTool(
     description:
       'Find notes in your Bear library that have no tags. Useful for organizing and categorizing notes.',
     inputSchema: {
-      limit: z.number().optional()
-      .describe('Maximum number of results (default: 50)'),
+      limit: z.number().optional().describe('Maximum number of results (default: 50)'),
     },
     annotations: {
       readOnlyHint: true,
@@ -491,10 +523,13 @@ server.registerTool(
     description:
       'Add one or more tags to an existing Bear note. Tags are added at the beginning of the note. Use bear-list-tags to see available tags.',
     inputSchema: {
-      id: z.string().trim()
+      id: z
+        .string()
+        .trim()
         .min(1, 'Note ID is required')
         .describe('Note identifier (ID) from bear-search-notes or bear-find-untagged-notes'),
-      tags: z.array(z.string().trim())
+      tags: z
+        .array(z.string().trim())
         .min(1, 'At least one tag is required')
         .describe('Tag names without # symbol (e.g., ["career", "career/meetings"])'),
     },
@@ -551,7 +586,9 @@ server.registerTool(
     description:
       "Move a note to Bear's archive. The note will no longer appear in regular searches but can be found in Bear's Archive section. Use bear-search-notes first to get the note ID.",
     inputSchema: {
-      id: z.string().trim()
+      id: z
+        .string()
+        .trim()
         .min(1, 'Note ID is required')
         .describe('Note identifier (ID) from bear-search-notes or bear-open-note'),
     },

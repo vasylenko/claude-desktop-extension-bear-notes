@@ -44,7 +44,7 @@
     "enable_new_note_convention": {
       "type": "boolean",
       "title": "New Note Convention",
-      "description": "Enable predefined note structure for new notes where tags are placed right under the note title",
+      "description": "Place tags right after the note title instead of at the end (default Bear behavior) when creating new notes",
       "default": false,
       "required": false
     }

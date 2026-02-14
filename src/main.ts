@@ -4,7 +4,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
-import { APP_VERSION, ERROR_MESSAGES } from './config.js';
+import { APP_VERSION, ENABLE_NOTE_CONVENTIONS, ERROR_MESSAGES } from './config.js';
+import { applyNoteConventions } from './note-conventions.js';
 import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
 import { getNoteContent, searchNotes } from './notes.js';
 import { findUntaggedNotes, listTags } from './tags.js';
@@ -78,8 +79,16 @@ server.registerTool(
         .string()
         .optional()
         .describe('Note title, e.g., "Meeting Notes" or "Research Ideas"'),
-      text: z.string().optional().describe('Note content in markdown format'),
-      tags: z.string().optional().describe('Tags separated by commas, e.g., "work,project,urgent"'),
+      text: z
+        .string()
+        .optional()
+        .describe(
+          'Note content in markdown format. Do not include a title heading — Bear adds it automatically from the title parameter.'
+        ),
+      tags: z
+        .string()
+        .optional()
+        .describe('Tags separated by commas, e.g., "work,project,urgent"'),
     },
     annotations: {
       readOnlyHint: false,
@@ -94,7 +103,16 @@ server.registerTool(
     );
 
     try {
-      const url = buildBearUrl('create', { title, text, tags });
+      // If ENABLE_NOTE_CONVENTIONS is true, embed tags in the text body using Bear's inline tag syntax, rather than passing as URL parameters
+      const { text: createText, tags: createTags } = ENABLE_NOTE_CONVENTIONS
+        ? applyNoteConventions({ text, tags })
+        : { text, tags };
+
+      const url = buildBearUrl('create', {
+        title,
+        ...(createText !== undefined && { text: createText }),
+        ...(createTags !== undefined && { tags: createTags }),
+      });
 
       await executeBearXCallbackApi(url);
 

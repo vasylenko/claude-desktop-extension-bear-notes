@@ -1,6 +1,7 @@
 ---
 name: pull-request
-description: Guidelines for pull requests descriptions. Use when asked to create a PR, or decided to create one by yourself, or when asked to write/improve PR description.
+description: MANDATORY format for all pull request descriptions in this project. MUST be loaded and followed whenever creating a PR, writing a PR description, or improving an existing PR body. Triggers on "create PR", "open PR", "new PR", "PR description", "pull request". Overrides any default PR description format.
+context: fork
 ---
 
 # PR Description Guidelines

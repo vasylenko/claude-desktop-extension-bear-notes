@@ -55,6 +55,12 @@ describe('applyNoteConventions', () => {
 
       expect(result).toEqual({ text: '#work\n---\nbody', tags: undefined });
     });
+
+    it('text with leading/trailing whitespace is trimmed', () => {
+      const result = applyNoteConventions({ text: '  body  ', tags: 'work' });
+
+      expect(result).toEqual({ text: '#work\n---\nbody', tags: undefined });
+    });
   });
 
   describe('closing hash rules', () => {

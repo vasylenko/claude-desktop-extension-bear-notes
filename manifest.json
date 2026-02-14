@@ -28,7 +28,8 @@
         "${__dirname}/main.js"
       ],
       "env": {
-        "UI_DEBUG_TOGGLE": "${user_config.debug}"
+        "UI_DEBUG_TOGGLE": "${user_config.debug}",
+        "UI_ENABLE_NEW_NOTE_CONVENTION": "${user_config.enable_new_note_convention}"
       }
     }
   },
@@ -39,7 +40,15 @@
       "description": "Enable debug logging for troubleshooting",
       "default": false,
       "required": false
+    },
+    "enable_new_note_convention": {
+      "type": "boolean",
+      "title": "New Note Convention",
+      "description": "Enable predefined note structure for new notes where tags are placed right under the note title",
+      "default": false,
+      "required": false
     }
+
   },
   "tools": [
     {

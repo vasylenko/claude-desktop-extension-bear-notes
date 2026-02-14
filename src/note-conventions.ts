@@ -24,7 +24,7 @@ export function applyNoteConventions(
   }
 
   const text = input.text?.trim()
-    ? `${tagLine}\n${input.text}`
+    ? `${tagLine}\n---\n${input.text}`
     : tagLine;
 
   return { text, tags: undefined };

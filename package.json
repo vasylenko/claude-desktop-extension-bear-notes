@@ -9,6 +9,7 @@
     "dev": "tsx src/main.ts --debug",
     "start": "node dist/main.js",
     "test": "vitest run",
+    "test:system": "npm run build && vitest run --config vitest.system.config.ts",
     "test:watch": "vitest",
     "lint": "eslint src --fix",
     "lint:check": "eslint src",

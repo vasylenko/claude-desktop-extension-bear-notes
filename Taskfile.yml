@@ -39,6 +39,11 @@ tasks:
       - npm run test
       - npm run build
       
+  test:system:
+    desc: Run system tests with MCP Inspector CLI
+    cmds:
+      - npm run test:system
+
   # === Bundle Build ===
 
   pack:

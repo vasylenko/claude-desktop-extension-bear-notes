@@ -11,8 +11,4 @@ export const ENABLE_NOTE_CONVENTIONS = process.env.UI_ENABLE_NEW_NOTE_CONVENTION
 export const ERROR_MESSAGES = {
   BEAR_DATABASE_NOT_FOUND:
     'Bear database not found. Please ensure Bear Notes is installed and has been opened at least once.',
-  MISSING_SEARCH_PARAM: 'Please provide either a search term or a tag to search for notes.',
-  MISSING_NOTE_ID:
-    'Please provide a note identifier. Use bear-search-notes first to find the note ID.',
-  MISSING_TEXT_PARAM: 'Text input parameter is required and must be a non-empty string',
 } as const;

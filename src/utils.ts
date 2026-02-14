@@ -1,7 +1,7 @@
 import createDebug from 'debug';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
-import { CORE_DATA_EPOCH_OFFSET, ERROR_MESSAGES } from './config.js';
+import { CORE_DATA_EPOCH_OFFSET } from './config.js';
 import { getNoteContent } from './notes.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 
@@ -164,14 +164,6 @@ export async function handleAddText(
   logger.info(
     `bear-add-text-${mode} called with id: ${id}, text length: ${text.length}, header: ${header || 'none'}`
   );
-
-  if (!id) {
-    throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
-  }
-
-  if (!text) {
-    throw new Error(ERROR_MESSAGES.MISSING_TEXT_PARAM);
-  }
 
   try {
     const existingNote = getNoteContent(id);

@@ -65,7 +65,7 @@ export function callTool({ toolName, args, env }: CallToolOptions): string {
  * then the actual note content, then `---` and the attached files section.
  */
 export function extractNoteBody(openNoteResponse: string): string {
-  const sections = openNoteResponse.split('\n---\n');
+  const sections = openNoteResponse.split('\n\n---\n\n');
 
   if (sections.length < 2) {
     throw new Error(
@@ -73,10 +73,10 @@ export function extractNoteBody(openNoteResponse: string): string {
     );
   }
 
-  const bodyWithFooter = sections.slice(1).join('\n---\n');
+  const bodyWithFooter = sections.slice(1).join('\n\n---\n\n');
 
   // Strip the attached files footer Bear always appends
-  const attachedFilesIndex = bodyWithFooter.indexOf('\n---\n\n#Attached Files');
+  const attachedFilesIndex = bodyWithFooter.indexOf('\n\n---\n\n#Attached Files');
   if (attachedFilesIndex !== -1) {
     return bodyWithFooter.substring(0, attachedFilesIndex);
   }

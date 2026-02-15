@@ -30,13 +30,14 @@ export function applyNoteConventions(input: {
 }
 
 /**
- * Bear uses `#tag` for simple tags and `#tag#` (closing hash) for tags
- * containing spaces or slashes — this is Bear's multi-word tag delimiter.
+ * Bear uses `#tag` for simple tags and `#tag#` (closing hash) for
+ * multi-word tags containing spaces. Slashes create hierarchy without
+ * requiring a closing hash.
  */
 function toBearTagSyntax(raw: string): string {
   const cleaned = raw.replace(/^#+|#+$/g, '').trim();
   if (!cleaned) return '';
 
-  const needsClosingHash = cleaned.includes('/') || cleaned.includes(' ');
+  const needsClosingHash = cleaned.includes(' ');
   return needsClosingHash ? `#${cleaned}#` : `#${cleaned}`;
 }

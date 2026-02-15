@@ -52,16 +52,22 @@ describe('applyNoteConventions', () => {
   });
 
   describe('closing hash rules', () => {
-    it('tag with slash gets closing hash', () => {
+    it('nested tag without spaces has no closing hash', () => {
       const result = applyNoteConventions({ text: undefined, tags: 'work/meetings' });
 
-      expect(result).toEqual({ text: '#work/meetings#', tags: undefined });
+      expect(result).toEqual({ text: '#work/meetings', tags: undefined });
     });
 
     it('tag with space gets closing hash', () => {
       const result = applyNoteConventions({ text: undefined, tags: 'my tag' });
 
       expect(result).toEqual({ text: '#my tag#', tags: undefined });
+    });
+
+    it('nested tag with spaces gets closing hash', () => {
+      const result = applyNoteConventions({ text: undefined, tags: 'work/meeting notes' });
+
+      expect(result).toEqual({ text: '#work/meeting notes#', tags: undefined });
     });
 
     it('simple tag has no closing hash', () => {
@@ -73,7 +79,7 @@ describe('applyNoteConventions', () => {
     it('mixed tags apply closing hash per-tag', () => {
       const result = applyNoteConventions({ text: undefined, tags: 'work/meetings,urgent,my tag' });
 
-      expect(result).toEqual({ text: '#work/meetings# #urgent #my tag#', tags: undefined });
+      expect(result).toEqual({ text: '#work/meetings #urgent #my tag#', tags: undefined });
     });
   });
 

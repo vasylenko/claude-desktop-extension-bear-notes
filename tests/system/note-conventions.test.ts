@@ -87,7 +87,7 @@ describe('note conventions via MCP Inspector CLI', () => {
     try {
       callTool({
         toolName: 'bear-create-note',
-        args: { title, text: FIXTURE_TEXT, tags: 'system-test,system-test/system-test' },
+        args: { title, text: FIXTURE_TEXT, tags: 'system-test,system test/system test spaces' },
         env: { UI_ENABLE_NEW_NOTE_CONVENTION: 'true' },
       });
 
@@ -101,7 +101,7 @@ describe('note conventions via MCP Inspector CLI', () => {
       const noteBody = extractNoteBody(openResult);
 
       // Verify structure: tag line → separator → fixture content (in that order)
-      expect(noteBody).toMatch(/#system-test #system-test\/system-test#\n---\n[\s\S]*Quarterly Infrastructure Review/);
+      expect(noteBody).toMatch(/#system-test #system test\/system test spaces#\n---\n[\s\S]*Quarterly Infrastructure Review/);
     } finally {
       if (noteId) archiveNote(noteId);
     }

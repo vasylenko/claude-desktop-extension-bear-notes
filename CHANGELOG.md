@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   │ Discussed roadmap...         │  ← Note body
   └──────────────────────────────┘
   ```
+  **HOW TO ENABLE**: Claude Settings -> Extensions -> Confgure (next to the extension name) -> toggle the "New Note Convention" switch and click save. Restart Claude.
+
 - e2e test suite as a Claude Code skill that runs scenarios for all MCP-server tools
 - system tests for the new feature with ability to exand to others 
 

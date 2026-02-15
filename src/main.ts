@@ -529,7 +529,7 @@ server.registerTool(
         .min(1, 'Note ID is required')
         .describe('Note identifier (ID) from bear-search-notes or bear-find-untagged-notes'),
       tags: z
-        .array(z.string().trim())
+        .array(z.string().trim().min(1, 'Tag name cannot be empty'))
         .min(1, 'At least one tag is required')
         .describe('Tag names without # symbol (e.g., ["career", "career/meetings"])'),
     },

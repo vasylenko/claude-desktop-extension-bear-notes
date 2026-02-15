@@ -1,6 +1,9 @@
 {
   "mcpServers": {
     "bear-notes-project-local": {
+      "env": {
+        "UI_ENABLE_NEW_NOTE_CONVENTION": "true"
+      },
       "command": "npx",
       "args": ["tsx", "src/main.ts"]
     }

@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   └──────────────────────────────┘
   ```
   **HOW TO ENABLE**: 
-    - For Claude Extension: Claude Settings -> Extensions -> Confgure (next to the extension name) -> toggle the "New Note Convention" switch and click save. Restart Claude.
+    - For Claude Extension: Claude Settings -> Extensions -> Configure (next to the extension name) -> toggle the "New Note Convention" switch and click save. Restart Claude.
     - For standalone MCP server: add the following ENV to your mcp configuration
       ```
         "env": {
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       ```
 
 - e2e test suite as a Claude Code skill that runs scenarios for all MCP-server tools
-- system tests for the new feature with ability to exand to others 
+- system tests for the new feature with ability to expand to others 
 
 ## [2.3.0] - 2026-02-13
 

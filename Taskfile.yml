@@ -49,8 +49,10 @@ tasks:
 
   pack:
     desc: Create production bundle
-    deps: [build, test:system]
+    # deps: [build, test:system]
     cmds:
+      - task: build      
+      - task: test:system # In CI, when skipped, this will be considered as success run
       - rm -rf tmp/bundle && mkdir -p tmp/bundle
       - cp -r dist/*.js manifest.json assets/* package.json tmp/bundle/
       - cd tmp/bundle && npx mcpb validate manifest.json

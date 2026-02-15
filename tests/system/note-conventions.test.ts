@@ -74,7 +74,7 @@ describe('note conventions via MCP Inspector CLI', () => {
       // The note body should NOT start with #system-test\n--- (that's the convention ON pattern)
       expect(noteBody).not.toMatch(/^#system-test\n---/);
       // The fixture content should be present in the body
-      expect(noteBody).toContain('Quarterly Infrastructure Review');
+      expect(noteBody).toContain('retention is set to 15 days');
     } finally {
       if (noteId) archiveNote(noteId);
     }
@@ -101,7 +101,7 @@ describe('note conventions via MCP Inspector CLI', () => {
       const noteBody = extractNoteBody(openResult);
 
       // Verify structure: tag line → separator → fixture content (in that order)
-      expect(noteBody).toMatch(/#system-test #system test\/system test spaces#\n---\n[\s\S]*Quarterly Infrastructure Review/);
+      expect(noteBody).toMatch(/#system-test #system test\/system test spaces#\n---\n[\s\S]*retention is set to 15 days/);
     } finally {
       if (noteId) archiveNote(noteId);
     }
@@ -157,7 +157,7 @@ describe('note conventions via MCP Inspector CLI', () => {
       const noteBody = extractNoteBody(openResult);
 
       // No tag line, no separator — just the fixture content
-      expect(noteBody).toContain('Quarterly Infrastructure Review');
+      expect(noteBody).toContain('retention is set to 15 days');
       expect(noteBody).not.toMatch(/#\w+\n---/);
     } finally {
       if (noteId) archiveNote(noteId);

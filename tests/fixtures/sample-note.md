@@ -1,5 +1,3 @@
-# Quarterly Infrastructure Review
-
 ## Current State
 
 We migrated three services to the new EKS cluster last quarter. The API gateway is handling 2.4M requests per day with p99 latency under 50ms. Database connection pooling reduced cold start times by 40%.

@@ -41,7 +41,7 @@ Pick any note from the search results above and open that note and show me its f
 
 ### 4. Create a note
 
-Create a new note in Bear with content from fixtures/sample-note.md
+Create a new note in Bear with content from tests/fixtures/sample-note.md
 
 ### 5. Find the created note
 

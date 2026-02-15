@@ -5,7 +5,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { callTool, extractNoteBody, extractNoteId } from './inspector.js';
 
 const FIXTURE_TEXT = readFileSync(
-  resolve(import.meta.dirname, '../../fixtures/sample-note.md'),
+  resolve(import.meta.dirname, '../fixtures/sample-note.md'),
   'utf-8'
 );
 

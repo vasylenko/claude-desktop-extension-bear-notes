@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+
+### Added
+- **New note convention** -- UI configuration (**disabled by default**, opt-in) to enforce the specific format for the new notes:
+  ```
+  ┌──────────────────────────────┐
+  │ # Meeting Notes              │  ← Bear title (from `title` param)
+  │ #work #meetings              │  ← Tags right after title (embedded in text)
+  │                              │ 
+  │ ---                          │  ← Horizontal rule separating tags from body
+  │                              │
+  │ Discussed roadmap...         │  ← Note body
+  └──────────────────────────────┘
+  ```
+- e2e test suite as a Claude Code skill that runs scenarios for all MCP-server tools
+- system tests for the new feature with ability to exand to others 
+
 ## [2.3.0] - 2026-02-13
 
 ### Added

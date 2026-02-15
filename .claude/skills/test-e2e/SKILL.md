@@ -3,7 +3,6 @@ name: test-e2e
 description: Run end-to-end tests against the live Bear Notes MCP server by simulating real user requests. Use when the user says "run e2e tests", "test the MCP tools", "e2e", or wants to verify the MCP server works after changes. Results are validated manually by the user.
 disable-model-invocation: true
 user-invocable: true
-context: fork
 ---
 
 # E2E Test Runner for Bear Notes MCP

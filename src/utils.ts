@@ -1,7 +1,7 @@
 import createDebug from 'debug';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 
-import { CORE_DATA_EPOCH_OFFSET, ERROR_MESSAGES } from './config.js';
+import { CORE_DATA_EPOCH_OFFSET } from './config.js';
 import { getNoteContent } from './notes.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 
@@ -165,16 +165,8 @@ export async function handleAddText(
     `bear-add-text-${mode} called with id: ${id}, text length: ${text.length}, header: ${header || 'none'}`
   );
 
-  if (!id || !id.trim()) {
-    throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
-  }
-
-  if (!text || !text.trim()) {
-    throw new Error(ERROR_MESSAGES.MISSING_TEXT_PARAM);
-  }
-
   try {
-    const existingNote = getNoteContent(id.trim());
+    const existingNote = getNoteContent(id);
 
     if (!existingNote) {
       return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
@@ -183,11 +175,11 @@ Use bear-search-notes to find the correct note identifier.`);
     }
 
     // Strip markdown header syntax from header parameter for Bear API
-    const cleanHeader = header?.trim().replace(/^#+\s*/, '');
+    const cleanHeader = header?.replace(/^#+\s*/, '');
 
     const url = buildBearUrl('add-text', {
-      id: id.trim(),
-      text: text.trim(),
+      id,
+      text,
       header: cleanHeader,
       mode,
     });
@@ -196,13 +188,13 @@ Use bear-search-notes to find the correct note identifier.`);
 
     const responseLines = [`Text ${action} to note "${existingNote.title}" successfully!`, ''];
 
-    responseLines.push(`Text: ${text.trim().length} characters`);
+    responseLines.push(`Text: ${text.length} characters`);
 
-    if (header?.trim()) {
-      responseLines.push(`Section: ${header.trim()}`);
+    if (header) {
+      responseLines.push(`Section: ${header}`);
     }
 
-    responseLines.push(`Note ID: ${id.trim()}`);
+    responseLines.push(`Note ID: ${id}`);
 
     return createToolResponse(`${responseLines.join('\n')}
 

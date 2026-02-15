@@ -5,6 +5,32 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+
+### Added
+- **New note convention** -- UI configuration (**disabled by default**, opt-in) to enforce the specific format for the new notes:
+  ```
+  ┌──────────────────────────────┐
+  │ # Meeting Notes              │  ← Note title
+  │ #work #meetings              │  ← Tags right after title
+  │                              │ 
+  │ ---                          │  ← Horizontal rule separating title and tags from body
+  │                              │
+  │ Lorem Ipsum...               │  ← Note body
+  └──────────────────────────────┘
+  ```
+  **HOW TO ENABLE**: 
+    - For Claude Extension: Claude Settings -> Extensions -> Configure (next to the extension name) -> toggle the "New Note Convention" switch and click save. Restart Claude.
+    - For standalone MCP server: add the following ENV to your mcp configuration
+      ```
+        "env": {
+          "UI_ENABLE_NEW_NOTE_CONVENTION": "true"
+        },
+      ```
+
+- e2e test suite as a Claude Code skill that runs scenarios for all MCP-server tools
+- system tests for the new feature with ability to expand to others 
+
 ## [2.3.0] - 2026-02-13
 
 ### Added

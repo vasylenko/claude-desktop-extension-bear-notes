@@ -9,6 +9,7 @@
     "dev": "tsx src/main.ts --debug",
     "start": "node dist/main.js",
     "test": "vitest run",
+    "test:system": "npm run build && vitest run --config vitest.system.config.ts",
     "test:watch": "vitest",
     "lint": "eslint src --fix",
     "lint:check": "eslint src",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2",
+    "@modelcontextprotocol/inspector": "^0.20.0",
     "@types/debug": "^4.1.12",
     "@types/node": "^24.10.13",
     "@typescript-eslint/eslint-plugin": "^8.55.0",

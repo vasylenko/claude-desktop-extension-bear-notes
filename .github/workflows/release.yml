@@ -1,4 +1,4 @@
-name: Release MCP Bundle and publish standalone MCP server to NPM
+name: "Release: MCP Bundle and MCP server"
 run-name: Release ${{ inputs.tag }}
 
 on:
@@ -11,6 +11,7 @@ on:
 
 env:
   PACKAGE_PATTERN: bear-notes-mcpb-*.mcpb
+  CI: true
 
 jobs:
   verify-ci:
@@ -36,7 +37,7 @@ jobs:
             exit 1
           fi
 
-          echo "✓ CI passed for tag ${{ inputs.tag }}"
+          echo "CI passed for tag ${{ inputs.tag }}"
 
   release:
     needs: verify-ci
@@ -51,7 +52,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Install Task
         uses: arduino/setup-task@v2

@@ -28,7 +28,8 @@
         "${__dirname}/main.js"
       ],
       "env": {
-        "UI_DEBUG_TOGGLE": "${user_config.debug}"
+        "UI_DEBUG_TOGGLE": "${user_config.debug}",
+        "UI_ENABLE_NEW_NOTE_CONVENTION": "${user_config.enable_new_note_convention}"
       }
     }
   },
@@ -37,6 +38,13 @@
       "type": "boolean",
       "title": "Debug Logging",
       "description": "Enable debug logging for troubleshooting",
+      "default": false,
+      "required": false
+    },
+    "enable_new_note_convention": {
+      "type": "boolean",
+      "title": "New Note Convention",
+      "description": "Place tags right after the note title instead of at the end (default Bear behavior) when creating new notes",
       "default": false,
       "required": false
     }
@@ -92,7 +100,7 @@
   "compatibility": {
     "platforms": ["darwin"],
     "runtimes": {
-      "node": ">=22.5.0"
+      "node": ">=24.13.0"
     }
   }
 }

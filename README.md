@@ -57,11 +57,10 @@ Want to use this Bear Notes MCP server with Claude Code, Cursor, Codex, or other
 
 You can run it as a standalone MCP server.
 
-**Requirements**: Node.js 22.13.0+
+**Requirements**: Node.js 24.13.0+
 
 ### Quick Start - Claude Code (One Command)
 
-**For Node.js 22.13.0+ / 23.4.0+ / 24.x+ / 25.x+ (recommended):**
 ```bash
 claude mcp add bear-notes --transport stdio -- npx -y bear-notes-mcp@latest
 ```

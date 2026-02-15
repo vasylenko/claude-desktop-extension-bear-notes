@@ -4,7 +4,8 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
-import { APP_VERSION, ERROR_MESSAGES } from './config.js';
+import { APP_VERSION, ENABLE_NEW_NOTE_CONVENTIONS } from './config.js';
+import { applyNoteConventions } from './note-conventions.js';
 import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
 import { getNoteContent, searchNotes } from './notes.js';
 import { findUntaggedNotes, listTags } from './tags.js';
@@ -23,7 +24,11 @@ server.registerTool(
     description:
       'Read the full text content of a Bear note from your library. Always includes text extracted from attached images and PDFs (aka OCR search) with clear labeling.',
     inputSchema: {
-      identifier: z.string().describe('Exact note identifier (ID) obtained from bear-search-notes'),
+      id: z
+        .string()
+        .trim()
+        .min(1, 'Note ID is required')
+        .describe('Exact note identifier (ID) obtained from bear-search-notes'),
     },
     annotations: {
       readOnlyHint: true,
@@ -31,18 +36,14 @@ server.registerTool(
       openWorldHint: false,
     },
   },
-  async ({ identifier }): Promise<CallToolResult> => {
-    logger.info(`bear-open-note called with identifier: ${identifier}, includeFiles: always`);
-
-    if (!identifier || !identifier.trim()) {
-      throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
-    }
+  async ({ id }): Promise<CallToolResult> => {
+    logger.info(`bear-open-note called with id: ${id}, includeFiles: always`);
 
     try {
-      const noteWithContent = getNoteContent(identifier.trim());
+      const noteWithContent = getNoteContent(id);
 
       if (!noteWithContent) {
-        return createToolResponse(`Note with ID '${identifier}' not found. The note may have been deleted, archived, or the ID may be incorrect.
+        return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
 
 Use bear-search-notes to find the correct note identifier.`);
       }
@@ -76,10 +77,21 @@ server.registerTool(
     inputSchema: {
       title: z
         .string()
+        .trim()
         .optional()
         .describe('Note title, e.g., "Meeting Notes" or "Research Ideas"'),
-      text: z.string().optional().describe('Note content in markdown format'),
-      tags: z.string().optional().describe('Tags separated by commas, e.g., "work,project,urgent"'),
+      text: z
+        .string()
+        .trim()
+        .optional()
+        .describe(
+          'Note content in markdown format. Do not include a title heading — Bear adds it automatically from the title parameter.'
+        ),
+      tags: z
+        .string()
+        .trim()
+        .optional()
+        .describe('Tags separated by commas, e.g., "work,project,urgent"'),
     },
     annotations: {
       readOnlyHint: false,
@@ -94,25 +106,30 @@ server.registerTool(
     );
 
     try {
-      const url = buildBearUrl('create', { title, text, tags });
+      // If ENABLE_NOTE_CONVENTIONS is true, embed tags in the text body using Bear's inline tag syntax, rather than passing as URL parameters
+      const { text: createText, tags: createTags } = ENABLE_NEW_NOTE_CONVENTIONS
+        ? applyNoteConventions({ text, tags })
+        : { text, tags };
+
+      const url = buildBearUrl('create', { title, text: createText, tags: createTags });
 
       await executeBearXCallbackApi(url);
 
       const responseLines: string[] = ['Bear note created successfully!', ''];
 
-      if (title?.trim()) {
-        responseLines.push(`Title: "${title.trim()}"`);
+      if (title) {
+        responseLines.push(`Title: "${title}"`);
       }
 
-      if (text?.trim()) {
-        responseLines.push(`Content: ${text.trim().length} characters`);
+      if (text) {
+        responseLines.push(`Content: ${text.length} characters`);
       }
 
-      if (tags?.trim()) {
-        responseLines.push(`Tags: ${tags.trim()}`);
+      if (tags) {
+        responseLines.push(`Tags: ${tags}`);
       }
 
-      const hasContent = title?.trim() || text?.trim() || tags?.trim();
+      const hasContent = title || text || tags;
       const finalMessage = hasContent ? responseLines.join('\n') : 'Empty note created';
 
       return createToolResponse(`${finalMessage}
@@ -132,8 +149,8 @@ server.registerTool(
     description:
       'Find notes in your Bear library by searching text content, filtering by tags, or date ranges. Always searches within attached images and PDF files via OCR. Returns a list with titles and IDs - use "Open Bear Note" to read full content.',
     inputSchema: {
-      term: z.string().optional().describe('Text to search for in note titles and content'),
-      tag: z.string().optional().describe('Tag to filter notes by (without # symbol)'),
+      term: z.string().trim().optional().describe('Text to search for in note titles and content'),
+      tag: z.string().trim().optional().describe('Tag to filter notes by (without # symbol)'),
       limit: z.number().optional().describe('Maximum number of results to return (default: 50)'),
       createdAfter: z
         .string()
@@ -204,8 +221,8 @@ server.registerTool(
 
       if (notes.length === 0) {
         const searchCriteria = [];
-        if (term?.trim()) searchCriteria.push(`term "${term.trim()}"`);
-        if (tag?.trim()) searchCriteria.push(`tag "${tag.trim()}"`);
+        if (term) searchCriteria.push(`term "${term}"`);
+        if (tag) searchCriteria.push(`tag "${tag}"`);
         if (createdAfter) searchCriteria.push(`created after "${createdAfter}"`);
         if (createdBefore) searchCriteria.push(`created before "${createdBefore}"`);
         if (modifiedAfter) searchCriteria.push(`modified after "${modifiedAfter}"`);
@@ -258,10 +275,19 @@ server.registerTool(
     description:
       'Add text to an existing Bear note at the beginning or end. Can target a specific section using header. Use bear-search-notes first to get the note ID.',
     inputSchema: {
-      id: z.string().describe('Note identifier (ID) from bear-search-notes'),
-      text: z.string().describe('Text content to add to the note'),
+      id: z
+        .string()
+        .trim()
+        .min(1, 'Note ID is required')
+        .describe('Note identifier (ID) from bear-search-notes'),
+      text: z
+        .string()
+        .trim()
+        .min(1, 'Text content is required')
+        .describe('Text content to add to the note'),
       header: z
         .string()
+        .trim()
         .optional()
         .describe('Optional section header to target (adds text within that section)'),
       position: z
@@ -291,13 +317,22 @@ server.registerTool(
     description:
       'Attach a file to an existing Bear note. Encode the file to base64 using shell commands (e.g., base64 /path/to/file.xlsx) and provide the encoded content. Use bear-search-notes first to get the note ID.',
     inputSchema: {
-      base64_content: z.string().describe('Base64-encoded file content'),
-      filename: z.string().describe('Filename with extension (e.g., budget.xlsx, report.pdf)'),
+      base64_content: z
+        .string()
+        .trim()
+        .min(1, 'Base64 file content is required')
+        .describe('Base64-encoded file content'),
+      filename: z
+        .string()
+        .trim()
+        .min(1, 'Filename is required')
+        .describe('Filename with extension (e.g., budget.xlsx, report.pdf)'),
       id: z
         .string()
+        .trim()
         .optional()
         .describe('Exact note identifier (ID) obtained from bear-search-notes'),
-      title: z.string().optional().describe('Note title if ID is not available'),
+      title: z.string().trim().optional().describe('Note title if ID is not available'),
     },
     annotations: {
       readOnlyHint: false,
@@ -311,14 +346,6 @@ server.registerTool(
       `bear-add-file called with base64_content: ${base64_content ? 'provided' : 'none'}, filename: ${filename || 'none'}, id: ${id || 'none'}, title: ${title || 'none'}`
     );
 
-    if (!base64_content || !base64_content.trim()) {
-      throw new Error('base64_content is required');
-    }
-
-    if (!filename || !filename.trim()) {
-      throw new Error('filename is required');
-    }
-
     if (!id && !title) {
       throw new Error(
         'Either note ID or title is required. Use bear-search-notes to find the note ID.'
@@ -331,7 +358,7 @@ server.registerTool(
 
       // Fail fast with helpful message rather than cryptic Bear error
       if (id) {
-        const existingNote = getNoteContent(id.trim());
+        const existingNote = getNoteContent(id);
         if (!existingNote) {
           return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
 
@@ -340,19 +367,19 @@ Use bear-search-notes to find the correct note identifier.`);
       }
 
       const url = buildBearUrl('add-file', {
-        id: id?.trim(),
-        title: title?.trim(),
+        id,
+        title,
         file: cleanedBase64,
-        filename: filename.trim(),
+        filename,
         mode: 'append',
       });
 
-      logger.debug(`Executing Bear add-file URL for: ${filename.trim()}`);
+      logger.debug(`Executing Bear add-file URL for: ${filename}`);
       await executeBearXCallbackApi(url);
 
-      const noteIdentifier = id ? `Note ID: ${id.trim()}` : `Note title: "${title!.trim()}"`;
+      const noteIdentifier = id ? `Note ID: ${id}` : `Note title: "${title!}"`;
 
-      return createToolResponse(`File "${filename.trim()}" added successfully!
+      return createToolResponse(`File "${filename}" added successfully!
 
 ${noteIdentifier}
 
@@ -498,9 +525,12 @@ server.registerTool(
     inputSchema: {
       id: z
         .string()
+        .trim()
+        .min(1, 'Note ID is required')
         .describe('Note identifier (ID) from bear-search-notes or bear-find-untagged-notes'),
       tags: z
-        .array(z.string())
+        .array(z.string().trim().min(1, 'Tag name cannot be empty'))
+        .min(1, 'At least one tag is required')
         .describe('Tag names without # symbol (e.g., ["career", "career/meetings"])'),
     },
     annotations: {
@@ -513,16 +543,8 @@ server.registerTool(
   async ({ id, tags }): Promise<CallToolResult> => {
     logger.info(`bear-add-tag called with id: ${id}, tags: [${tags.join(', ')}]`);
 
-    if (!id || !id.trim()) {
-      throw new Error(ERROR_MESSAGES.MISSING_NOTE_ID);
-    }
-
-    if (!tags || tags.length === 0) {
-      throw new Error('At least one tag is required');
-    }
-
     try {
-      const existingNote = getNoteContent(id.trim());
+      const existingNote = getNoteContent(id);
       if (!existingNote) {
         return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
 
@@ -532,7 +554,7 @@ Use bear-search-notes to find the correct note identifier.`);
       const tagsString = tags.join(',');
 
       const url = buildBearUrl('add-text', {
-        id: id.trim(),
+        id,
         tags: tagsString,
         mode: 'prepend',
         open_note: 'no',

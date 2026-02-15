@@ -39,12 +39,20 @@ tasks:
       - npm run test
       - npm run build
       
+  test:system:
+    if: '{{ ne .CI "true" }}' # Skip in CI as there is no system test environment set up yet
+    desc: Run system tests with MCP Inspector CLI
+    cmds:
+      - npm run test:system
+
   # === Bundle Build ===
 
   pack:
     desc: Create production bundle
-    deps: [build]
+    # deps: [build, test:system]
     cmds:
+      - task: build      
+      - task: test:system # In CI, when skipped, this will be considered as success run
       - rm -rf tmp/bundle && mkdir -p tmp/bundle
       - cp -r dist/*.js manifest.json assets/* package.json tmp/bundle/
       - cd tmp/bundle && npx mcpb validate manifest.json

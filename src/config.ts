@@ -6,7 +6,7 @@ export const DEFAULT_SEARCH_LIMIT = 50;
 export const BEAR_DATABASE_PATH =
   'Library/Group Containers/9K33E3U3T4.net.shinyfrog.bear/Application Data/database.sqlite';
 
-export const ENABLE_NOTE_CONVENTIONS = process.env.UI_ENABLE_NEW_NOTE_CONVENTION === 'true';
+export const ENABLE_NEW_NOTE_CONVENTIONS = process.env.UI_ENABLE_NEW_NOTE_CONVENTION === 'true';
 
 export const ERROR_MESSAGES = {
   BEAR_DATABASE_NOT_FOUND:

@@ -4,7 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
-import { APP_VERSION, ENABLE_NOTE_CONVENTIONS } from './config.js';
+import { APP_VERSION, ENABLE_NEW_NOTE_CONVENTIONS } from './config.js';
 import { applyNoteConventions } from './note-conventions.js';
 import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
 import { getNoteContent, searchNotes } from './notes.js';
@@ -107,7 +107,7 @@ server.registerTool(
 
     try {
       // If ENABLE_NOTE_CONVENTIONS is true, embed tags in the text body using Bear's inline tag syntax, rather than passing as URL parameters
-      const { text: createText, tags: createTags } = ENABLE_NOTE_CONVENTIONS
+      const { text: createText, tags: createTags } = ENABLE_NEW_NOTE_CONVENTIONS
         ? applyNoteConventions({ text, tags })
         : { text, tags };
 

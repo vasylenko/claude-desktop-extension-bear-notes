@@ -45,7 +45,7 @@ jobs:
         run: npm run test
 
   security:
-    # matches "on:push" from the rules at the top -- will run only for main ang tags
+    # matches "on:push" from the rules at the top -- will run only for main and tags
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:

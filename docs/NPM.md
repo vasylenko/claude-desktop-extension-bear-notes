@@ -17,7 +17,7 @@ Want to use this Bear Notes MCP server with Claude Code, Cursor, Codex, or other
 - **`bear-find-untagged-notes`** - Find notes that have no tags assigned
 - **`bear-add-tag`** - Add one or more tags to an existing note
 
-**Requirements**: Node.js 22.13.0+
+**Requirements**: Node.js 24.13.0+
 
 ## Quick Start - Claude Code (One Command)
 

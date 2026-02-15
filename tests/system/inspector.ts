@@ -3,6 +3,9 @@ import { resolve } from 'path';
 
 const SERVER_PATH = resolve(import.meta.dirname, '../../dist/main.js');
 
+/** Timeout for a single MCP Inspector CLI tool call (ms). */
+export const TOOL_CALL_TIMEOUT = 1_000;
+
 interface CallToolOptions {
   toolName: string;
   args?: Record<string, string>;
@@ -36,7 +39,7 @@ export function callTool({ toolName, args, env }: CallToolOptions): string {
 
   const result = spawnSync('npx', cliArgs, {
     encoding: 'utf-8',
-    timeout: 30_000,
+    timeout: TOOL_CALL_TIMEOUT,
   });
 
   if (result.error) {

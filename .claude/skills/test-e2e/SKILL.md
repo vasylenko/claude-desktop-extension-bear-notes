@@ -44,7 +44,7 @@ Create a new note in Bear with content from tests/fixtures/sample-note.md
 
 ### 5. Find the created note
 
-Search for my notes about infrastructure review.
+Search for my notes that mention Prometheus.
 
 ### 6. Append text to the note
 

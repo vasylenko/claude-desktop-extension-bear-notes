@@ -76,15 +76,17 @@ Add to your MCP configuration file:
 
 ## 🛠️ Tools
 
-- **`bear-search-notes`** - Find notes by text content, tags, or date ranges. Includes OCR search in attachments
-- **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata
-- **`bear-create-note`** - Create new notes with optional title, content, and tags
-- **`bear-add-text`** - Add text to an existing note at the beginning or end, optionally targeting a specific section
-- **`bear-add-file`** - Attach files (images, PDFs, spreadsheets, etc.) to existing notes
+<!-- TOOLS:START -->
+- **`bear-open-note`** - Read the full text content of a Bear note including OCR'd text from attached images and PDFs
+- **`bear-create-note`** - Create a new note in your Bear library with optional title, content, and tags
+- **`bear-search-notes`** - Find notes by searching text content, filtering by tags, or date ranges. Includes OCR search in attachments
+- **`bear-add-text`** - Add text to an existing Bear note at the beginning or end, optionally targeting a specific section
+- **`bear-add-file`** - Attach a file (image, PDF, Excel, etc.) to an existing Bear note using base64-encoded content
 - **`bear-list-tags`** - List all tags in your Bear library as a hierarchical tree with note counts
-- **`bear-find-untagged-notes`** - Find notes that have no tags assigned
-- **`bear-add-tag`** - Add one or more tags to an existing note
-- **`bear-archive-note`** - Move a note to Bear's archive without deleting it
+- **`bear-find-untagged-notes`** - Find notes in your Bear library that have no tags assigned
+- **`bear-add-tag`** - Add one or more tags to an existing Bear note
+- **`bear-archive-note`** - Archive a Bear note to remove it from active lists without deleting it
+<!-- TOOLS:END -->
 
 ## ⚙️ Configuration
 

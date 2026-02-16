@@ -1,21 +1,30 @@
 # Bear Notes MCP Server
 
-Search, read, and update your Bear Notes
+Search, read, create, and update your Bear Notes from any AI assistant.
 
-Want to use this Bear Notes MCP server with Claude Code, Cursor, Codex, or other AI assistants? You can run it as a standalone MCP server.
+**Full documentation and source code: [claude-desktop-extension-bear-notes](https://github.com/vasylenko/claude-desktop-extension-bear-notes)**
 
-**Read more about the project here -- [claude-desktop-extension-bear-notes](https://github.com/vasylenko/claude-desktop-extension-bear-notes)**
+## Key Features
+
+- **9 MCP tools** for full Bear Notes integration
+- **OCR search** across images and PDFs attached to notes
+- **Date-based search** with relative dates ("yesterday", "last week", etc.)
+- **Configurable new note convention** for tag placement (opt-in)
+- **Local-only** — no network calls, all data stays on your Mac
 
 ## Tools
 
-- **`bear-search-notes`** - Find notes by text content or tags, returns list with IDs for further actions
-- **`bear-open-note`** - Read full content of a specific note including text, formatting, and metadata
-- **`bear-create-note`** - Create new notes with optional title, content, and tags
-- **`bear-add-text`** - Add text to an existing note at the beginning or end, optionally targeting a specific section
-- **`bear-add-file`** - Attach files (images, PDFs, spreadsheets, etc.) to existing notes
+<!-- TOOLS:START -->
+- **`bear-open-note`** - Read the full text content of a Bear note including OCR'd text from attached images and PDFs
+- **`bear-create-note`** - Create a new note in your Bear library with optional title, content, and tags
+- **`bear-search-notes`** - Find notes by searching text content, filtering by tags, or date ranges. Includes OCR search in attachments
+- **`bear-add-text`** - Add text to an existing Bear note at the beginning or end, optionally targeting a specific section
+- **`bear-add-file`** - Attach a file (image, PDF, Excel, etc.) to an existing Bear note using base64-encoded content
 - **`bear-list-tags`** - List all tags in your Bear library as a hierarchical tree with note counts
-- **`bear-find-untagged-notes`** - Find notes that have no tags assigned
-- **`bear-add-tag`** - Add one or more tags to an existing note
+- **`bear-find-untagged-notes`** - Find notes in your Bear library that have no tags assigned
+- **`bear-add-tag`** - Add one or more tags to an existing Bear note
+- **`bear-archive-note`** - Archive a Bear note to remove it from active lists without deleting it
+<!-- TOOLS:END -->
 
 **Requirements**: Node.js 24.13.0+
 
@@ -36,6 +45,29 @@ Add to your MCP configuration file:
     "bear-notes": {
       "command": "npx",
       "args": ["-y", "bear-notes-mcp@latest"]
+    }
+  }
+}
+```
+
+## Configuration
+
+| Variable | Default | Description |
+|---|---|---|
+| `UI_DEBUG_TOGGLE` | `false` | Enable debug logging for troubleshooting |
+| `UI_ENABLE_NEW_NOTE_CONVENTION` | `false` | Place tags right after the note title instead of at the bottom |
+
+Example with configuration:
+```json
+{
+  "mcpServers": {
+    "bear-notes": {
+      "command": "npx",
+      "args": ["-y", "bear-notes-mcp@latest"],
+      "env": {
+        "UI_ENABLE_NEW_NOTE_CONVENTION": "true",
+        "UI_DEBUG_TOGGLE": "true"
+      }
     }
   }
 }

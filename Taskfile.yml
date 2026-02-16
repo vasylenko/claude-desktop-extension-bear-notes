@@ -45,6 +45,7 @@ tasks:
     cmds:
       - npm run test:system
 
+
   # === Bundle Build ===
 
   pack:
@@ -64,14 +65,19 @@ tasks:
     desc: Show bundle info
     cmds:
       - npx mcpb info {{.BUNDLE_NAME}}
-      
-  # === Version Management ===
+  
+  docs:sync:
+    desc: Sync tools list from manifest.json into README.md and docs/NPM.md
+    cmds:
+      - node scripts/sync-tools-to-docs.mjs
   
   version:
     desc: Update version across all files
-    prompt: "Confirm version update to {{.VERSION}}?"
+    interactive: true
     requires:
-      vars: [VERSION]
+      vars: 
+        - VERSION
+    prompt: "Confirm version update to {{.VERSION}}?"
     preconditions:
       - sh: echo "{{.VERSION}}" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$'
         msg: "VERSION must follow semver format (x.y.z)"
@@ -88,7 +94,11 @@ tasks:
         echo "Version updated to {{.VERSION}} in package.json, manifest.json, and src/config.ts"
       - npm install --package-lock-only
 
-  # === Changelog ===
+  prepare-release:
+    desc: Prepare release by updating version and changelog
+    cmds:
+      - task: docs:sync
+      - task: version
   
   changelog:
     silent: true

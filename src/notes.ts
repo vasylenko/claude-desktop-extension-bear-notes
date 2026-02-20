@@ -189,6 +189,10 @@ export function searchNotes(
       innerQuery += `
       JOIN Z_5PINNEDINTAGS pt ON pt.Z_5PINNEDNOTES = note.Z_PK
       JOIN ZSFNOTETAG t ON t.Z_PK = pt.Z_13PINNEDINTAGS`;
+    } else if (hasTag) {
+      innerQuery += `
+      JOIN Z_5TAGS nt ON nt.Z_5NOTES = note.Z_PK
+      JOIN ZSFNOTETAG t ON t.Z_PK = nt.Z_13TAGS`;
     }
 
     innerQuery += `
@@ -207,18 +211,24 @@ export function searchNotes(
     // Pinned and tag filtering - behavior depends on combination
     if (hasPinnedFilter && hasTag) {
       // Notes pinned within specific tag view (via Z_5PINNEDINTAGS)
-      const tagPattern = `%${tag.trim()}%`;
-      innerQuery += ' AND t.ZTITLE LIKE ?';
-      queryParams.push(tagPattern);
+      const normalizedTag = tag.trim().toLowerCase();
+      innerQuery += ` AND (
+        LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' '))) = ?
+        OR LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' '))) LIKE ? || '/%'
+      )`;
+      queryParams.push(normalizedTag, normalizedTag);
     } else if (hasPinnedFilter) {
       // All pinned notes: globally pinned OR pinned in any tag (matches Bear's "Pinned" section)
       innerQuery +=
         ' AND (note.ZPINNED = 1 OR EXISTS (SELECT 1 FROM Z_5PINNEDINTAGS pt WHERE pt.Z_5PINNEDNOTES = note.Z_PK))';
     } else if (hasTag) {
-      // Text-based tag search
-      const tagPattern = `%#${tag.trim()}%`;
-      innerQuery += ' AND note.ZTEXT LIKE ?';
-      queryParams.push(tagPattern);
+      // Relational tag match: exact tag or nested children (e.g., "career" matches "career/meetings")
+      const normalizedTag = tag.trim().toLowerCase();
+      innerQuery += ` AND (
+        LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' '))) = ?
+        OR LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' '))) LIKE ? || '/%'
+      )`;
+      queryParams.push(normalizedTag, normalizedTag);
     }
 
     // Add date filtering

@@ -36,7 +36,7 @@ export function openBearDatabase(): DatabaseSync {
   logger.info(`Opening Bear database at: ${databasePath}`);
 
   try {
-    const db = new DatabaseSync(databasePath);
+    const db = new DatabaseSync(databasePath, { readOnly: true });
 
     logger.debug('Bear database opened successfully');
     return db;

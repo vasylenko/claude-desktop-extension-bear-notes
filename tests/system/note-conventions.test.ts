@@ -2,7 +2,14 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { callTool, extractNoteBody, extractNoteId } from './inspector.js';
+import {
+  archiveNote,
+  callTool,
+  cleanupTestNotes,
+  extractNoteBody,
+  extractNoteId,
+  uniqueTitle,
+} from './inspector.js';
 
 const FIXTURE_TEXT = readFileSync(
   resolve(import.meta.dirname, '../fixtures/sample-note.md'),
@@ -10,48 +17,24 @@ const FIXTURE_TEXT = readFileSync(
 );
 
 const TEST_PREFIX = '[Bear-MCP-stest-note-convention]';
-
-function uniqueTitle(label: string): string {
-  return `${TEST_PREFIX} ${label} ${Date.now()}`;
-}
+const RUN_ID = Date.now();
 
 /** Search for a test note by its exact title and return its ID. */
-function findTestNote(title: string): string {
+function findTestNote(noteTitle: string): string {
   const searchResult = callTool({
     toolName: 'bear-search-notes',
-    args: { term: title },
+    args: { term: noteTitle },
   });
   return extractNoteId(searchResult);
 }
 
-/** Archive a note by ID, swallowing errors during cleanup. */
-function archiveNote(id: string): void {
-  try {
-    callTool({ toolName: 'bear-archive-note', args: { id } });
-  } catch {
-    // Best-effort cleanup — don't fail the test
-  }
-}
-
 afterAll(() => {
-  // Safety sweep: archive any stray test notes
-  try {
-    const searchResult = callTool({
-      toolName: 'bear-search-notes',
-      args: { term: TEST_PREFIX },
-    });
-    const idMatches = searchResult.matchAll(/ID:\s+([A-Fa-f0-9-]+)/g);
-    for (const match of idMatches) {
-      archiveNote(match[1]);
-    }
-  } catch {
-    // Best-effort — test notes may already be archived
-  }
+  cleanupTestNotes(TEST_PREFIX);
 });
 
 describe('note conventions via MCP Inspector CLI', () => {
   it('convention OFF — tags placed by Bear via URL params', () => {
-    const title = uniqueTitle('Conv Off');
+    const title = uniqueTitle(TEST_PREFIX, 'Conv Off', RUN_ID);
     let noteId: string | undefined;
 
     try {
@@ -81,7 +64,7 @@ describe('note conventions via MCP Inspector CLI', () => {
   });
 
   it('convention ON — tags embedded in text body with separator', () => {
-    const title = uniqueTitle('Conv On Tags+Text');
+    const title = uniqueTitle(TEST_PREFIX, 'Conv On Tags+Text', RUN_ID);
     let noteId: string | undefined;
 
     try {
@@ -108,7 +91,7 @@ describe('note conventions via MCP Inspector CLI', () => {
   });
 
   it('convention ON — tags only, no text', () => {
-    const title = uniqueTitle('Conv On Tags Only');
+    const title = uniqueTitle(TEST_PREFIX, 'Conv On Tags Only', RUN_ID);
     let noteId: string | undefined;
 
     try {
@@ -137,7 +120,7 @@ describe('note conventions via MCP Inspector CLI', () => {
   });
 
   it('convention ON — no tags, text passes through unchanged', () => {
-    const title = uniqueTitle('Conv On No Tags');
+    const title = uniqueTitle(TEST_PREFIX, 'Conv On No Tags', RUN_ID);
     let noteId: string | undefined;
 
     try {

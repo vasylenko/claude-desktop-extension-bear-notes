@@ -9,14 +9,14 @@ import {
 } from './utils.js';
 import { openBearDatabase } from './database.js';
 
-// SQL expression that decodes Bear's URL-encoded tag titles — mirrors decodeTagName() in tags.ts
+// SQL equivalent of decodeTagName() in tags.ts — both MUST apply the same transformations
 const DECODED_TAG_TITLE = "LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' ')))";
 
 /**
  * Builds a SQL WHERE clause that matches a tag exactly or its nested children.
  * Escapes LIKE wildcards (%, _) in the tag name to prevent unintended pattern matching.
  */
-function buildTagMatchClause(tag: string): { sql: string; params: (string | number)[] } {
+function buildTagMatchClause(tag: string): { sql: string; params: string[] } {
   const normalizedTag = tag.trim().toLowerCase();
   const escapedTag = normalizedTag.replace(/[%_\\]/g, '\\$&');
 

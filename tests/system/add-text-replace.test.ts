@@ -152,6 +152,48 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
     }
   });
 
+  it('replaces section with special characters in header name', () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Special Header', RUN_ID);
+    let noteId: string | undefined;
+
+    const sectionedText = [
+      '## Overview',
+      'Overview text',
+      '',
+      '## Details (v2)',
+      'Original details v2 content',
+    ].join('\n');
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: sectionedText, tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      // Header contains regex special chars: (, )
+      callTool({
+        toolName: 'bear-add-text',
+        args: { id: noteId, text: 'Updated details v2 content', header: 'Details (v2)', mode: 'replace' },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+
+      syncSleep(500);
+
+      const openResult = callTool({
+        toolName: 'bear-open-note',
+        args: { id: noteId },
+      });
+
+      const noteBody = extractNoteBody(openResult);
+      expect(noteBody).toContain('Updated details v2 content');
+      expect(noteBody).toContain('Overview text');
+    } finally {
+      if (noteId) archiveNote(noteId);
+    }
+  });
+
   it('strips markdown syntax from header parameter', () => {
     const title = uniqueTitle(TEST_PREFIX, 'MD Header', RUN_ID);
     let noteId: string | undefined;

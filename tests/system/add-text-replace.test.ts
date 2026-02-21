@@ -122,7 +122,7 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
         env: {},
       });
 
-      expect(result).toContain('not enabled');
+      expect(result).toContain('Content replacement is not enabled');
     } finally {
       if (noteId) archiveNote(noteId);
     }
@@ -146,7 +146,119 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      expect(result).toContain('not found');
+      expect(result).toContain('"NonExistentSection" not found');
+    } finally {
+      if (noteId) archiveNote(noteId);
+    }
+  });
+
+  it('strips markdown syntax from header parameter', () => {
+    const title = uniqueTitle(TEST_PREFIX, 'MD Header', RUN_ID);
+    let noteId: string | undefined;
+
+    const sectionedText = [
+      '## First',
+      'First section text',
+      '',
+      '## Second',
+      'Second section text',
+    ].join('\n');
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: sectionedText, tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      // LLMs commonly pass headers with markdown prefix — code should strip it
+      callTool({
+        toolName: 'bear-add-text',
+        args: { id: noteId, text: 'Replaced via markdown header', header: '## Second', mode: 'replace' },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+
+      syncSleep(500);
+
+      const openResult = callTool({
+        toolName: 'bear-open-note',
+        args: { id: noteId },
+      });
+
+      const noteBody = extractNoteBody(openResult);
+      expect(noteBody).toContain('Replaced via markdown header');
+      expect(noteBody).toContain('First section text');
+    } finally {
+      if (noteId) archiveNote(noteId);
+    }
+  });
+
+  it('matches header case-insensitively for validation', () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Case Header', RUN_ID);
+    let noteId: string | undefined;
+
+    const sectionedText = [
+      '## My Section',
+      'Original section text',
+    ].join('\n');
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: sectionedText, tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      // Validation should pass case-insensitively
+      callTool({
+        toolName: 'bear-add-text',
+        args: { id: noteId, text: 'Case-insensitive replace', header: 'my section', mode: 'replace' },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+
+      syncSleep(500);
+
+      const openResult = callTool({
+        toolName: 'bear-open-note',
+        args: { id: noteId },
+      });
+
+      const noteBody = extractNoteBody(openResult);
+      expect(noteBody).toContain('Case-insensitive replace');
+    } finally {
+      if (noteId) archiveNote(noteId);
+    }
+  });
+
+  it('regression — prepend still works without mode', () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Prepend Default', RUN_ID);
+    let noteId: string | undefined;
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: 'Original content', tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      callTool({
+        toolName: 'bear-add-text',
+        args: { id: noteId, text: 'Prepended text', position: 'beginning' },
+      });
+
+      syncSleep(500);
+
+      const openResult = callTool({
+        toolName: 'bear-open-note',
+        args: { id: noteId },
+      });
+
+      const noteBody = extractNoteBody(openResult);
+      expect(noteBody).toContain('Original content');
+      expect(noteBody).toContain('Prepended text');
     } finally {
       if (noteId) archiveNote(noteId);
     }

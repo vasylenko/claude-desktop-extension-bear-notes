@@ -128,3 +128,12 @@ export function cleanupTestNotes(prefix: string): void {
 export function uniqueTitle(prefix: string, label: string, runId: number): string {
   return `${prefix} ${label} ${runId}`;
 }
+
+/** Search for a note by title and return its ID. */
+export function findNoteId(noteTitle: string): string {
+  const searchResult = callTool({
+    toolName: 'bear-search-notes',
+    args: { term: noteTitle },
+  });
+  return extractNoteId(searchResult);
+}

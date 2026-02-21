@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { archiveNote, callTool, cleanupTestNotes, extractNoteId, uniqueTitle } from './inspector.js';
+import { archiveNote, callTool, cleanupTestNotes, findNoteId, uniqueTitle } from './inspector.js';
 
 const TEST_PREFIX = '[Bear-MCP-stest-tag-search]';
 const RUN_ID = Date.now();
@@ -33,11 +33,7 @@ beforeAll(() => {
     { noteTitle: TITLE_SIMILAR, tag: TAG_SIMILAR },
   ]) {
     callTool({ toolName: 'bear-create-note', args: { title: noteTitle, tags: tag } });
-    const searchResult = callTool({
-      toolName: 'bear-search-notes',
-      args: { term: noteTitle },
-    });
-    noteIds.push(extractNoteId(searchResult));
+    noteIds.push(findNoteId(noteTitle));
   }
 });
 

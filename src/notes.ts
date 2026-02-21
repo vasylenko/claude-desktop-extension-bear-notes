@@ -228,8 +228,8 @@ export function searchNotes(
       queryParams.push(searchPattern, searchPattern, searchPattern);
     }
 
-    // Pinned and tag filtering - behavior depends on combination
-    if (hasPinnedFilter && hasTag) {
+    // Tag clause applies to both pinned+tag and tag-only paths (JOINs differ above)
+    if (hasTag) {
       const tagClause = buildTagMatchClause(tag);
       innerQuery += tagClause.sql;
       queryParams.push(...tagClause.params);
@@ -237,10 +237,6 @@ export function searchNotes(
       // All pinned notes: globally pinned OR pinned in any tag (matches Bear's "Pinned" section)
       innerQuery +=
         ' AND (note.ZPINNED = 1 OR EXISTS (SELECT 1 FROM Z_5PINNEDINTAGS pt WHERE pt.Z_5PINNEDNOTES = note.Z_PK))';
-    } else if (hasTag) {
-      const tagClause = buildTagMatchClause(tag);
-      innerQuery += tagClause.sql;
-      queryParams.push(...tagClause.params);
     }
 
     // Add date filtering

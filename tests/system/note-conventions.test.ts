@@ -7,7 +7,7 @@ import {
   callTool,
   cleanupTestNotes,
   extractNoteBody,
-  extractNoteId,
+  findNoteId,
   uniqueTitle,
 } from './inspector.js';
 
@@ -18,15 +18,6 @@ const FIXTURE_TEXT = readFileSync(
 
 const TEST_PREFIX = '[Bear-MCP-stest-note-convention]';
 const RUN_ID = Date.now();
-
-/** Search for a test note by its exact title and return its ID. */
-function findTestNote(noteTitle: string): string {
-  const searchResult = callTool({
-    toolName: 'bear-search-notes',
-    args: { term: noteTitle },
-  });
-  return extractNoteId(searchResult);
-}
 
 afterAll(() => {
   cleanupTestNotes(TEST_PREFIX);
@@ -44,7 +35,7 @@ describe('note conventions via MCP Inspector CLI', () => {
         // No env override — convention OFF by default
       });
 
-      noteId = findTestNote(title);
+      noteId = findNoteId(title);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -74,7 +65,7 @@ describe('note conventions via MCP Inspector CLI', () => {
         env: { UI_ENABLE_NEW_NOTE_CONVENTION: 'true' },
       });
 
-      noteId = findTestNote(title);
+      noteId = findNoteId(title);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -101,7 +92,7 @@ describe('note conventions via MCP Inspector CLI', () => {
         env: { UI_ENABLE_NEW_NOTE_CONVENTION: 'true' },
       });
 
-      noteId = findTestNote(title);
+      noteId = findNoteId(title);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -130,7 +121,7 @@ describe('note conventions via MCP Inspector CLI', () => {
         env: { UI_ENABLE_NEW_NOTE_CONVENTION: 'true' },
       });
 
-      noteId = findTestNote(title);
+      noteId = findNoteId(title);
 
       const openResult = callTool({
         toolName: 'bear-open-note',

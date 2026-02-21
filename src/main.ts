@@ -273,7 +273,7 @@ server.registerTool(
   {
     title: 'Add Text to Note',
     description:
-      'Add text to an existing Bear note at the beginning or end. Can target a specific section using header. Supports replacing note content or a specific section when content replacement is enabled in settings. Use bear-search-notes first to get the note ID.',
+      'Add text to an existing Bear note at the beginning or end. Can target a specific section using header. Use bear-search-notes first to get the note ID.',
     inputSchema: {
       id: z
         .string()
@@ -296,32 +296,57 @@ server.registerTool(
         .describe(
           "Where to insert: 'end' (default) for appending, logs, updates; 'beginning' for prepending, summaries, top of mind, etc."
         ),
-      mode: z
-        .enum(['replace'])
-        .optional()
-        .describe(
-          "Set to 'replace' to replace note content (or a specific section when combined with header). When set, the position parameter is ignored. Requires content replacement to be enabled in extension settings. This is destructive and cannot be undone."
-        ),
     },
     annotations: {
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },
   },
-  async ({ id, text, header, position, mode }): Promise<CallToolResult> => {
-    if (mode === 'replace') {
-      if (!ENABLE_CONTENT_REPLACEMENT) {
-        return createToolResponse(`Content replacement is not enabled.
+  async ({ id, text, header, position }): Promise<CallToolResult> => {
+    const mode = position === 'beginning' ? 'prepend' : 'append';
+    return handleAddText(mode, { id, text, header });
+  }
+);
+
+server.registerTool(
+  'bear-replace-text',
+  {
+    title: 'Replace Note Content',
+    description:
+      'Replace content in an existing Bear note — either the full body or a specific section by header. Requires content replacement to be enabled in extension settings. Use bear-search-notes first to get the note ID.',
+    inputSchema: {
+      id: z
+        .string()
+        .trim()
+        .min(1, 'Note ID is required')
+        .describe('Note identifier (ID) from bear-search-notes'),
+      text: z
+        .string()
+        .trim()
+        .min(1, 'Text content is required')
+        .describe('Replacement text content'),
+      header: z
+        .string()
+        .trim()
+        .optional()
+        .describe('Optional section header to target (replaces only that section)'),
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  async ({ id, text, header }): Promise<CallToolResult> => {
+    if (!ENABLE_CONTENT_REPLACEMENT) {
+      return createToolResponse(`Content replacement is not enabled.
 
 To use replace mode, enable "Content Replacement" in the Bear Notes extension settings.`);
-      }
-      return handleAddText('replace', { id, text, header });
     }
-
-    const bearMode = position === 'beginning' ? 'prepend' : 'append';
-    return handleAddText(bearMode, { id, text, header });
+    return handleAddText('replace', { id, text, header });
   }
 );
 

@@ -88,10 +88,52 @@ export function extractNoteBody(openNoteResponse: string): string {
  * Extracts the first note ID from bear-search-notes response text.
  * The response format includes `ID: <uuid>` for each result.
  */
-export function extractNoteId(searchResponse: string): string {
+function extractNoteId(searchResponse: string): string {
   const match = searchResponse.match(/ID:\s+([A-Fa-f0-9-]+)/);
   if (!match) {
     throw new Error(`No note ID found in search response: ${searchResponse}`);
   }
   return match[1];
+}
+
+/** Archive a note by ID, swallowing errors during cleanup. */
+export function archiveNote(id: string): void {
+  try {
+    callTool({ toolName: 'bear-archive-note', args: { id } });
+  } catch {
+    // Best-effort cleanup — don't fail the test
+  }
+}
+
+/**
+ * Archives all notes matching a search prefix.
+ * Intended for afterAll cleanup to remove stray test notes from interrupted runs.
+ */
+export function cleanupTestNotes(prefix: string): void {
+  try {
+    const searchResult = callTool({
+      toolName: 'bear-search-notes',
+      args: { term: prefix },
+    });
+    const idMatches = searchResult.matchAll(/ID:\s+([A-Fa-f0-9-]+)/g);
+    for (const match of idMatches) {
+      archiveNote(match[1]);
+    }
+  } catch {
+    // Best-effort — test notes may already be archived
+  }
+}
+
+/** Generates a unique note title scoped to a test run, preventing cross-run collisions. */
+export function uniqueTitle(prefix: string, label: string, runId: number): string {
+  return `${prefix} ${label} ${runId}`;
+}
+
+/** Search for a note by title and return its ID. */
+export function findNoteId(noteTitle: string): string {
+  const searchResult = callTool({
+    toolName: 'bear-search-notes',
+    args: { term: noteTitle },
+  });
+  return extractNoteId(searchResult);
 }

@@ -9,6 +9,26 @@ import {
 } from './utils.js';
 import { openBearDatabase } from './database.js';
 
+// SQL equivalent of decodeTagName() in tags.ts — both MUST apply the same transformations
+const DECODED_TAG_TITLE = "LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' ')))";
+
+/**
+ * Builds a SQL WHERE clause that matches a tag exactly or its nested children.
+ * Escapes LIKE wildcards (%, _) in the tag name to prevent unintended pattern matching.
+ */
+function buildTagMatchClause(tag: string): { sql: string; params: string[] } {
+  const normalizedTag = tag.trim().toLowerCase();
+  const escapedTag = normalizedTag.replace(/[%_\\]/g, '\\$&');
+
+  return {
+    sql: ` AND (
+        ${DECODED_TAG_TITLE} = ?
+        OR ${DECODED_TAG_TITLE} LIKE ? || '/%' ESCAPE '\\'
+      )`,
+    params: [normalizedTag, escapedTag],
+  };
+}
+
 function formatBearNote(row: Record<string, unknown>): BearNote {
   const title = (row.title as string) || 'Untitled';
   const identifier = row.identifier as string;
@@ -189,6 +209,10 @@ export function searchNotes(
       innerQuery += `
       JOIN Z_5PINNEDINTAGS pt ON pt.Z_5PINNEDNOTES = note.Z_PK
       JOIN ZSFNOTETAG t ON t.Z_PK = pt.Z_13PINNEDINTAGS`;
+    } else if (hasTag) {
+      innerQuery += `
+      JOIN Z_5TAGS nt ON nt.Z_5NOTES = note.Z_PK
+      JOIN ZSFNOTETAG t ON t.Z_PK = nt.Z_13TAGS`;
     }
 
     innerQuery += `
@@ -204,21 +228,15 @@ export function searchNotes(
       queryParams.push(searchPattern, searchPattern, searchPattern);
     }
 
-    // Pinned and tag filtering - behavior depends on combination
-    if (hasPinnedFilter && hasTag) {
-      // Notes pinned within specific tag view (via Z_5PINNEDINTAGS)
-      const tagPattern = `%${tag.trim()}%`;
-      innerQuery += ' AND t.ZTITLE LIKE ?';
-      queryParams.push(tagPattern);
+    // Tag clause applies to both pinned+tag and tag-only paths (JOINs differ above)
+    if (hasTag) {
+      const tagClause = buildTagMatchClause(tag);
+      innerQuery += tagClause.sql;
+      queryParams.push(...tagClause.params);
     } else if (hasPinnedFilter) {
       // All pinned notes: globally pinned OR pinned in any tag (matches Bear's "Pinned" section)
       innerQuery +=
         ' AND (note.ZPINNED = 1 OR EXISTS (SELECT 1 FROM Z_5PINNEDINTAGS pt WHERE pt.Z_5PINNEDNOTES = note.Z_PK))';
-    } else if (hasTag) {
-      // Text-based tag search
-      const tagPattern = `%#${tag.trim()}%`;
-      innerQuery += ' AND note.ZTEXT LIKE ?';
-      queryParams.push(tagPattern);
     }
 
     // Add date filtering

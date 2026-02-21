@@ -56,9 +56,10 @@ export function buildBearUrl(action: string, params: BearUrlParams = {}): string
   urlParams.set('new_window', params.new_window ?? 'no');
   urlParams.set('show_window', params.show_window ?? 'yes');
 
-  // Add required Bear API parameters for add-text action
-  if (action === 'add-text') {
-    urlParams.set('new_line', 'yes'); // Ensures text appears on new line
+  // Ensures appended/prepended text starts on its own line, not glued to existing content.
+  // Skipped for replace mode — there's no preceding content to separate from.
+  if (action === 'add-text' && params.mode !== 'replace') {
+    urlParams.set('new_line', 'yes');
   }
 
   // Convert URLSearchParams to proper URL encoding (Bear expects %20 not +)

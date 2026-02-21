@@ -174,7 +174,7 @@ export async function handleAddText(
 ): Promise<CallToolResult> {
   const action = mode === 'append' ? 'appended' : mode === 'prepend' ? 'prepended' : 'replaced';
   logger.info(
-    `bear-add-text-${mode} called with id: ${id}, text length: ${text.length}, header: ${header || 'none'}`
+    `handleAddText(${mode}) id: ${id}, text length: ${text.length}, header: ${header || 'none'}`
   );
 
   try {
@@ -207,7 +207,8 @@ Check the note content with bear-open-note to see available sections.`);
     logger.debug(`Executing Bear URL: ${url}`);
     await executeBearXCallbackApi(url);
 
-    const responseLines = [`Text ${action} to note "${existingNote.title}" successfully!`, ''];
+    const preposition = mode === 'replace' ? 'in' : 'to';
+    const responseLines = [`Text ${action} ${preposition} note "${existingNote.title}" successfully!`, ''];
 
     responseLines.push(`Text: ${text.length} characters`);
 
@@ -228,7 +229,7 @@ Check the note content with bear-open-note to see available sections.`);
 
 ${trailingMessage}`);
   } catch (error) {
-    logger.error(`bear-add-text-${mode} failed: ${error}`);
+    logger.error(`handleAddText(${mode}) failed: ${error}`);
     throw error;
   }
 }

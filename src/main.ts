@@ -4,7 +4,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
-import { APP_VERSION, ENABLE_NEW_NOTE_CONVENTIONS } from './config.js';
+import { APP_VERSION, ENABLE_CONTENT_REPLACEMENT, ENABLE_NEW_NOTE_CONVENTIONS } from './config.js';
 import { applyNoteConventions } from './note-conventions.js';
 import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
 import { getNoteContent, searchNotes } from './notes.js';
@@ -273,7 +273,7 @@ server.registerTool(
   {
     title: 'Add Text to Note',
     description:
-      'Add text to an existing Bear note at the beginning or end. Can target a specific section using header. Use bear-search-notes first to get the note ID.',
+      'Add text to an existing Bear note at the beginning or end. Can target a specific section using header. Supports replacing note content or a specific section when content replacement is enabled in settings. Use bear-search-notes first to get the note ID.',
     inputSchema: {
       id: z
         .string()
@@ -296,6 +296,12 @@ server.registerTool(
         .describe(
           "Where to insert: 'end' (default) for appending, logs, updates; 'beginning' for prepending, summaries, top of mind, etc."
         ),
+      mode: z
+        .enum(['replace'])
+        .optional()
+        .describe(
+          "Set to 'replace' to replace note content (or a specific section when combined with header). Requires content replacement to be enabled in extension settings. This is destructive and cannot be undone."
+        ),
     },
     annotations: {
       readOnlyHint: false,
@@ -304,9 +310,18 @@ server.registerTool(
       openWorldHint: true,
     },
   },
-  async ({ id, text, header, position }): Promise<CallToolResult> => {
-    const mode = position === 'beginning' ? 'prepend' : 'append';
-    return handleAddText(mode, { id, text, header });
+  async ({ id, text, header, position, mode }): Promise<CallToolResult> => {
+    if (mode === 'replace') {
+      if (!ENABLE_CONTENT_REPLACEMENT) {
+        return createToolResponse(`Content replacement is not enabled.
+
+To use replace mode, enable "Content Replacement" in the Bear Notes extension settings.`);
+      }
+      return handleAddText('replace_all', { id, text, header });
+    }
+
+    const bearMode = position === 'beginning' ? 'prepend' : 'append';
+    return handleAddText(bearMode, { id, text, header });
   }
 );
 

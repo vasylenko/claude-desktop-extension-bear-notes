@@ -149,18 +149,18 @@ export function createToolResponse(text: string): Pick<CallToolResult, 'content'
 }
 
 /**
- * Shared handler for adding text to Bear notes (append or prepend).
+ * Shared handler for adding text to Bear notes (append, prepend, or replace).
  * Consolidates common validation, execution, and response logic.
  *
- * @param mode - Whether to append or prepend text
+ * @param mode - Whether to append, prepend, or replace text
  * @param params - Note ID, text content, and optional header
  * @returns Formatted response indicating success or failure
  */
 export async function handleAddText(
-  mode: 'append' | 'prepend',
+  mode: 'append' | 'prepend' | 'replace_all',
   { id, text, header }: { id: string; text: string; header?: string | undefined }
 ): Promise<CallToolResult> {
-  const action = mode === 'append' ? 'appended' : 'prepended';
+  const action = mode === 'append' ? 'appended' : mode === 'prepend' ? 'prepended' : 'replaced';
   logger.info(
     `bear-add-text-${mode} called with id: ${id}, text length: ${text.length}, header: ${header || 'none'}`
   );
@@ -172,6 +172,17 @@ export async function handleAddText(
       return createToolResponse(`Note with ID '${id}' not found. The note may have been deleted, archived, or the ID may be incorrect.
 
 Use bear-search-notes to find the correct note identifier.`);
+    }
+
+    // Validate that the target header exists before attempting section replacement
+    if (mode === 'replace_all' && header) {
+      const cleanHeader = header.replace(/^#+\s*/, '');
+      const headerRegex = new RegExp(`^#{1,6}\\s+${cleanHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'mi');
+      if (!existingNote.text || !headerRegex.test(existingNote.text)) {
+        return createToolResponse(`Section "${header}" not found in note "${existingNote.title}".
+
+Check the note content with bear-open-note to see available sections.`);
+      }
     }
 
     // Strip markdown header syntax from header parameter for Bear API
@@ -196,9 +207,13 @@ Use bear-search-notes to find the correct note identifier.`);
 
     responseLines.push(`Note ID: ${id}`);
 
+    const trailingMessage = mode === 'replace_all'
+      ? (header ? 'The section content has been replaced in your Bear note.' : 'The note content has been replaced in your Bear note.')
+      : 'The text has been added to your Bear note.';
+
     return createToolResponse(`${responseLines.join('\n')}
 
-The text has been added to your Bear note.`);
+${trailingMessage}`);
   } catch (error) {
     logger.error(`bear-add-text-${mode} failed: ${error}`);
     throw error;

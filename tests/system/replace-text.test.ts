@@ -100,6 +100,57 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
     }
   });
 
+  it('does not duplicate header when replacement text includes it', async () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Header Dedup', RUN_ID);
+    let noteId: string | undefined;
+
+    const sectionedText = [
+      '## Introduction',
+      'Intro text',
+      '',
+      '## Details',
+      'Original details',
+      '',
+      '## Conclusion',
+      'Conclusion text',
+    ].join('\n');
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: sectionedText, tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      // AI agents naturally include the header in replacement text — the server must strip it
+      callTool({
+        toolName: 'bear-replace-text',
+        args: { id: noteId, text: '## Details\nReplaced details content', header: 'Details' },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+
+      await sleep(500);
+
+      const openResult = callTool({
+        toolName: 'bear-open-note',
+        args: { id: noteId },
+      });
+
+      const noteBody = extractNoteBody(openResult);
+      expect(noteBody).toContain('Replaced details content');
+      // Header must appear exactly once — no duplication
+      const detailsCount = (noteBody.match(/## Details/g) || []).length;
+      expect(detailsCount).toBe(1);
+      // Other sections remain untouched
+      expect(noteBody).toContain('Intro text');
+      expect(noteBody).toContain('Conclusion text');
+      expect(noteBody).not.toContain('Original details');
+    } finally {
+      if (noteId) archiveNote(noteId);
+    }
+  });
+
   it('blocks replace when content replacement is not enabled', () => {
     const title = uniqueTitle(TEST_PREFIX, 'Flag Off', RUN_ID);
     let noteId: string | undefined;

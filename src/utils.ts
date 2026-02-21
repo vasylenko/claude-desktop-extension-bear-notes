@@ -208,7 +208,10 @@ Check the note content with bear-open-note to see available sections.`);
     await executeBearXCallbackApi(url);
 
     const preposition = mode === 'replace' ? 'in' : 'to';
-    const responseLines = [`Text ${action} ${preposition} note "${existingNote.title}" successfully!`, ''];
+    const responseLines = [
+      `Text ${action} ${preposition} note "${existingNote.title}" successfully!`,
+      '',
+    ];
 
     responseLines.push(`Text: ${text.length} characters`);
 

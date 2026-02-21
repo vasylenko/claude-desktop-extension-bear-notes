@@ -217,8 +217,14 @@ Check the note content with bear-open-note to see available sections.`);
 
     // When replacing a section, the AI often includes the section header in the replacement text.
     // Bear's replace mode keeps the original header, so sending it again causes duplication.
-    const cleanText =
+    let cleanText =
       mode === 'replace' && cleanHeader ? stripLeadingHeader(text, cleanHeader) : text;
+
+    // Bear's section replace consumes the trailing blank line that separates sections in markdown.
+    // Appending a newline preserves the section separator after the replaced content.
+    if (mode === 'replace' && cleanHeader) {
+      cleanText += '\n';
+    }
 
     const url = buildBearUrl('add-text', {
       id,

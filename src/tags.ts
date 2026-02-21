@@ -7,6 +7,7 @@ import { openBearDatabase } from './database.js';
  * - Replaces '+' with spaces (Bear's URL encoding)
  * - Converts to lowercase (matches Bear UI behavior)
  * - Trims whitespace
+ * Keep in sync with DECODED_TAG_TITLE in notes.ts — both MUST apply the same transformations.
  */
 function decodeTagName(encodedName: string): string {
   return encodedName.replace(/\+/g, ' ').trim().toLowerCase();

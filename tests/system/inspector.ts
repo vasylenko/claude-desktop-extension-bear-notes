@@ -88,7 +88,7 @@ export function extractNoteBody(openNoteResponse: string): string {
  * Extracts the first note ID from bear-search-notes response text.
  * The response format includes `ID: <uuid>` for each result.
  */
-export function extractNoteId(searchResponse: string): string {
+function extractNoteId(searchResponse: string): string {
   const match = searchResponse.match(/ID:\s+([A-Fa-f0-9-]+)/);
   if (!match) {
     throw new Error(`No note ID found in search response: ${searchResponse}`);

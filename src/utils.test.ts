@@ -51,6 +51,20 @@ describe('noteHasHeader', () => {
     'Release notes',
   ].join('\n');
 
+  it('finds an exact header match', () => {
+    expect(noteHasHeader(noteText, 'Details')).toBe(true);
+  });
+
+  it('strips markdown prefix from header input', () => {
+    expect(noteHasHeader(noteText, '## Details')).toBe(true);
+    expect(noteHasHeader(noteText, '### Q&A')).toBe(true);
+  });
+
+  it('matches case-insensitively', () => {
+    expect(noteHasHeader(noteText, 'details')).toBe(true);
+    expect(noteHasHeader(noteText, 'DETAILS')).toBe(true);
+  });
+
   it('rejects partial header name', () => {
     expect(noteHasHeader(noteText, 'Detail')).toBe(false);
   });

@@ -186,17 +186,17 @@ export async function handleAddText(
 Use bear-search-notes to find the correct note identifier.`);
     }
 
-    // Validate that the target header exists before attempting section replacement
-    if (mode === 'replace' && header) {
-      if (!existingNote.text || !noteHasHeader(existingNote.text, header)) {
-        return createToolResponse(`Section "${header}" not found in note "${existingNote.title}".
+    // Strip markdown header syntax once — reused for both validation and Bear API
+    const cleanHeader = header?.replace(/^#+\s*/, '');
+
+    // Bear silently ignores replace-with-header when the section doesn't exist — fail early with a clear message
+    if (mode === 'replace' && cleanHeader) {
+      if (!existingNote.text || !noteHasHeader(existingNote.text, cleanHeader)) {
+        return createToolResponse(`Section "${cleanHeader}" not found in note "${existingNote.title}".
 
 Check the note content with bear-open-note to see available sections.`);
       }
     }
-
-    // Strip markdown header syntax from header parameter for Bear API
-    const cleanHeader = header?.replace(/^#+\s*/, '');
 
     const url = buildBearUrl('add-text', {
       id,

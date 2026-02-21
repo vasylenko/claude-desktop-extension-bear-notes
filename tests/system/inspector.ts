@@ -1,4 +1,5 @@
 import { spawnSync } from 'child_process';
+export { setTimeout as sleep } from 'node:timers/promises';
 import { resolve } from 'path';
 
 const SERVER_PATH = resolve(import.meta.dirname, '../../dist/main.js');
@@ -125,9 +126,6 @@ export function cleanupTestNotes(prefix: string): void {
 export function uniqueTitle(prefix: string, label: string, runId: number): string {
   return `${prefix} ${label} ${runId}`;
 }
-
-// Re-export Node's built-in promise-based setTimeout as `sleep` for readability in tests
-export { setTimeout as sleep } from 'node:timers/promises';
 
 /** Search for a note by title and return its ID. */
 export function findNoteId(noteTitle: string): string {

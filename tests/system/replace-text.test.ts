@@ -12,6 +12,7 @@ import {
 
 const TEST_PREFIX = '[Bear-MCP-stest-replace-text]';
 const RUN_ID = Date.now();
+const PAUSE_AFTER_WRITE_OP = 100; // ms to wait after write operations for Bear to process changes as we don't catch the callback response in these tests to confirm completion
 
 afterAll(() => {
   cleanupTestNotes(TEST_PREFIX);
@@ -36,7 +37,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      await sleep(500);
+      await sleep(PAUSE_AFTER_WRITE_OP);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -83,7 +84,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      await sleep(500);
+      await sleep(PAUSE_AFTER_WRITE_OP);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -130,7 +131,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      await sleep(500);
+      await sleep(PAUSE_AFTER_WRITE_OP);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -226,7 +227,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      await sleep(500);
+      await sleep(PAUSE_AFTER_WRITE_OP);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -268,7 +269,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      await sleep(500);
+      await sleep(PAUSE_AFTER_WRITE_OP);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -304,7 +305,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      await sleep(500);
+      await sleep(PAUSE_AFTER_WRITE_OP);
 
       const openResult = callTool({
         toolName: 'bear-open-note',

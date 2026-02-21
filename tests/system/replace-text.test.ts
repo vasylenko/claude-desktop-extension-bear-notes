@@ -9,7 +9,7 @@ import {
   uniqueTitle,
 } from './inspector.js';
 
-const TEST_PREFIX = '[Bear-MCP-stest-add-text-replace]';
+const TEST_PREFIX = '[Bear-MCP-stest-replace-text]';
 const RUN_ID = Date.now();
 
 /** Bear processes URL callbacks asynchronously — pause to let writes settle. */
@@ -21,7 +21,7 @@ afterAll(() => {
   cleanupTestNotes(TEST_PREFIX);
 });
 
-describe('bear-add-text replace mode via MCP Inspector CLI', () => {
+describe('bear-replace-text via MCP Inspector CLI', () => {
   it('replaces full note content', () => {
     const title = uniqueTitle(TEST_PREFIX, 'Full Replace', RUN_ID);
     let noteId: string | undefined;
@@ -35,8 +35,8 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
       noteId = findNoteId(title);
 
       callTool({
-        toolName: 'bear-add-text',
-        args: { id: noteId, text: 'Completely new content', mode: 'replace' },
+        toolName: 'bear-replace-text',
+        args: { id: noteId, text: 'Completely new content' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -82,8 +82,8 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
       noteId = findNoteId(title);
 
       callTool({
-        toolName: 'bear-add-text',
-        args: { id: noteId, text: 'Updated details text', header: 'Details', mode: 'replace' },
+        toolName: 'bear-replace-text',
+        args: { id: noteId, text: 'Updated details text', header: 'Details' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -117,8 +117,8 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
       noteId = findNoteId(title);
 
       const result = callTool({
-        toolName: 'bear-add-text',
-        args: { id: noteId, text: 'new content', mode: 'replace' },
+        toolName: 'bear-replace-text',
+        args: { id: noteId, text: 'new content' },
         env: {},
       });
 
@@ -141,8 +141,8 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
       noteId = findNoteId(title);
 
       const result = callTool({
-        toolName: 'bear-add-text',
-        args: { id: noteId, text: 'new content', header: 'NonExistentSection', mode: 'replace' },
+        toolName: 'bear-replace-text',
+        args: { id: noteId, text: 'new content', header: 'NonExistentSection' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -174,8 +174,8 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
 
       // Header contains regex special chars: (, )
       callTool({
-        toolName: 'bear-add-text',
-        args: { id: noteId, text: 'Updated details v2 content', header: 'Details (v2)', mode: 'replace' },
+        toolName: 'bear-replace-text',
+        args: { id: noteId, text: 'Updated details v2 content', header: 'Details (v2)' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -216,8 +216,8 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
 
       // LLMs commonly pass headers with markdown prefix — code should strip it
       callTool({
-        toolName: 'bear-add-text',
-        args: { id: noteId, text: 'Replaced via markdown header', header: '## Second', mode: 'replace' },
+        toolName: 'bear-replace-text',
+        args: { id: noteId, text: 'Replaced via markdown header', header: '## Second' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -255,8 +255,8 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
 
       // Validation should pass case-insensitively
       callTool({
-        toolName: 'bear-add-text',
-        args: { id: noteId, text: 'Case-insensitive replace', header: 'my section', mode: 'replace' },
+        toolName: 'bear-replace-text',
+        args: { id: noteId, text: 'Case-insensitive replace', header: 'my section' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -274,67 +274,69 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
     }
   });
 
-  it('regression — prepend still works without mode', () => {
-    const title = uniqueTitle(TEST_PREFIX, 'Prepend Default', RUN_ID);
-    let noteId: string | undefined;
+  describe('bear-add-text regression', () => {
+    it('regression — prepend still works', () => {
+      const title = uniqueTitle(TEST_PREFIX, 'Prepend Default', RUN_ID);
+      let noteId: string | undefined;
 
-    try {
-      callTool({
-        toolName: 'bear-create-note',
-        args: { title, text: 'Original content', tags: 'system-test' },
-      });
+      try {
+        callTool({
+          toolName: 'bear-create-note',
+          args: { title, text: 'Original content', tags: 'system-test' },
+        });
 
-      noteId = findNoteId(title);
+        noteId = findNoteId(title);
 
-      callTool({
-        toolName: 'bear-add-text',
-        args: { id: noteId, text: 'Prepended text', position: 'beginning' },
-      });
+        callTool({
+          toolName: 'bear-add-text',
+          args: { id: noteId, text: 'Prepended text', position: 'beginning' },
+        });
 
-      syncSleep(500);
+        syncSleep(500);
 
-      const openResult = callTool({
-        toolName: 'bear-open-note',
-        args: { id: noteId },
-      });
+        const openResult = callTool({
+          toolName: 'bear-open-note',
+          args: { id: noteId },
+        });
 
-      const noteBody = extractNoteBody(openResult);
-      expect(noteBody).toContain('Original content');
-      expect(noteBody).toContain('Prepended text');
-    } finally {
-      if (noteId) archiveNote(noteId);
-    }
-  });
+        const noteBody = extractNoteBody(openResult);
+        expect(noteBody).toContain('Original content');
+        expect(noteBody).toContain('Prepended text');
+      } finally {
+        if (noteId) archiveNote(noteId);
+      }
+    });
 
-  it('regression — default append still works without mode', () => {
-    const title = uniqueTitle(TEST_PREFIX, 'Append Default', RUN_ID);
-    let noteId: string | undefined;
+    it('regression — default append still works', () => {
+      const title = uniqueTitle(TEST_PREFIX, 'Append Default', RUN_ID);
+      let noteId: string | undefined;
 
-    try {
-      callTool({
-        toolName: 'bear-create-note',
-        args: { title, text: 'Original content', tags: 'system-test' },
-      });
+      try {
+        callTool({
+          toolName: 'bear-create-note',
+          args: { title, text: 'Original content', tags: 'system-test' },
+        });
 
-      noteId = findNoteId(title);
+        noteId = findNoteId(title);
 
-      callTool({
-        toolName: 'bear-add-text',
-        args: { id: noteId, text: 'Appended text' },
-      });
+        callTool({
+          toolName: 'bear-add-text',
+          args: { id: noteId, text: 'Appended text' },
+        });
 
-      syncSleep(500);
+        syncSleep(500);
 
-      const openResult = callTool({
-        toolName: 'bear-open-note',
-        args: { id: noteId },
-      });
+        const openResult = callTool({
+          toolName: 'bear-open-note',
+          args: { id: noteId },
+        });
 
-      const noteBody = extractNoteBody(openResult);
-      expect(noteBody).toContain('Original content');
-      expect(noteBody).toContain('Appended text');
-    } finally {
-      if (noteId) archiveNote(noteId);
-    }
+        const noteBody = extractNoteBody(openResult);
+        expect(noteBody).toContain('Original content');
+        expect(noteBody).toContain('Appended text');
+      } finally {
+        if (noteId) archiveNote(noteId);
+      }
+    });
   });
 });

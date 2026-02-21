@@ -29,7 +29,8 @@
       ],
       "env": {
         "UI_DEBUG_TOGGLE": "${user_config.debug}",
-        "UI_ENABLE_NEW_NOTE_CONVENTION": "${user_config.enable_new_note_convention}"
+        "UI_ENABLE_NEW_NOTE_CONVENTION": "${user_config.enable_new_note_convention}",
+        "UI_ENABLE_CONTENT_REPLACEMENT": "${user_config.enable_content_replacement}"
       }
     }
   },
@@ -45,6 +46,13 @@
       "type": "boolean",
       "title": "New Note Convention",
       "description": "Place tags right after the note title instead of at the end (default Bear behavior) when creating new notes",
+      "default": false,
+      "required": false
+    },
+    "enable_content_replacement": {
+      "type": "boolean",
+      "title": "Content Replacement",
+      "description": "Allow replacing note content or specific sections using the bear-add-text tool",
       "default": false,
       "required": false
     }
@@ -64,7 +72,7 @@
     },
     {
       "name": "bear-add-text",
-      "description": "Add text to an existing Bear note at the beginning or end, optionally targeting a specific section"
+      "description": "Add text to an existing Bear note at the beginning or end, optionally targeting a specific section. Supports content replacement when enabled in settings."
     },
     {
       "name": "bear-add-file",

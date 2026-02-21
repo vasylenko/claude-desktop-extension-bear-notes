@@ -6,16 +6,12 @@ import {
   cleanupTestNotes,
   extractNoteBody,
   findNoteId,
+  syncSleep,
   uniqueTitle,
 } from './inspector.js';
 
 const TEST_PREFIX = '[Bear-MCP-stest-replace-text]';
 const RUN_ID = Date.now();
-
-/** Bear processes URL callbacks asynchronously — pause to let writes settle. */
-function syncSleep(ms: number): void {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-}
 
 afterAll(() => {
   cleanupTestNotes(TEST_PREFIX);
@@ -240,10 +236,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
     const title = uniqueTitle(TEST_PREFIX, 'Case Header', RUN_ID);
     let noteId: string | undefined;
 
-    const sectionedText = [
-      '## My Section',
-      'Original section text',
-    ].join('\n');
+    const sectionedText = ['## My Section', 'Original section text'].join('\n');
 
     try {
       callTool({

@@ -21,10 +21,7 @@ interface ToolResponse {
  * Each call spawns a fresh server process — no shared state between calls.
  */
 export function callTool({ toolName, args, env }: CallToolOptions): string {
-  const cliArgs = [
-    '@modelcontextprotocol/inspector',
-    '--cli',
-  ];
+  const cliArgs = ['@modelcontextprotocol/inspector', '--cli'];
 
   // Inspector's -e flag passes env vars to the spawned server process
   for (const [key, value] of Object.entries(env ?? {})) {
@@ -127,6 +124,11 @@ export function cleanupTestNotes(prefix: string): void {
 /** Generates a unique note title scoped to a test run, preventing cross-run collisions. */
 export function uniqueTitle(prefix: string, label: string, runId: number): string {
   return `${prefix} ${label} ${runId}`;
+}
+
+/** Bear processes URL callbacks asynchronously — pause to let writes settle. */
+export function syncSleep(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
 /** Search for a note by title and return its ID. */

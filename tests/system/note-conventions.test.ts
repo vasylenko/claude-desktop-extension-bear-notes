@@ -75,7 +75,9 @@ describe('note conventions via MCP Inspector CLI', () => {
       const noteBody = extractNoteBody(openResult);
 
       // Verify structure: tag line → separator → fixture content (in that order)
-      expect(noteBody).toMatch(/#system-test #system test\/system test spaces#\n---\n[\s\S]*retention is set to 15 days/);
+      expect(noteBody).toMatch(
+        /#system-test #system test\/system test spaces#\n---\n[\s\S]*retention is set to 15 days/
+      );
     } finally {
       if (noteId) archiveNote(noteId);
     }

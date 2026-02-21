@@ -80,6 +80,14 @@ describe('noteHasHeader', () => {
   it('handles dots in header name', () => {
     expect(noteHasHeader(noteText, 'v1.0 Release')).toBe(true);
   });
+
+  it('returns false for empty note text', () => {
+    expect(noteHasHeader('', 'Details')).toBe(false);
+  });
+
+  it('returns false for empty header input', () => {
+    expect(noteHasHeader(noteText, '')).toBe(false);
+  });
 });
 
 describe('convertCoreDataTimestamp', () => {

@@ -223,7 +223,7 @@ Check the note content with bear-open-note to see available sections.`);
 
     const trailingMessage =
       mode === 'replace'
-        ? header
+        ? cleanHeader
           ? 'The section content has been replaced in your Bear note.'
           : 'The note content has been replaced in your Bear note.'
         : 'The text has been added to your Bear note.';

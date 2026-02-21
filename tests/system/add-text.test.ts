@@ -6,16 +6,12 @@ import {
   cleanupTestNotes,
   extractNoteBody,
   findNoteId,
+  syncSleep,
   uniqueTitle,
 } from './inspector.js';
 
 const TEST_PREFIX = '[Bear-MCP-stest-add-text]';
 const RUN_ID = Date.now();
-
-/** Bear processes URL callbacks asynchronously — pause to let writes settle. */
-function syncSleep(ms: number): void {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-}
 
 afterAll(() => {
   cleanupTestNotes(TEST_PREFIX);

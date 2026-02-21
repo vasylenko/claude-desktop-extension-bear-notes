@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { convertCoreDataTimestamp, noteHasHeader, parseDateString } from './utils.js';
+import {
+  convertCoreDataTimestamp,
+  noteHasHeader,
+  parseDateString,
+  stripLeadingHeader,
+} from './utils.js';
 
 describe('parseDateString', () => {
   beforeEach(() => {
@@ -87,6 +92,39 @@ describe('noteHasHeader', () => {
 
   it('returns false for empty header input', () => {
     expect(noteHasHeader(noteText, '')).toBe(false);
+  });
+});
+
+describe('stripLeadingHeader', () => {
+  it('strips matching header with exact case', () => {
+    expect(stripLeadingHeader('## Details\nNew content', 'Details')).toBe('New content');
+  });
+
+  it('strips matching header case-insensitively', () => {
+    expect(stripLeadingHeader('## DETAILS\nNew content', 'Details')).toBe('New content');
+    expect(stripLeadingHeader('## details\nNew content', 'Details')).toBe('New content');
+  });
+
+  it('strips matching header at any heading level', () => {
+    expect(stripLeadingHeader('### Details\nNew content', 'Details')).toBe('New content');
+    expect(stripLeadingHeader('#### Details\nNew content', 'Details')).toBe('New content');
+  });
+
+  it('does not strip when header text does not match', () => {
+    expect(stripLeadingHeader('## Other\nNew content', 'Details')).toBe('## Other\nNew content');
+  });
+
+  it('does not strip when text does not start with a header', () => {
+    expect(stripLeadingHeader('New content', 'Details')).toBe('New content');
+  });
+
+  it('handles special characters in header name', () => {
+    expect(stripLeadingHeader('## Details (v2)\nNew content', 'Details (v2)')).toBe('New content');
+    expect(stripLeadingHeader('## Q&A\nNew content', 'Q&A')).toBe('New content');
+  });
+
+  it('returns text unchanged when header is empty string', () => {
+    expect(stripLeadingHeader('## Details\nNew content', '')).toBe('## Details\nNew content');
   });
 });
 

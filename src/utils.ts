@@ -149,6 +149,23 @@ export function createToolResponse(text: string): Pick<CallToolResult, 'content'
 }
 
 /**
+ * Strips a matching markdown heading from the start of text to prevent header duplication.
+ * Bear's add-text API with mode=replace keeps the original section header, so if the
+ * replacement text also starts with that header, it appears twice in the note.
+ *
+ * @param text - The replacement text that may start with a duplicate heading
+ * @param header - The cleaned header name (no # prefix) to match against
+ * @returns Text with the leading heading removed if it matched, otherwise unchanged
+ */
+export function stripLeadingHeader(text: string, header: string): string {
+  if (!header) return text;
+
+  const escaped = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const leadingHeaderRegex = new RegExp(`^#{1,6}\\s+${escaped}\\s*\\n?`, 'i');
+  return text.replace(leadingHeaderRegex, '');
+}
+
+/**
  * Checks whether a markdown heading matching the given header text exists in the note.
  * Strips markdown prefix from input (e.g., "## Foo" → "Foo") and matches case-insensitively.
  * Escapes regex special characters so headers like "Q&A" or "Details (v2)" match literally.
@@ -198,9 +215,14 @@ Check the note content with bear-open-note to see available sections.`);
       }
     }
 
+    // When replacing a section, the AI often includes the section header in the replacement text.
+    // Bear's replace mode keeps the original header, so sending it again causes duplication.
+    const cleanText =
+      mode === 'replace' && cleanHeader ? stripLeadingHeader(text, cleanHeader) : text;
+
     const url = buildBearUrl('add-text', {
       id,
-      text,
+      text: cleanText,
       header: cleanHeader,
       mode,
     });

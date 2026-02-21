@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { convertCoreDataTimestamp, parseDateString } from './utils.js';
+import { convertCoreDataTimestamp, noteHasHeader, parseDateString } from './utils.js';
 
 describe('parseDateString', () => {
   beforeEach(() => {
@@ -30,6 +30,41 @@ describe('parseDateString', () => {
     expect(result.getHours()).toBe(23);
     expect(result.getMinutes()).toBe(59);
     expect(result.getSeconds()).toBe(59);
+  });
+});
+
+describe('noteHasHeader', () => {
+  const noteText = [
+    '# Title',
+    'Intro paragraph',
+    '',
+    '## Details',
+    'Some details here',
+    '',
+    '### Q&A',
+    'Questions and answers',
+    '',
+    '## Details (v2)',
+    'Updated details',
+    '',
+    '## v1.0 Release',
+    'Release notes',
+  ].join('\n');
+
+  it('rejects partial header name', () => {
+    expect(noteHasHeader(noteText, 'Detail')).toBe(false);
+  });
+
+  it('handles parentheses in header name', () => {
+    expect(noteHasHeader(noteText, 'Details (v2)')).toBe(true);
+  });
+
+  it('handles ampersand in header name', () => {
+    expect(noteHasHeader(noteText, 'Q&A')).toBe(true);
+  });
+
+  it('handles dots in header name', () => {
+    expect(noteHasHeader(noteText, 'v1.0 Release')).toBe(true);
   });
 });
 

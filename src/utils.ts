@@ -149,6 +149,18 @@ export function createToolResponse(text: string): Pick<CallToolResult, 'content'
 }
 
 /**
+ * Checks whether a markdown heading matching the given header text exists in the note.
+ * Strips markdown prefix from input (e.g., "## Foo" → "Foo") and matches case-insensitively.
+ * Escapes regex special characters so headers like "Q&A" or "Details (v2)" match literally.
+ */
+export function noteHasHeader(noteText: string, header: string): boolean {
+  const cleanHeader = header.replace(/^#+\s*/, '');
+  const escaped = cleanHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const headerRegex = new RegExp(`^#{1,6}\\s+${escaped}\\s*$`, 'mi');
+  return headerRegex.test(noteText);
+}
+
+/**
  * Shared handler for adding text to Bear notes (append, prepend, or replace).
  * Consolidates common validation, execution, and response logic.
  *
@@ -176,9 +188,7 @@ Use bear-search-notes to find the correct note identifier.`);
 
     // Validate that the target header exists before attempting section replacement
     if (mode === 'replace' && header) {
-      const cleanHeader = header.replace(/^#+\s*/, '');
-      const headerRegex = new RegExp(`^#{1,6}\\s+${cleanHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'mi');
-      if (!existingNote.text || !headerRegex.test(existingNote.text)) {
+      if (!existingNote.text || !noteHasHeader(existingNote.text, header)) {
         return createToolResponse(`Section "${header}" not found in note "${existingNote.title}".
 
 Check the note content with bear-open-note to see available sections.`);

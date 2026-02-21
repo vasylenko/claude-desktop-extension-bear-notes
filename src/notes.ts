@@ -9,6 +9,26 @@ import {
 } from './utils.js';
 import { openBearDatabase } from './database.js';
 
+// SQL expression that decodes Bear's URL-encoded tag titles — mirrors decodeTagName() in tags.ts
+const DECODED_TAG_TITLE = "LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' ')))";
+
+/**
+ * Builds a SQL WHERE clause that matches a tag exactly or its nested children.
+ * Escapes LIKE wildcards (%, _) in the tag name to prevent unintended pattern matching.
+ */
+function buildTagMatchClause(tag: string): { sql: string; params: (string | number)[] } {
+  const normalizedTag = tag.trim().toLowerCase();
+  const escapedTag = normalizedTag.replace(/[%_\\]/g, '\\$&');
+
+  return {
+    sql: ` AND (
+        ${DECODED_TAG_TITLE} = ?
+        OR ${DECODED_TAG_TITLE} LIKE ? || '/%' ESCAPE '\\'
+      )`,
+    params: [normalizedTag, escapedTag],
+  };
+}
+
 function formatBearNote(row: Record<string, unknown>): BearNote {
   const title = (row.title as string) || 'Untitled';
   const identifier = row.identifier as string;
@@ -210,25 +230,17 @@ export function searchNotes(
 
     // Pinned and tag filtering - behavior depends on combination
     if (hasPinnedFilter && hasTag) {
-      // Notes pinned within specific tag view (via Z_5PINNEDINTAGS)
-      const normalizedTag = tag.trim().toLowerCase();
-      innerQuery += ` AND (
-        LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' '))) = ?
-        OR LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' '))) LIKE ? || '/%'
-      )`;
-      queryParams.push(normalizedTag, normalizedTag);
+      const tagClause = buildTagMatchClause(tag);
+      innerQuery += tagClause.sql;
+      queryParams.push(...tagClause.params);
     } else if (hasPinnedFilter) {
       // All pinned notes: globally pinned OR pinned in any tag (matches Bear's "Pinned" section)
       innerQuery +=
         ' AND (note.ZPINNED = 1 OR EXISTS (SELECT 1 FROM Z_5PINNEDINTAGS pt WHERE pt.Z_5PINNEDNOTES = note.Z_PK))';
     } else if (hasTag) {
-      // Relational tag match: exact tag or nested children (e.g., "career" matches "career/meetings")
-      const normalizedTag = tag.trim().toLowerCase();
-      innerQuery += ` AND (
-        LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' '))) = ?
-        OR LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' '))) LIKE ? || '/%'
-      )`;
-      queryParams.push(normalizedTag, normalizedTag);
+      const tagClause = buildTagMatchClause(tag);
+      innerQuery += tagClause.sql;
+      queryParams.push(...tagClause.params);
     }
 
     // Add date filtering

@@ -225,12 +225,6 @@ Check the note content with bear-open-note to see available sections.`);
         : stripLeadingHeader(text, existingNote.title);
     }
 
-    // Bear's section replace consumes the trailing blank line that separates sections in markdown.
-    // Appending a newline preserves the section separator after the replaced content.
-    if (mode === 'replace' && cleanHeader) {
-      cleanText += '\n';
-    }
-
     const url = buildBearUrl('add-text', {
       id,
       text: cleanText,

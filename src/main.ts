@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 import { APP_VERSION, ENABLE_CONTENT_REPLACEMENT, ENABLE_NEW_NOTE_CONVENTIONS } from './config.js';
 import { applyNoteConventions } from './note-conventions.js';
-import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
+import { cleanBase64, createToolResponse, handleNoteTextUpdate, logger } from './utils.js';
 import { getNoteContent, searchNotes } from './notes.js';
 import { findUntaggedNotes, listTags } from './tags.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
@@ -306,7 +306,7 @@ server.registerTool(
   },
   async ({ id, text, header, position }): Promise<CallToolResult> => {
     const mode = position === 'beginning' ? 'prepend' : 'append';
-    return handleAddText(mode, { id, text, header });
+    return handleNoteTextUpdate(mode, { id, text, header });
   }
 );
 
@@ -346,7 +346,7 @@ server.registerTool(
 
 To use replace mode, enable "Content Replacement" in the Bear Notes extension settings.`);
     }
-    return handleAddText('replace', { id, text, header });
+    return handleNoteTextUpdate('replace', { id, text, header });
   }
 );
 

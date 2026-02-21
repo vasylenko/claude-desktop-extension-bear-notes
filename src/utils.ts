@@ -161,20 +161,20 @@ export function noteHasHeader(noteText: string, header: string): boolean {
 }
 
 /**
- * Shared handler for adding text to Bear notes (append, prepend, or replace).
+ * Shared handler for note text operations (append, prepend, or replace).
  * Consolidates common validation, execution, and response logic.
  *
  * @param mode - Whether to append, prepend, or replace text
  * @param params - Note ID, text content, and optional header
  * @returns Formatted response indicating success or failure
  */
-export async function handleAddText(
+export async function handleNoteTextUpdate(
   mode: 'append' | 'prepend' | 'replace',
   { id, text, header }: { id: string; text: string; header?: string | undefined }
 ): Promise<CallToolResult> {
   const action = mode === 'append' ? 'appended' : mode === 'prepend' ? 'prepended' : 'replaced';
   logger.info(
-    `handleAddText(${mode}) id: ${id}, text length: ${text.length}, header: ${header || 'none'}`
+    `handleNoteTextUpdate(${mode}) id: ${id}, text length: ${text.length}, header: ${header || 'none'}`
   );
 
   try {
@@ -229,7 +229,7 @@ Check the note content with bear-open-note to see available sections.`);
 
 ${trailingMessage}`);
   } catch (error) {
-    logger.error(`handleAddText(${mode}) failed: ${error}`);
+    logger.error(`handleNoteTextUpdate(${mode}) failed: ${error}`);
     throw error;
   }
 }

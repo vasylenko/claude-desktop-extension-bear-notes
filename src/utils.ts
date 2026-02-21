@@ -211,15 +211,18 @@ Check the note content with bear-open-note to see available sections.`);
 
     responseLines.push(`Text: ${text.length} characters`);
 
-    if (header) {
-      responseLines.push(`Section: ${header}`);
+    if (cleanHeader) {
+      responseLines.push(`Section: ${cleanHeader}`);
     }
 
     responseLines.push(`Note ID: ${id}`);
 
-    const trailingMessage = mode === 'replace'
-      ? (header ? 'The section content has been replaced in your Bear note.' : 'The note content has been replaced in your Bear note.')
-      : 'The text has been added to your Bear note.';
+    const trailingMessage =
+      mode === 'replace'
+        ? header
+          ? 'The section content has been replaced in your Bear note.'
+          : 'The note content has been replaced in your Bear note.'
+        : 'The text has been added to your Bear note.';
 
     return createToolResponse(`${responseLines.join('\n')}
 

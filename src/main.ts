@@ -300,7 +300,7 @@ server.registerTool(
         .enum(['replace'])
         .optional()
         .describe(
-          "Set to 'replace' to replace note content (or a specific section when combined with header). Requires content replacement to be enabled in extension settings. This is destructive and cannot be undone."
+          "Set to 'replace' to replace note content (or a specific section when combined with header). When set, the position parameter is ignored. Requires content replacement to be enabled in extension settings. This is destructive and cannot be undone."
         ),
     },
     annotations: {

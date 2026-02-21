@@ -100,6 +100,19 @@ tasks:
       - task: docs:sync
       - task: version
   
+  commit-tag:
+    desc: Prepare release commit and tag
+    requires:
+      vars:
+        - VERSION
+        - SHORT_DESCRIPTION
+    prompt: "Confirm preparing release commit and tag for version {{.VERSION}} with description: {{.SHORT_DESCRIPTION}}?"
+    cmds:
+      - |
+       git add .
+       git commit -m "release: {{.VERSION}} - {{.SHORT_DESCRIPTION}}"
+       git tag -a "v{{.VERSION}}" -m "release: {{.VERSION}}"      
+  
   changelog:
     silent: true
     desc: Extract changelog for specific version
@@ -117,3 +130,4 @@ tasks:
         sed '$d' | \
         tail -n +3 | \
         sed '/^$/d'
+

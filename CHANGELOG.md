@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.1] - 2026-02-21
+
+### Fixed
+- **Tag search no longer matches false positives** ([#67](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/67)): Searching by tag (e.g., `car`) previously matched unrelated tags sharing a prefix (`career`), as well as tag-like text in code blocks and URLs. Tag filtering now uses Bear's relational tag tables for exact matching. Nested child tags still match as expected (e.g., `career` returns notes tagged `career` and `career/meetings`).
+- **Read-only database connection** ([#68](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/68)): The SQLite connection to Bear's database now enforces read-only mode at the driver level, preventing any possibility of accidental writes.
+
 ## [2.4.0] - 2026-02-16
 
 ### Added

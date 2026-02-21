@@ -1,13 +1,8 @@
 name: "Release: MCP Bundle and MCP server"
-run-name: Release ${{ inputs.tag }}
+run-name: Release ${{ github.ref_name }}
 
 on:
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to release (e.g., v1.2.3)'
-        required: true
-        type: string
 
 env:
   PACKAGE_PATTERN: bear-notes-mcpb-*.mcpb
@@ -16,28 +11,38 @@ env:
 jobs:
   verify-ci:
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
     steps:
+      - name: Verify release does not exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ github.ref_name }}" --repo=${{ github.repository }} &>/dev/null; then
+            echo "::error::Release ${{ github.ref_name }} already exists"
+            exit 1
+          fi
+
       - name: Verify CI passed for tag
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Checking CI status for tag: ${{ inputs.tag }}"
+          echo "Checking CI status for tag: ${{ github.ref_name }}"
 
           COUNT=$(gh run list \
             --repo=${{ github.repository }} \
             --workflow=ci.yml \
-            --branch=${{ inputs.tag }} \
+            --branch=${{ github.ref_name }} \
             --status=success \
             --limit=1 \
             --json conclusion \
             --jq 'length')
 
           if [ "$COUNT" -eq 0 ]; then
-            echo "::error::CI workflow has not passed for tag ${{ inputs.tag }}"
+            echo "::error::CI workflow has not passed for tag ${{ github.ref_name }}"
             exit 1
           fi
 
-          echo "CI passed for tag ${{ inputs.tag }}"
+          echo "CI passed for tag ${{ github.ref_name }}"
 
   release:
     needs: verify-ci
@@ -47,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -74,12 +79,12 @@ jobs:
           echo "$CHANGELOG_BODY" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
         env:
-          TAG_NAME: ${{ inputs.tag }}
+          TAG_NAME: ${{ github.ref_name }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.tag }}
+          tag_name: ${{ github.ref_name }}
           body: |
             ${{ env.CHANGELOG_BODY }}
 
@@ -97,7 +102,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -115,7 +120,7 @@ jobs:
           fi
           echo "Version verified: $PKG_VERSION"
         env:
-          TAG_NAME: ${{ inputs.tag }}
+          TAG_NAME: ${{ github.ref_name }}
 
       - name: Install dependencies
         run: npm ci

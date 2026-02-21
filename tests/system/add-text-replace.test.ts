@@ -51,9 +51,8 @@ describe('bear-add-text replace mode via MCP Inspector CLI', () => {
       expect(noteBody).toContain('Completely new content');
       expect(noteBody).not.toContain('Original body content');
 
-      // Bear's replace_all replaces the entire note text (including title line).
-      // The note remaining accessible by ID proves it wasn't destroyed.
-      expect(openResult).toContain('Completely new content');
+      // Bear's replace mode preserves the note title
+      expect(openResult).toContain(title);
     } finally {
       if (noteId) archiveNote(noteId);
     }

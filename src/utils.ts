@@ -157,7 +157,7 @@ export function createToolResponse(text: string): Pick<CallToolResult, 'content'
  * @returns Formatted response indicating success or failure
  */
 export async function handleAddText(
-  mode: 'append' | 'prepend' | 'replace_all',
+  mode: 'append' | 'prepend' | 'replace',
   { id, text, header }: { id: string; text: string; header?: string | undefined }
 ): Promise<CallToolResult> {
   const action = mode === 'append' ? 'appended' : mode === 'prepend' ? 'prepended' : 'replaced';
@@ -175,7 +175,7 @@ Use bear-search-notes to find the correct note identifier.`);
     }
 
     // Validate that the target header exists before attempting section replacement
-    if (mode === 'replace_all' && header) {
+    if (mode === 'replace' && header) {
       const cleanHeader = header.replace(/^#+\s*/, '');
       const headerRegex = new RegExp(`^#{1,6}\\s+${cleanHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'mi');
       if (!existingNote.text || !headerRegex.test(existingNote.text)) {
@@ -207,7 +207,7 @@ Check the note content with bear-open-note to see available sections.`);
 
     responseLines.push(`Note ID: ${id}`);
 
-    const trailingMessage = mode === 'replace_all'
+    const trailingMessage = mode === 'replace'
       ? (header ? 'The section content has been replaced in your Bear note.' : 'The note content has been replaced in your Bear note.')
       : 'The text has been added to your Bear note.';
 

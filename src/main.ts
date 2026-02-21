@@ -317,7 +317,7 @@ server.registerTool(
 
 To use replace mode, enable "Content Replacement" in the Bear Notes extension settings.`);
       }
-      return handleAddText('replace_all', { id, text, header });
+      return handleAddText('replace', { id, text, header });
     }
 
     const bearMode = position === 'beginning' ? 'prepend' : 'append';

@@ -6,7 +6,7 @@ import {
   cleanupTestNotes,
   extractNoteBody,
   findNoteId,
-  syncSleep,
+  sleep,
   uniqueTitle,
 } from './inspector.js';
 
@@ -18,7 +18,7 @@ afterAll(() => {
 });
 
 describe('bear-add-text via MCP Inspector CLI', () => {
-  it('prepends text to a note', () => {
+  it('prepends text to a note', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'Prepend', RUN_ID);
     let noteId: string | undefined;
 
@@ -35,7 +35,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
         args: { id: noteId, text: 'Prepended text', position: 'beginning' },
       });
 
-      syncSleep(500);
+      await sleep(500);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -50,7 +50,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
     }
   });
 
-  it('appends text to a specific section via header', () => {
+  it('appends text to a specific section via header', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'Append Header', RUN_ID);
     let noteId: string | undefined;
 
@@ -75,7 +75,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
         args: { id: noteId, text: 'New action item appended', header: 'Action Items' },
       });
 
-      syncSleep(500);
+      await sleep(500);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -90,7 +90,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
     }
   });
 
-  it('appends text to a note by default', () => {
+  it('appends text to a note by default', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'Append', RUN_ID);
     let noteId: string | undefined;
 
@@ -107,7 +107,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
         args: { id: noteId, text: 'Appended text' },
       });
 
-      syncSleep(500);
+      await sleep(500);
 
       const openResult = callTool({
         toolName: 'bear-open-note',

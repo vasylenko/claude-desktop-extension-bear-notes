@@ -126,10 +126,8 @@ export function uniqueTitle(prefix: string, label: string, runId: number): strin
   return `${prefix} ${label} ${runId}`;
 }
 
-/** Bear processes URL callbacks asynchronously — pause to let writes settle. */
-export function syncSleep(ms: number): void {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-}
+// Re-export Node's built-in promise-based setTimeout as `sleep` for readability in tests
+export { setTimeout as sleep } from 'node:timers/promises';
 
 /** Search for a note by title and return its ID. */
 export function findNoteId(noteTitle: string): string {

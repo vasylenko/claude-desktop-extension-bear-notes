@@ -6,7 +6,7 @@ import {
   cleanupTestNotes,
   extractNoteBody,
   findNoteId,
-  syncSleep,
+  sleep,
   uniqueTitle,
 } from './inspector.js';
 
@@ -18,7 +18,7 @@ afterAll(() => {
 });
 
 describe('bear-replace-text via MCP Inspector CLI', () => {
-  it('replaces full note content', () => {
+  it('replaces full note content', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'Full Replace', RUN_ID);
     let noteId: string | undefined;
 
@@ -36,7 +36,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      syncSleep(500);
+      await sleep(500);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -54,7 +54,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
     }
   });
 
-  it('replaces only the targeted section under a header', () => {
+  it('replaces only the targeted section under a header', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'Section Replace', RUN_ID);
     let noteId: string | undefined;
 
@@ -83,7 +83,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      syncSleep(500);
+      await sleep(500);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -148,7 +148,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
     }
   });
 
-  it('replaces section with special characters in header name', () => {
+  it('replaces section with special characters in header name', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'Special Header', RUN_ID);
     let noteId: string | undefined;
 
@@ -175,7 +175,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      syncSleep(500);
+      await sleep(500);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -190,7 +190,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
     }
   });
 
-  it('strips markdown syntax from header parameter', () => {
+  it('strips markdown syntax from header parameter', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'MD Header', RUN_ID);
     let noteId: string | undefined;
 
@@ -217,7 +217,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      syncSleep(500);
+      await sleep(500);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -232,7 +232,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
     }
   });
 
-  it('matches header case-insensitively for validation', () => {
+  it('matches header case-insensitively for validation', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'Case Header', RUN_ID);
     let noteId: string | undefined;
 
@@ -253,7 +253,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
-      syncSleep(500);
+      await sleep(500);
 
       const openResult = callTool({
         toolName: 'bear-open-note',

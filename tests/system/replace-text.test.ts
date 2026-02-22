@@ -33,7 +33,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
 
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, text: 'Completely new content' },
+        args: { id: noteId, scope: 'full-note-body', text: 'Completely new content' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -80,7 +80,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
 
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, text: 'Updated details text', header: 'Details' },
+        args: { id: noteId, scope: 'section', text: 'Updated details text', header: 'Details' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -127,7 +127,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       // AI agents naturally include the header in replacement text — the server must strip it
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, text: '## Details\nReplaced details content', header: 'Details' },
+        args: { id: noteId, scope: 'section', text: '## Details\nReplaced details content', header: 'Details' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -166,7 +166,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
 
       const result = callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, text: 'new content' },
+        args: { id: noteId, scope: 'full-note-body', text: 'new content' },
         env: {},
       });
 
@@ -190,7 +190,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
 
       const result = callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, text: 'new content', header: 'NonExistentSection' },
+        args: { id: noteId, scope: 'section', text: 'new content', header: 'NonExistentSection' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -223,7 +223,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       // Header contains regex special chars: (, )
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, text: 'Updated details v2 content', header: 'Details (v2)' },
+        args: { id: noteId, scope: 'section', text: 'Updated details v2 content', header: 'Details (v2)' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -265,7 +265,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       // LLMs commonly pass headers with markdown prefix — code should strip it
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, text: 'Replaced via markdown header', header: '## Second' },
+        args: { id: noteId, scope: 'section', text: 'Replaced via markdown header', header: '## Second' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -301,7 +301,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       // Validation should pass case-insensitively
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, text: 'Case-insensitive replace', header: 'my section' },
+        args: { id: noteId, scope: 'section', text: 'Case-insensitive replace', header: 'my section' },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -314,6 +314,91 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
 
       const noteBody = extractNoteBody(openResult);
       expect(noteBody).toContain('Case-insensitive replace');
+    } finally {
+      if (noteId) archiveNote(noteId);
+    }
+  });
+
+  it('rejects section scope without header', () => {
+    const title = uniqueTitle(TEST_PREFIX, 'No Header', RUN_ID);
+    let noteId: string | undefined;
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: 'Some content', tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      const result = callTool({
+        toolName: 'bear-replace-text',
+        args: { id: noteId, scope: 'section', text: 'new content' },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+
+      expect(result).toContain('scope is "section" but no header was provided');
+    } finally {
+      if (noteId) archiveNote(noteId);
+    }
+  });
+
+  it('rejects body scope with header', () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Body + Header', RUN_ID);
+    let noteId: string | undefined;
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: '## Section\nSome content', tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      const result = callTool({
+        toolName: 'bear-replace-text',
+        args: { id: noteId, scope: 'full-note-body', text: 'new content', header: 'Section' },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+
+      expect(result).toContain('scope is "full-note-body" but a header was provided');
+    } finally {
+      if (noteId) archiveNote(noteId);
+    }
+  });
+
+  it('does not duplicate title in full-body replace', async () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Title Dedup', RUN_ID);
+    let noteId: string | undefined;
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: 'Original body', tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      // AI agents naturally include the title heading — the server must strip it
+      callTool({
+        toolName: 'bear-replace-text',
+        args: { id: noteId, scope: 'full-note-body', text: `# ${title}\nBrand new body content` },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+
+      await sleep(PAUSE_AFTER_WRITE_OP);
+
+      const openResult = callTool({
+        toolName: 'bear-open-note',
+        args: { id: noteId },
+      });
+
+      const noteBody = extractNoteBody(openResult);
+      expect(noteBody).toContain('Brand new body content');
+      // Title must appear exactly once — no duplication
+      const titleRegex = new RegExp(`# ${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
+      const titleCount = (noteBody.match(titleRegex) || []).length;
+      expect(titleCount).toBe(1);
     } finally {
       if (noteId) archiveNote(noteId);
     }

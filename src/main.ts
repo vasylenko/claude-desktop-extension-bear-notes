@@ -322,6 +322,11 @@ server.registerTool(
         .trim()
         .min(1, 'Note ID is required')
         .describe('Note identifier (ID) from bear-search-notes'),
+      scope: z
+        .enum(['section', 'full-note-body'])
+        .describe(
+          "Replacement target: 'section' replaces under a specific header (requires header), 'full-note-body' replaces the entire note body (header must not be set)"
+        ),
       text: z
         .string()
         .trim()
@@ -331,7 +336,7 @@ server.registerTool(
         .string()
         .trim()
         .optional()
-        .describe('Optional section header to target (replaces only that section)'),
+        .describe('Section header to target — required when scope is "section", forbidden when scope is "full-note-body"'),
     },
     annotations: {
       readOnlyHint: false,
@@ -340,12 +345,25 @@ server.registerTool(
       openWorldHint: true,
     },
   },
-  async ({ id, text, header }): Promise<CallToolResult> => {
+  async ({ id, scope, text, header }): Promise<CallToolResult> => {
     if (!ENABLE_CONTENT_REPLACEMENT) {
       return createToolResponse(`Content replacement is not enabled.
 
 To use replace mode, enable "Content Replacement" in the Bear Notes extension settings.`);
     }
+
+    if (scope === 'section' && !header) {
+      return createToolResponse(`scope is "section" but no header was provided.
+
+Set the header parameter to the section heading you want to replace.`);
+    }
+
+    if (scope === 'full-note-body' && header) {
+      return createToolResponse(`scope is "full-note-body" but a header was provided.
+
+Remove the header parameter to replace the full note body, or change scope to "section".`);
+    }
+
     return handleNoteTextUpdate('replace', { id, text, header });
   }
 );

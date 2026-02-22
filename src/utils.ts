@@ -215,10 +215,11 @@ Check the note content with bear-open-note to see available sections.`);
       }
     }
 
-    // Bear's section replace keeps the original header, so if the AI includes it
-    // in the replacement text (which it naturally does), the result has a duplicate.
-    const cleanText =
-      mode === 'replace' && cleanHeader ? stripLeadingHeader(text, cleanHeader) : text;
+    // Bear's replace mode preserves the original heading (section header or note title),
+    // so if the AI includes it in the replacement text, the result has a duplicate.
+    const cleanText = mode === 'replace'
+      ? stripLeadingHeader(text, cleanHeader || existingNote.title)
+      : text;
 
     const url = buildBearUrl('add-text', {
       id,

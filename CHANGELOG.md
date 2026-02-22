@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## UNRELEASED
+
+### Added
+- **bear-replace-text** tool — replace content in an existing Bear note, either the full body or a specific section by header (**disabled by default**, opt-in).
+
+  Two replacement scopes:
+  - `section` — replaces content under a specific header while preserving the rest of the note
+  - `full-note-body` — replaces the entire note body (everything below the title)
+
+  **HOW TO ENABLE**:
+    - For Claude Extension: Claude Settings -> Extensions -> Configure (next to the extension name) -> toggle the "Content Replacement" switch and click save. Restart Claude.
+    - For standalone MCP server: add the following ENV to your mcp configuration
+      ```
+        "env": {
+          "UI_ENABLE_CONTENT_REPLACEMENT": "true"
+        },
+      ```
+
 ## [2.4.1] - 2026-02-21
 
 ### Fixed

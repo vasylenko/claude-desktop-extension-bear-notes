@@ -12,6 +12,7 @@ import {
 
 const TEST_PREFIX = '[Bear-MCP-stest-add-text]';
 const RUN_ID = Date.now();
+const PAUSE_AFTER_WRITE_OP = 100; // ms to wait after write operations for Bear to process changes
 
 afterAll(() => {
   cleanupTestNotes(TEST_PREFIX);
@@ -35,7 +36,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
         args: { id: noteId, text: 'Prepended text', position: 'beginning' },
       });
 
-      await sleep(500);
+      await sleep(PAUSE_AFTER_WRITE_OP);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -75,7 +76,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
         args: { id: noteId, text: 'New action item appended', header: 'Action Items' },
       });
 
-      await sleep(500);
+      await sleep(PAUSE_AFTER_WRITE_OP);
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -107,7 +108,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
         args: { id: noteId, text: 'Appended text' },
       });
 
-      await sleep(500);
+      await sleep(PAUSE_AFTER_WRITE_OP);
 
       const openResult = callTool({
         toolName: 'bear-open-note',

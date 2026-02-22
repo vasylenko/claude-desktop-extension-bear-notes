@@ -1,6 +1,7 @@
 import { spawnSync } from 'child_process';
-export { setTimeout as sleep } from 'node:timers/promises';
 import { resolve } from 'path';
+
+export { setTimeout as sleep } from 'node:timers/promises';
 
 const SERVER_PATH = resolve(import.meta.dirname, '../../dist/main.js');
 

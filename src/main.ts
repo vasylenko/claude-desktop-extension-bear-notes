@@ -336,7 +336,9 @@ server.registerTool(
         .string()
         .trim()
         .optional()
-        .describe('Section header to target — required when scope is "section", forbidden when scope is "full-note-body"'),
+        .describe(
+          'Section header to target — required when scope is "section", forbidden when scope is "full-note-body"'
+        ),
     },
     annotations: {
       readOnlyHint: false,

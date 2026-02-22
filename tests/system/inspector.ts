@@ -1,6 +1,8 @@
 import { spawnSync } from 'child_process';
 import { resolve } from 'path';
 
+export { setTimeout as sleep } from 'node:timers/promises';
+
 const SERVER_PATH = resolve(import.meta.dirname, '../../dist/main.js');
 
 /** Timeout for a single MCP Inspector CLI tool call (ms). */
@@ -21,10 +23,7 @@ interface ToolResponse {
  * Each call spawns a fresh server process — no shared state between calls.
  */
 export function callTool({ toolName, args, env }: CallToolOptions): string {
-  const cliArgs = [
-    '@modelcontextprotocol/inspector',
-    '--cli',
-  ];
+  const cliArgs = ['@modelcontextprotocol/inspector', '--cli'];
 
   // Inspector's -e flag passes env vars to the spawned server process
   for (const [key, value] of Object.entries(env ?? {})) {

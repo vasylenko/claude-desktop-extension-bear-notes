@@ -4,9 +4,9 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
-import { APP_VERSION, ENABLE_NEW_NOTE_CONVENTIONS } from './config.js';
+import { APP_VERSION, ENABLE_CONTENT_REPLACEMENT, ENABLE_NEW_NOTE_CONVENTIONS } from './config.js';
 import { applyNoteConventions } from './note-conventions.js';
-import { cleanBase64, createToolResponse, handleAddText, logger } from './utils.js';
+import { cleanBase64, createToolResponse, handleNoteTextUpdate, logger } from './utils.js';
 import { getNoteContent, searchNotes } from './notes.js';
 import { findUntaggedNotes, listTags } from './tags.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
@@ -299,14 +299,74 @@ server.registerTool(
     },
     annotations: {
       readOnlyHint: false,
-      destructiveHint: true,
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },
   },
   async ({ id, text, header, position }): Promise<CallToolResult> => {
     const mode = position === 'beginning' ? 'prepend' : 'append';
-    return handleAddText(mode, { id, text, header });
+    return handleNoteTextUpdate(mode, { id, text, header });
+  }
+);
+
+server.registerTool(
+  'bear-replace-text',
+  {
+    title: 'Replace Note Content',
+    description:
+      'Replace content in an existing Bear note — either the full body or a specific section. Requires content replacement to be enabled in extension settings. Use bear-search-notes first to get the note ID.',
+    inputSchema: {
+      id: z
+        .string()
+        .trim()
+        .min(1, 'Note ID is required')
+        .describe('Note identifier (ID) from bear-search-notes'),
+      scope: z
+        .enum(['section', 'full-note-body'])
+        .describe(
+          "Replacement target: 'section' replaces under a specific header (requires header), 'full-note-body' replaces the entire note body (header must not be set)"
+        ),
+      text: z
+        .string()
+        .trim()
+        .min(1, 'Text content is required')
+        .describe('Replacement text content'),
+      header: z
+        .string()
+        .trim()
+        .optional()
+        .describe(
+          'Section header to target — required when scope is "section", forbidden when scope is "full-note-body"'
+        ),
+    },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: true,
+      openWorldHint: true,
+    },
+  },
+  async ({ id, scope, text, header }): Promise<CallToolResult> => {
+    if (!ENABLE_CONTENT_REPLACEMENT) {
+      return createToolResponse(`Content replacement is not enabled.
+
+To use replace mode, enable "Content Replacement" in the Bear Notes extension settings.`);
+    }
+
+    if (scope === 'section' && !header) {
+      return createToolResponse(`scope is "section" but no header was provided.
+
+Set the header parameter to the section heading you want to replace.`);
+    }
+
+    if (scope === 'full-note-body' && header) {
+      return createToolResponse(`scope is "full-note-body" but a header was provided.
+
+Remove the header parameter to replace the full note body, or change scope to "section".`);
+    }
+
+    return handleNoteTextUpdate('replace', { id, text, header });
   }
 );
 

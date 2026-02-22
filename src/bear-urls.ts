@@ -12,7 +12,8 @@ export interface BearUrlParams {
   tags?: string | undefined;
   id?: string | undefined;
   header?: string | undefined;
-  mode?: 'append' | 'prepend' | undefined;
+  mode?: 'append' | 'prepend' | 'replace' | undefined;
+  new_line?: 'yes' | 'no' | undefined;
   file?: string | undefined;
   filename?: string | undefined;
   open_note?: 'yes' | 'no' | undefined;
@@ -51,15 +52,14 @@ export function buildBearUrl(action: string, params: BearUrlParams = {}): string
     urlParams.set('mode', params.mode);
   }
 
+  if (params.new_line !== undefined) {
+    urlParams.set('new_line', params.new_line);
+  }
+
   // UX params with defaults
   urlParams.set('open_note', params.open_note ?? 'yes');
   urlParams.set('new_window', params.new_window ?? 'no');
   urlParams.set('show_window', params.show_window ?? 'yes');
-
-  // Add required Bear API parameters for add-text action
-  if (action === 'add-text') {
-    urlParams.set('new_line', 'yes'); // Ensures text appears on new line
-  }
 
   // Convert URLSearchParams to proper URL encoding (Bear expects %20 not +)
   const queryString = urlParams.toString().replace(/\+/g, '%20');

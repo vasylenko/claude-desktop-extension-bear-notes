@@ -6,10 +6,11 @@ Search, read, create, and update your Bear Notes from any AI assistant.
 
 ## Key Features
 
-- **9 MCP tools** for full Bear Notes integration
+- **10 MCP tools** for full Bear Notes integration
 - **OCR search** across images and PDFs attached to notes
 - **Date-based search** with relative dates ("yesterday", "last week", etc.)
 - **Configurable new note convention** for tag placement (opt-in)
+- **Content replacement** for replacing note body or specific sections (opt-in)
 - **Local-only** — no network calls, all data stays on your Mac
 
 ## Tools
@@ -19,6 +20,7 @@ Search, read, create, and update your Bear Notes from any AI assistant.
 - **`bear-create-note`** - Create a new note in your Bear library with optional title, content, and tags
 - **`bear-search-notes`** - Find notes by searching text content, filtering by tags, or date ranges. Includes OCR search in attachments
 - **`bear-add-text`** - Add text to an existing Bear note at the beginning or end, optionally targeting a specific section
+- **`bear-replace-text`** - Replace content in an existing Bear note — either the full body or a specific section. Requires content replacement to be enabled in settings.
 - **`bear-add-file`** - Attach a file (image, PDF, Excel, etc.) to an existing Bear note using base64-encoded content
 - **`bear-list-tags`** - List all tags in your Bear library as a hierarchical tree with note counts
 - **`bear-find-untagged-notes`** - Find notes in your Bear library that have no tags assigned
@@ -56,6 +58,7 @@ Add to your MCP configuration file:
 |---|---|---|
 | `UI_DEBUG_TOGGLE` | `false` | Enable debug logging for troubleshooting |
 | `UI_ENABLE_NEW_NOTE_CONVENTION` | `false` | Place tags right after the note title instead of at the bottom |
+| `UI_ENABLE_CONTENT_REPLACEMENT` | `false` | Enable the `bear-replace-text` tool for replacing note content |
 
 Example with configuration:
 ```json
@@ -66,6 +69,7 @@ Example with configuration:
       "args": ["-y", "bear-notes-mcp@latest"],
       "env": {
         "UI_ENABLE_NEW_NOTE_CONVENTION": "true",
+        "UI_ENABLE_CONTENT_REPLACEMENT": "true",
         "UI_DEBUG_TOGGLE": "true"
       }
     }

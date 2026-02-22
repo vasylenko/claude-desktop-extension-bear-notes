@@ -149,20 +149,49 @@ export function createToolResponse(text: string): Pick<CallToolResult, 'content'
 }
 
 /**
- * Shared handler for adding text to Bear notes (append or prepend).
+ * Strips a matching markdown heading from the start of text to prevent header duplication.
+ * Bear's add-text API with mode=replace keeps the original section header, so if the
+ * replacement text also starts with that header, it appears twice in the note.
+ *
+ * @param text - The replacement text that may start with a duplicate heading
+ * @param header - The cleaned header name (no # prefix) to match against
+ * @returns Text with the leading heading removed if it matched, otherwise unchanged
+ */
+export function stripLeadingHeader(text: string, header: string): string {
+  if (!header) return text;
+
+  const escaped = header.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const leadingHeaderRegex = new RegExp(`^#{1,6}\\s+${escaped}\\s*\\n?`, 'i');
+  return text.replace(leadingHeaderRegex, '');
+}
+
+/**
+ * Checks whether a markdown heading matching the given header text exists in the note.
+ * Strips markdown prefix from input (e.g., "## Foo" → "Foo") and matches case-insensitively.
+ * Escapes regex special characters so headers like "Q&A" or "Details (v2)" match literally.
+ */
+export function noteHasHeader(noteText: string, header: string): boolean {
+  const cleanHeader = header.replace(/^#+\s*/, '');
+  const escaped = cleanHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const headerRegex = new RegExp(`^#{1,6}\\s+${escaped}\\s*$`, 'mi');
+  return headerRegex.test(noteText);
+}
+
+/**
+ * Shared handler for note text operations (append, prepend, or replace).
  * Consolidates common validation, execution, and response logic.
  *
- * @param mode - Whether to append or prepend text
+ * @param mode - Whether to append, prepend, or replace text
  * @param params - Note ID, text content, and optional header
  * @returns Formatted response indicating success or failure
  */
-export async function handleAddText(
-  mode: 'append' | 'prepend',
+export async function handleNoteTextUpdate(
+  mode: 'append' | 'prepend' | 'replace',
   { id, text, header }: { id: string; text: string; header?: string | undefined }
 ): Promise<CallToolResult> {
-  const action = mode === 'append' ? 'appended' : 'prepended';
+  const action = mode === 'append' ? 'appended' : mode === 'prepend' ? 'prepended' : 'replaced';
   logger.info(
-    `bear-add-text-${mode} called with id: ${id}, text length: ${text.length}, header: ${header || 'none'}`
+    `handleNoteTextUpdate(${mode}) id: ${id}, text length: ${text.length}, header: ${header || 'none'}`
   );
 
   try {
@@ -174,33 +203,61 @@ export async function handleAddText(
 Use bear-search-notes to find the correct note identifier.`);
     }
 
-    // Strip markdown header syntax from header parameter for Bear API
+    // Strip markdown header syntax once — reused for both validation and Bear API
     const cleanHeader = header?.replace(/^#+\s*/, '');
+
+    // Bear silently ignores replace-with-header when the section doesn't exist — fail early with a clear message
+    if (mode === 'replace' && cleanHeader) {
+      if (!existingNote.text || !noteHasHeader(existingNote.text, cleanHeader)) {
+        return createToolResponse(`Section "${cleanHeader}" not found in note "${existingNote.title}".
+
+Check the note content with bear-open-note to see available sections.`);
+      }
+    }
+
+    // Bear's replace mode preserves the original heading (section header or note title),
+    // so if the AI includes it in the replacement text, the result has a duplicate.
+    const cleanText =
+      mode === 'replace' ? stripLeadingHeader(text, cleanHeader || existingNote.title) : text;
 
     const url = buildBearUrl('add-text', {
       id,
-      text,
+      text: cleanText,
       header: cleanHeader,
       mode,
+      // Ensures appended/prepended text starts on its own line, not glued to existing content.
+      // Not needed for replace — there's no preceding content to separate from.
+      new_line: mode !== 'replace' ? 'yes' : undefined,
     });
     logger.debug(`Executing Bear URL: ${url}`);
     await executeBearXCallbackApi(url);
 
-    const responseLines = [`Text ${action} to note "${existingNote.title}" successfully!`, ''];
+    const preposition = mode === 'replace' ? 'in' : 'to';
+    const responseLines = [
+      `Text ${action} ${preposition} note "${existingNote.title}" successfully!`,
+      '',
+    ];
 
     responseLines.push(`Text: ${text.length} characters`);
 
-    if (header) {
-      responseLines.push(`Section: ${header}`);
+    if (cleanHeader) {
+      responseLines.push(`Section: ${cleanHeader}`);
     }
 
     responseLines.push(`Note ID: ${id}`);
 
+    const trailingMessage =
+      mode === 'replace'
+        ? cleanHeader
+          ? 'The section content has been replaced in your Bear note.'
+          : 'The note content has been replaced in your Bear note.'
+        : 'The text has been added to your Bear note.';
+
     return createToolResponse(`${responseLines.join('\n')}
 
-The text has been added to your Bear note.`);
+${trailingMessage}`);
   } catch (error) {
-    logger.error(`bear-add-text-${mode} failed: ${error}`);
+    logger.error(`handleNoteTextUpdate(${mode}) failed: ${error}`);
     throw error;
   }
 }

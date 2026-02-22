@@ -11,21 +11,24 @@ This **local-only** extension reads Bear's SQLite database for fast search with 
 
 Example prompts:
 
-> Find my Bear notes about the last trip to Norway
-
-> Go through my untagged notes and suggest how to tag them
-
 > Summarize our conversation and create a new Bear note with it
+
+> Interview me about my side project idea and capture the key points in a Bear note
+
+> Help me restructure the outline in my "Product Launch" note
+
+> Let's brainstorm blog post ideas — save the best ones to my Bear note and refine them as we go
 
 ![](./docs/demo.gif)
 
 ## ✨ Key Features
 
-- **9 MCP tools** for searching, reading, creating, updating, tagging, and archiving notes
+- **10 MCP tools** for searching, reading, creating, updating, tagging, and archiving notes
 - **OCR search** — finds text inside attached images and PDFs
 - **Date-based search** with relative dates ("yesterday", "last week", "start of last month")
 - **Tag management** — list tags as a tree, find untagged notes, add tags to notes
 - **New note convention** (opt-in) — place tags right after the title instead of at the bottom
+- **Content replacement** (opt-in) — replace the full note body or a specific section
 - **Local-only** — no network calls, all data stays on your Mac
 
 > [!NOTE]
@@ -82,6 +85,7 @@ Add to your MCP configuration file:
 - **`bear-create-note`** - Create a new note in your Bear library with optional title, content, and tags
 - **`bear-search-notes`** - Find notes by searching text content, filtering by tags, or date ranges. Includes OCR search in attachments
 - **`bear-add-text`** - Add text to an existing Bear note at the beginning or end, optionally targeting a specific section
+- **`bear-replace-text`** - Replace content in an existing Bear note — either the full body or a specific section. Requires content replacement to be enabled in settings.
 - **`bear-add-file`** - Attach a file (image, PDF, Excel, etc.) to an existing Bear note using base64-encoded content
 - **`bear-list-tags`** - List all tags in your Bear library as a hierarchical tree with note counts
 - **`bear-find-untagged-notes`** - Find notes in your Bear library that have no tags assigned
@@ -133,6 +137,31 @@ Example standalone configuration with the convention enabled:
       "args": ["-y", "bear-notes-mcp@latest"],
       "env": {
         "UI_ENABLE_NEW_NOTE_CONVENTION": "true"
+      }
+    }
+  }
+}
+```
+
+### Content Replacement
+
+Enable the `bear-replace-text` tool to replace content in existing notes — either the full note body or a specific section under a header.
+
+> [!TIP]
+> This feature is **disabled by default** — it's opt-in because replacement is a destructive operation.
+
+- **Claude Desktop**: Settings → Extensions → Configure (next to Bear Notes) → toggle "Content Replacement" → Save → Restart Claude
+- **Standalone MCP server**: set environment variable `UI_ENABLE_CONTENT_REPLACEMENT=true`
+
+Example standalone configuration with content replacement enabled:
+```json
+{
+  "mcpServers": {
+    "bear-notes": {
+      "command": "npx",
+      "args": ["-y", "bear-notes-mcp@latest"],
+      "env": {
+        "UI_ENABLE_CONTENT_REPLACEMENT": "true"
       }
     }
   }

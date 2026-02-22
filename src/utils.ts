@@ -225,6 +225,9 @@ Check the note content with bear-open-note to see available sections.`);
       text: cleanText,
       header: cleanHeader,
       mode,
+      // Ensures appended/prepended text starts on its own line, not glued to existing content.
+      // Not needed for replace — there's no preceding content to separate from.
+      new_line: mode !== 'replace' ? 'yes' : undefined,
     });
     logger.debug(`Executing Bear URL: ${url}`);
     await executeBearXCallbackApi(url);

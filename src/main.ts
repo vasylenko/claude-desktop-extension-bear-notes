@@ -315,7 +315,7 @@ server.registerTool(
   {
     title: 'Replace Note Content',
     description:
-      'Replace content in an existing Bear note — either the full body or a specific section by header. Requires content replacement to be enabled in extension settings. Use bear-search-notes first to get the note ID.',
+      'Replace content in an existing Bear note — either the full body or a specific section. Requires content replacement to be enabled in extension settings. Use bear-search-notes first to get the note ID.',
     inputSchema: {
       id: z
         .string()

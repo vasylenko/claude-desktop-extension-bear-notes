@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "bear-notes",
   "display_name": "Bear Notes",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "icon": "icon.png",
   "screenshots": ["screenshots/search-demo.png"],
   "description": "Bear Notes MCP server with TypeScript and native SQLite. Provides comprehensive Bear Notes integration for creating, searching, reading, and modifying notes.",
@@ -72,7 +72,7 @@
     },
     {
       "name": "bear-add-text",
-      "description": "Add text to an existing Bear note at the beginning or end, optionally targeting a specific section"
+      "description": "Insert text at the beginning or end of a Bear note, or within a specific section identified by its header"
     },
     {
       "name": "bear-replace-text",

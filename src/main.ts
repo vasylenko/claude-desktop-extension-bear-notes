@@ -21,7 +21,7 @@ const server = new McpServer(
     instructions: [
       'This server integrates with Bear, a markdown note-taking app.',
       'Each note has a unique ID, a title (rendered as H1), a body, and optional tags.',
-      'Notes use markdown headings (##, ###, etc.) to define sections.',
+      'Notes use markdown headings (##, ###, etc.) to define sections. The header parameter accepts any heading level, including the note title (H1).',
       'Use bear-search-notes to find note IDs before reading or modifying notes.',
       'To modify note content: bear-add-text inserts text without touching existing content; bear-replace-text overwrites content.',
       'When targeting a section by header, operations apply only to the direct content under that header — not nested sub-sections.',

@@ -302,7 +302,9 @@ server.registerTool(
         .string()
         .trim()
         .optional()
-        .describe('Optional section header to target (adds text within that section)'),
+        .describe(
+          'Optional section header to target (adds text within that section). Accepts any heading level, including the note title (H1).'
+        ),
       position: z
         .enum(['beginning', 'end'])
         .optional()
@@ -352,7 +354,7 @@ server.registerTool(
         .trim()
         .optional()
         .describe(
-          'Section header to target — required when scope is "section", forbidden when scope is "full-note-body"'
+          'Section header to target — required when scope is "section", forbidden when scope is "full-note-body". Accepts any heading level, including the note title (H1).'
         ),
     },
     annotations: {

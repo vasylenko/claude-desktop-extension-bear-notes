@@ -114,7 +114,6 @@ tasks:
     prompt: "Release v{{.VERSION}} ({{.SHORT_DESCRIPTION}})?"
     cmds:
       - |
-        git add .
         git commit --allow-empty -m "release: {{.VERSION}} - {{.SHORT_DESCRIPTION}}"
         git tag -a "v{{.VERSION}}" -m "release: {{.VERSION}}"
         git push --follow-tags

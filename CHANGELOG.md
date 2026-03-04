@@ -5,13 +5,13 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## UNRELEASED
+## [2.6.0] - 2026-03-04
 
 ### Added
-- **Server instructions for MCP clients** ([#73](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/73)): MCP clients now receive orientation at initialization — Bear's note structure, section model, and how tools relate to each other. This helps AI agents understand that section-level operations apply only to direct content under a header (not nested sub-sections) before they attempt any edits.
+- **Server instructions for MCP clients**: MCP clients now receive orientation at initialization — Bear's note structure, section model, and how tools relate to each other. This helps AI agents understand that section-level operations apply only to direct content under a header (not nested sub-sections) before they attempt any edits.
 
 ### Changed
-- **Improved tool descriptions for `bear-add-text` and `bear-replace-text`**: Descriptions now cross-reference each other so AI agents can choose the right tool (insert vs. overwrite). The `bear-replace-text` text parameter explicitly warns against including sub-headers in the replacement text to prevent section duplication.
+- **Improved tool descriptions for `bear-add-text` and `bear-replace-text`**  ([#73](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/73)): Descriptions now cross-reference each other so AI agents can choose the right tool (insert vs. overwrite). The `bear-replace-text` text parameter explicitly warns against including sub-headers in the replacement text to prevent section duplication.
 
 ## [2.5.0] - 2026-02-22
 

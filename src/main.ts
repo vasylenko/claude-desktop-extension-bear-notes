@@ -20,7 +20,7 @@ const server = new McpServer(
   {
     instructions: [
       'This server integrates with Bear, a markdown note-taking app.',
-      'Each note has a unique ID, a title (rendered as H1), a body, and optional tags.',
+      'Each note has a unique ID, a title, a body, and optional tags.',
       'Notes use markdown headings (##, ###, etc.) to define sections.',
       'Use bear-search-notes to find note IDs before reading or modifying notes.',
       'To modify note content: bear-add-text inserts text without touching existing content; bear-replace-text overwrites content.',
@@ -286,7 +286,7 @@ server.registerTool(
   {
     title: 'Add Text to Note',
     description:
-      'Insert text at the beginning or end of a Bear note, or within a specific section identified by its header. Use bear-search-notes first to get the note ID. To insert without replacing existing text use this tool; to overwrite a section entirely use bear-replace-text.',
+      'Insert text at the beginning or end of a Bear note, or within a specific section identified by its header. Use bear-search-notes first to get the note ID. To insert without replacing existing text use this tool; to overwrite the direct content under a header use bear-replace-text.',
     inputSchema: {
       id: z
         .string()

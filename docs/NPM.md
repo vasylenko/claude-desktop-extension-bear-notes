@@ -19,7 +19,7 @@ Search, read, create, and update your Bear Notes from any AI assistant.
 - **`bear-open-note`** - Read the full text content of a Bear note including OCR'd text from attached images and PDFs
 - **`bear-create-note`** - Create a new note in your Bear library with optional title, content, and tags
 - **`bear-search-notes`** - Find notes by searching text content, filtering by tags, or date ranges. Includes OCR search in attachments
-- **`bear-add-text`** - Add text to an existing Bear note at the beginning or end, optionally targeting a specific section
+- **`bear-add-text`** - Insert text at the beginning or end of a Bear note, or within a specific section identified by its header
 - **`bear-replace-text`** - Replace content in an existing Bear note — either the full body or a specific section. Requires content replacement to be enabled in settings.
 - **`bear-add-file`** - Attach a file (image, PDF, Excel, etc.) to an existing Bear note using base64-encoded content
 - **`bear-list-tags`** - List all tags in your Bear library as a hierarchical tree with note counts

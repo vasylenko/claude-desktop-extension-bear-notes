@@ -12,10 +12,23 @@ import { findUntaggedNotes, listTags } from './tags.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 import type { BearTag } from './types.js';
 
-const server = new McpServer({
-  name: 'bear-notes-mcp',
-  version: APP_VERSION,
-});
+const server = new McpServer(
+  {
+    name: 'bear-notes-mcp',
+    version: APP_VERSION,
+  },
+  {
+    instructions: [
+      'This server integrates with Bear, a markdown note-taking app.',
+      'Each note has a unique ID, a title, a body, and optional tags.',
+      'Notes use markdown headings (##, ###, etc.) to define sections.',
+      'Use bear-search-notes to find note IDs before reading or modifying notes.',
+      'To modify note content: bear-add-text inserts text without touching existing content; bear-replace-text overwrites content.',
+      'When targeting a section by header, operations apply only to the direct content under that header — not nested sub-sections.',
+      'To modify sub-sections, make separate calls targeting each sub-header.',
+    ].join('\n'),
+  }
+);
 
 server.registerTool(
   'bear-open-note',
@@ -273,7 +286,7 @@ server.registerTool(
   {
     title: 'Add Text to Note',
     description:
-      'Add text to an existing Bear note at the beginning or end. Can target a specific section using header. Use bear-search-notes first to get the note ID.',
+      'Insert text at the beginning or end of a Bear note, or within a specific section identified by its header. Use bear-search-notes first to get the note ID. To insert without replacing existing text use this tool; to overwrite the direct content under a header use bear-replace-text.',
     inputSchema: {
       id: z
         .string()
@@ -289,7 +302,9 @@ server.registerTool(
         .string()
         .trim()
         .optional()
-        .describe('Optional section header to target (adds text within that section)'),
+        .describe(
+          'Optional section header to target (adds text within that section). Accepts any heading level, including the note title (H1).'
+        ),
       position: z
         .enum(['beginning', 'end'])
         .optional()
@@ -315,7 +330,7 @@ server.registerTool(
   {
     title: 'Replace Note Content',
     description:
-      'Replace content in an existing Bear note — either the full body or a specific section. Requires content replacement to be enabled in extension settings. Use bear-search-notes first to get the note ID.',
+      'Replace content in an existing Bear note — either the full body or a specific section. Requires content replacement to be enabled in extension settings. Use bear-search-notes first to get the note ID. To add text without replacing existing content use bear-add-text instead.',
     inputSchema: {
       id: z
         .string()
@@ -331,13 +346,15 @@ server.registerTool(
         .string()
         .trim()
         .min(1, 'Text content is required')
-        .describe('Replacement text content'),
+        .describe(
+          'Replacement text content. When scope is "section", provide only the direct content for the targeted header — do not include markdown sub-headers (###). Replace sub-sections with separate calls targeting each sub-header.'
+        ),
       header: z
         .string()
         .trim()
         .optional()
         .describe(
-          'Section header to target — required when scope is "section", forbidden when scope is "full-note-body"'
+          'Section header to target — required when scope is "section", forbidden when scope is "full-note-body". Accepts any heading level, including the note title (H1).'
         ),
     },
     annotations: {

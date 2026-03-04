@@ -95,23 +95,28 @@ tasks:
       - npm install --package-lock-only
 
   prepare-release:
-    desc: Prepare release by updating version and changelog
+    desc: Prepare release by updating version and docs
     cmds:
       - task: docs:sync
       - task: version
   
-  commit-tag:
-    desc: Prepare release commit and tag
+  push-release:
+    desc: Commit, tag, and push a release
     requires:
       vars:
         - VERSION
         - SHORT_DESCRIPTION
-    prompt: "Confirm preparing release commit and tag for version {{.VERSION}} with description: {{.SHORT_DESCRIPTION}}?"
+    preconditions:
+      - sh: test "$(git branch --show-current)" = "main"
+        msg: Must be on main branch
+      - sh: test -z "$(git status --porcelain)"
+        msg: Working tree must be clean
+    prompt: "Release v{{.VERSION}} ({{.SHORT_DESCRIPTION}})?"
     cmds:
       - |
-       git add .
-       git commit -m "release: {{.VERSION}} - {{.SHORT_DESCRIPTION}}"
-       git tag -a "v{{.VERSION}}" -m "release: {{.VERSION}}"      
+        git commit --allow-empty -m "release: {{.VERSION}} - {{.SHORT_DESCRIPTION}}"
+        git tag -a "v{{.VERSION}}" -m "release: {{.VERSION}}"
+        git push --follow-tags
   
   changelog:
     silent: true

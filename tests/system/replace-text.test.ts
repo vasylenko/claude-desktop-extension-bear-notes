@@ -403,4 +403,67 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       if (noteId) archiveNote(noteId);
     }
   });
+
+  it('replaces only direct body content when section has sub-headers', async () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Nested Sections', RUN_ID);
+    let noteId: string | undefined;
+
+    // Mirrors issue #73: parent section with child sub-headers
+    const originalText = [
+      '## Execution Model',
+      'Original body text',
+      '',
+      '### Progress tracking',
+      'Tracking content here',
+      '',
+      '### Services',
+      'Services content here',
+      '',
+      '## Other Section',
+      'Other content',
+    ].join('\n');
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: originalText, tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      // Correct usage: replace only the direct body under the header, not sub-headers
+      callTool({
+        toolName: 'bear-replace-text',
+        args: {
+          id: noteId,
+          scope: 'section',
+          text: 'Updated body text',
+          header: 'Execution Model',
+        },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+
+      await sleep(PAUSE_AFTER_WRITE_OP);
+
+      const openResult = callTool({
+        toolName: 'bear-open-note',
+        args: { id: noteId },
+      });
+
+      const noteBody = extractNoteBody(openResult);
+      expect(noteBody).toContain('Updated body text');
+      expect(noteBody).not.toContain('Original body text');
+      // Sub-headers appear exactly once — no duplication (issue #73)
+      const progressCount = (noteBody.match(/### Progress tracking/g) || []).length;
+      expect(progressCount).toBe(1);
+      const servicesCount = (noteBody.match(/### Services/g) || []).length;
+      expect(servicesCount).toBe(1);
+      expect(noteBody).toContain('Tracking content here');
+      expect(noteBody).toContain('Services content here');
+      expect(noteBody).toContain('Other content');
+    } finally {
+      if (noteId) archiveNote(noteId);
+    }
+  });
+
 });

@@ -95,7 +95,7 @@ tasks:
       - npm install --package-lock-only
 
   prepare-release:
-    desc: Prepare release by updating version and changelog
+    desc: Prepare release by updating version and docs
     cmds:
       - task: docs:sync
       - task: version

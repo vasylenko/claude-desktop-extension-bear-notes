@@ -1,3 +1,5 @@
+import { setTimeout } from 'node:timers/promises';
+
 import type { BearNote, DateFilter } from './types.js';
 import { DEFAULT_SEARCH_LIMIT } from './config.js';
 import {
@@ -8,6 +10,10 @@ import {
   parseDateString,
 } from './utils.js';
 import { openBearDatabase } from './database.js';
+
+const POLL_INTERVAL_MS = 25;
+const POLL_TIMEOUT_MS = 2_000;
+const CREATION_LOOKBACK_MS = 10_000;
 
 // SQL equivalent of decodeTagName() in tags.ts — both MUST apply the same transformations
 const DECODED_TAG_TITLE = "LOWER(TRIM(REPLACE(t.ZTITLE, '+', ' ')))";
@@ -317,4 +323,60 @@ export function searchNotes(
   }
 
   return { notes: [], totalCount: 0 };
+}
+
+/**
+ * Polls Bear's SQLite database for a recently created note matching the given title.
+ * Designed for use after bear-create-note fires the URL API — the note creation already
+ * succeeded, so errors here degrade gracefully to null instead of throwing.
+ *
+ * @param title - Exact title to match (case-sensitive, as Bear stores it)
+ * @returns The created note, or null if not found within the timeout window
+ */
+export async function awaitNoteCreation(title: string): Promise<BearNote | null> {
+  logger.debug(`awaitNoteCreation: polling for note "${title}"`);
+
+  const sinceTimestamp = convertDateToCoreDataTimestamp(
+    new Date(Date.now() - CREATION_LOOKBACK_MS)
+  );
+
+  const db = openBearDatabase();
+
+  try {
+    const stmt = db.prepare(`
+      SELECT ZTITLE as title, ZUNIQUEIDENTIFIER as identifier,
+             ZCREATIONDATE as creationDate, ZMODIFICATIONDATE as modificationDate,
+             ZPINNED as pinned
+      FROM ZSFNOTE
+      WHERE ZTITLE = ? AND ZCREATIONDATE >= ?
+        AND ZARCHIVED = 0 AND ZTRASHED = 0 AND ZENCRYPTED = 0
+      ORDER BY ZCREATIONDATE DESC LIMIT 1
+    `);
+
+    const deadline = Date.now() + POLL_TIMEOUT_MS;
+
+    while (Date.now() < deadline) {
+      const row = stmt.get(title, sinceTimestamp) as Record<string, unknown> | undefined;
+      if (row) {
+        logger.debug(`awaitNoteCreation: found note "${title}"`);
+        return formatBearNote(row);
+      }
+      await setTimeout(POLL_INTERVAL_MS);
+    }
+
+    logger.info(`awaitNoteCreation: timed out waiting for note "${title}"`);
+    return null;
+  } catch (error) {
+    // Intentionally not using logAndThrow — the note was already created via URL API,
+    // failing to retrieve its ID should not turn a successful creation into an error
+    logger.error(`awaitNoteCreation failed: ${error}`);
+    return null;
+  } finally {
+    try {
+      db.close();
+      logger.debug('Database connection closed');
+    } catch (closeError) {
+      logger.error(`Failed to close database connection: ${closeError}`);
+    }
+  }
 }

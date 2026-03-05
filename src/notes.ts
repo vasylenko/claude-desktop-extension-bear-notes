@@ -336,9 +336,11 @@ export async function awaitNoteCreation(title: string): Promise<string | null> {
     new Date(Date.now() - CREATION_LOOKBACK_MS)
   );
 
-  const db = openBearDatabase();
+  let db: ReturnType<typeof openBearDatabase> | undefined;
 
   try {
+    db = openBearDatabase();
+
     const stmt = db.prepare(`
       SELECT ZUNIQUEIDENTIFIER as identifier
       FROM ZSFNOTE
@@ -366,6 +368,6 @@ export async function awaitNoteCreation(title: string): Promise<string | null> {
     logger.error(`awaitNoteCreation failed: ${error}`);
     return null;
   } finally {
-    closeBearDatabase(db);
+    if (db) closeBearDatabase(db);
   }
 }

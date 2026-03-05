@@ -128,11 +128,7 @@ server.registerTool(
 
       await executeBearXCallbackApi(url);
 
-      let createdNoteId: string | undefined;
-      if (title) {
-        const createdNote = await awaitNoteCreation(title);
-        createdNoteId = createdNote?.identifier;
-      }
+      const createdNoteId = title ? await awaitNoteCreation(title) : undefined;
 
       const responseLines: string[] = ['Bear note created successfully!', ''];
 

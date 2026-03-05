@@ -9,10 +9,11 @@ import {
   logger,
   parseDateString,
 } from './utils.js';
-import { openBearDatabase } from './database.js';
+import { closeBearDatabase, openBearDatabase } from './database.js';
 
 const POLL_INTERVAL_MS = 25;
 const POLL_TIMEOUT_MS = 2_000;
+// Safety window wider than POLL_TIMEOUT_MS to avoid matching a stale note with the same title
 const CREATION_LOOKBACK_MS = 10_000;
 
 // SQL equivalent of decodeTagName() in tags.ts — both MUST apply the same transformations
@@ -147,12 +148,7 @@ export function getNoteContent(identifier: string): BearNote | null {
       `Database error: Failed to retrieve note content: ${error instanceof Error ? error.message : String(error)}`
     );
   } finally {
-    try {
-      db.close();
-      logger.debug('Database connection closed');
-    } catch (closeError) {
-      logger.error(`Failed to close database connection: ${closeError}`);
-    }
+    closeBearDatabase(db);
   }
   return null;
 }
@@ -314,26 +310,26 @@ export function searchNotes(
       `SQLite search query failed: ${error instanceof Error ? error.message : String(error)}`
     );
   } finally {
-    try {
-      db.close();
-      logger.debug('Database connection closed');
-    } catch (closeError) {
-      logger.error(`Failed to close database connection: ${closeError}`);
-    }
+    closeBearDatabase(db);
   }
 
   return { notes: [], totalCount: 0 };
 }
 
 /**
- * Polls Bear's SQLite database for a recently created note matching the given title.
+ * Polls Bear's SQLite database for the identifier of a recently created note.
  * Designed for use after bear-create-note fires the URL API — the note creation already
  * succeeded, so errors here degrade gracefully to null instead of throwing.
  *
  * @param title - Exact title to match (case-sensitive, as Bear stores it)
- * @returns The created note, or null if not found within the timeout window
+ * @returns The created note's identifier, or null if not found within the timeout window
  */
-export async function awaitNoteCreation(title: string): Promise<BearNote | null> {
+export async function awaitNoteCreation(title: string): Promise<string | null> {
+  if (!title?.trim()) {
+    logger.debug('awaitNoteCreation: skipped — no title provided');
+    return null;
+  }
+
   logger.debug(`awaitNoteCreation: polling for note "${title}"`);
 
   const sinceTimestamp = convertDateToCoreDataTimestamp(
@@ -344,9 +340,7 @@ export async function awaitNoteCreation(title: string): Promise<BearNote | null>
 
   try {
     const stmt = db.prepare(`
-      SELECT ZTITLE as title, ZUNIQUEIDENTIFIER as identifier,
-             ZCREATIONDATE as creationDate, ZMODIFICATIONDATE as modificationDate,
-             ZPINNED as pinned
+      SELECT ZUNIQUEIDENTIFIER as identifier
       FROM ZSFNOTE
       WHERE ZTITLE = ? AND ZCREATIONDATE >= ?
         AND ZARCHIVED = 0 AND ZTRASHED = 0 AND ZENCRYPTED = 0
@@ -356,10 +350,10 @@ export async function awaitNoteCreation(title: string): Promise<BearNote | null>
     const deadline = Date.now() + POLL_TIMEOUT_MS;
 
     while (Date.now() < deadline) {
-      const row = stmt.get(title, sinceTimestamp) as Record<string, unknown> | undefined;
+      const row = stmt.get(title, sinceTimestamp) as { identifier: string } | undefined;
       if (row) {
         logger.debug(`awaitNoteCreation: found note "${title}"`);
-        return formatBearNote(row);
+        return row.identifier;
       }
       await setTimeout(POLL_INTERVAL_MS);
     }
@@ -372,11 +366,6 @@ export async function awaitNoteCreation(title: string): Promise<BearNote | null>
     logger.error(`awaitNoteCreation failed: ${error}`);
     return null;
   } finally {
-    try {
-      db.close();
-      logger.debug('Database connection closed');
-    } catch (closeError) {
-      logger.error(`Failed to close database connection: ${closeError}`);
-    }
+    closeBearDatabase(db);
   }
 }

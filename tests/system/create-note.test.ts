@@ -1,6 +1,13 @@
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { archiveNote, callTool, cleanupTestNotes, findNoteId, uniqueTitle } from './inspector.js';
+import {
+  archiveNote,
+  callTool,
+  cleanupTestNotes,
+  findNoteId,
+  tryExtractNoteId,
+  uniqueTitle,
+} from './inspector.js';
 
 const TEST_PREFIX = '[Bear-MCP-stest-create-note]';
 const RUN_ID = Date.now();
@@ -21,9 +28,8 @@ describe('bear-create-note returns note ID via MCP Inspector CLI', () => {
       });
 
       // Response must contain Note ID with a UUID
-      const idMatch = createResult.match(/Note ID:\s+([A-Fa-f0-9-]+)/);
-      expect(idMatch, `Expected "Note ID: <UUID>" in response:\n${createResult}`).not.toBeNull();
-      noteId = idMatch![1];
+      noteId = tryExtractNoteId(createResult) ?? undefined;
+      expect(noteId, `Expected "Note ID: <UUID>" in response:\n${createResult}`).toBeDefined();
 
       // Verify the returned ID is valid by opening the note
       const openResult = callTool({
@@ -48,7 +54,7 @@ describe('bear-create-note returns note ID via MCP Inspector CLI', () => {
       });
 
       // No title → no polling → no Note ID line
-      expect(createResult).not.toContain('Note ID:');
+      expect(tryExtractNoteId(createResult)).toBeNull();
 
       // Find the orphan note by its unique marker text so we can clean it up
       noteId = findNoteId(marker);

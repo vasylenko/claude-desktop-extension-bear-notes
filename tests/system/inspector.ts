@@ -83,16 +83,24 @@ export function extractNoteBody(openNoteResponse: string): string {
   return bodyWithFooter;
 }
 
+const NOTE_ID_REGEX = /ID:\s+([A-Fa-f0-9-]+)/;
+
+/** Extracts a note ID from any MCP response containing "ID: <uuid>", or null if absent. */
+export function tryExtractNoteId(response: string): string | null {
+  const match = response.match(NOTE_ID_REGEX);
+  return match ? match[1] : null;
+}
+
 /**
  * Extracts the first note ID from bear-search-notes response text.
  * The response format includes `ID: <uuid>` for each result.
  */
 function extractNoteId(searchResponse: string): string {
-  const match = searchResponse.match(/ID:\s+([A-Fa-f0-9-]+)/);
-  if (!match) {
+  const id = tryExtractNoteId(searchResponse);
+  if (!id) {
     throw new Error(`No note ID found in search response: ${searchResponse}`);
   }
-  return match[1];
+  return id;
 }
 
 /** Archive a note by ID, swallowing errors during cleanup. */
@@ -114,7 +122,7 @@ export function cleanupTestNotes(prefix: string): void {
       toolName: 'bear-search-notes',
       args: { term: prefix },
     });
-    const idMatches = searchResult.matchAll(/ID:\s+([A-Fa-f0-9-]+)/g);
+    const idMatches = searchResult.matchAll(new RegExp(NOTE_ID_REGEX, 'g'));
     for (const match of idMatches) {
       archiveNote(match[1]);
     }

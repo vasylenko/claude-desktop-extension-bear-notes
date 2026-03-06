@@ -97,9 +97,13 @@ export function listTags(): { tags: BearTag[]; totalCount: number } {
     const query = `
       SELECT t.ZTITLE as name,
              t.ZISROOT as isRoot,
-             COUNT(nt.Z_5NOTES) as noteCount
+             COUNT(n.Z_PK) as noteCount
       FROM ZSFNOTETAG t
       LEFT JOIN Z_5TAGS nt ON nt.Z_13TAGS = t.Z_PK
+      LEFT JOIN ZSFNOTE n ON n.Z_PK = nt.Z_5NOTES
+                          AND n.ZTRASHED = 0
+                          AND n.ZARCHIVED = 0
+                          AND n.ZENCRYPTED = 0
       GROUP BY t.Z_PK
       ORDER BY t.ZTITLE
     `;

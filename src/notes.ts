@@ -365,7 +365,7 @@ export async function awaitNoteCreation(title: string): Promise<string | null> {
   } catch (error) {
     // Intentionally not using logAndThrow — the note was already created via URL API,
     // failing to retrieve its ID should not turn a successful creation into an error
-    logger.error(`awaitNoteCreation failed: ${error}`);
+    logger.error('awaitNoteCreation failed:', error);
     return null;
   } finally {
     if (db) closeBearDatabase(db);

@@ -1,6 +1,6 @@
 import type { BearNote, BearTag } from './types.js';
 import { convertCoreDataTimestamp, logAndThrow, logger } from './utils.js';
-import { openBearDatabase } from './database.js';
+import { closeBearDatabase, openBearDatabase } from './database.js';
 
 /**
  * Decodes and normalizes Bear tag names.
@@ -132,12 +132,7 @@ export function listTags(): { tags: BearTag[]; totalCount: number } {
       `Database error: Failed to retrieve tags: ${error instanceof Error ? error.message : String(error)}`
     );
   } finally {
-    try {
-      db.close();
-      logger.debug('Database connection closed');
-    } catch (closeError) {
-      logger.error(`Failed to close database connection: ${closeError}`);
-    }
+    closeBearDatabase(db);
   }
 
   return { tags: [], totalCount: 0 };
@@ -201,12 +196,7 @@ export function findUntaggedNotes(limit: number = 50): { notes: BearNote[]; tota
       `Database error: Failed to find untagged notes: ${error instanceof Error ? error.message : String(error)}`
     );
   } finally {
-    try {
-      db.close();
-      logger.debug('Database connection closed');
-    } catch (closeError) {
-      logger.error(`Failed to close database connection: ${closeError}`);
-    }
+    closeBearDatabase(db);
   }
 
   return { notes: [], totalCount: 0 };

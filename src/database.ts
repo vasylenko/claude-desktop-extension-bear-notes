@@ -26,6 +26,19 @@ function getBearDatabasePath(): string {
 }
 
 /**
+ * Closes a Bear database connection, logging but swallowing close errors.
+ * Centralizes the try/catch-close pattern used after every DB operation.
+ */
+export function closeBearDatabase(db: DatabaseSync): void {
+  try {
+    db.close();
+    logger.debug('Database connection closed');
+  } catch (closeError) {
+    logger.error(`Failed to close database connection: ${closeError}`);
+  }
+}
+
+/**
  * Opens a read-only connection to Bear's SQLite database.
  *
  * @returns DatabaseSync instance for querying Bear notes

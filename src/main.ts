@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { APP_VERSION, ENABLE_CONTENT_REPLACEMENT, ENABLE_NEW_NOTE_CONVENTIONS } from './config.js';
 import { applyNoteConventions } from './note-conventions.js';
 import { cleanBase64, createToolResponse, handleNoteTextUpdate, logger } from './utils.js';
-import { getNoteContent, searchNotes } from './notes.js';
+import { awaitNoteCreation, getNoteContent, searchNotes } from './notes.js';
 import { findUntaggedNotes, listTags } from './tags.js';
 import { buildBearUrl, executeBearXCallbackApi } from './bear-urls.js';
 import type { BearTag } from './types.js';
@@ -86,7 +86,7 @@ server.registerTool(
   {
     title: 'Create New Note',
     description:
-      'Create a new note in your Bear library with optional title, content, and tags. The note will be immediately available in Bear app.',
+      'Create a new note in your Bear library with optional title, content, and tags. Returns the note ID when a title is provided, enabling immediate follow-up operations. The note will be immediately available in Bear app.',
     inputSchema: {
       title: z
         .string()
@@ -128,18 +128,20 @@ server.registerTool(
 
       await executeBearXCallbackApi(url);
 
+      const createdNoteId = title ? await awaitNoteCreation(title) : undefined;
+
       const responseLines: string[] = ['Bear note created successfully!', ''];
 
       if (title) {
         responseLines.push(`Title: "${title}"`);
       }
 
-      if (text) {
-        responseLines.push(`Content: ${text.length} characters`);
-      }
-
       if (tags) {
         responseLines.push(`Tags: ${tags}`);
+      }
+
+      if (createdNoteId) {
+        responseLines.push(`Note ID: ${createdNoteId}`);
       }
 
       const hasContent = title || text || tags;

@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2026-03-06
+
+### Changed
+- **`bear-create-note` returns the note ID** ([#66](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/66)): When a title is provided, the tool now polls Bear's database after creation and returns the note's unique identifier. This lets AI agents reference the newly created note in follow-up operations (add text, add tag, etc.) without a separate search step. When no title is given or the lookup times out, the tool still succeeds — returning the ID is best-effort.
+
 ## [2.6.0] - 2026-03-04
 
 ### Added

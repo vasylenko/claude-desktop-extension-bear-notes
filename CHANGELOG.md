@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- **`bear-list-tags` no longer shows ghost tags from excluded notes** ([#77](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/77)): Tag counts previously included trashed, archived, and encrypted notes, causing tags that existed only on those notes to appear in the list with inflated counts. Tag results now match what Bear's UI shows.
 - **Attachments without OCR text no longer silently disappear** ([#79](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/79)): When a note had attachments that Bear could not extract text from (e.g., MHTML files), those attachments were omitted entirely — making it look like the note had no files. Attachment filenames now always appear, with a note indicating when file content is not available.
 
 ## [2.7.0] - 2026-03-06

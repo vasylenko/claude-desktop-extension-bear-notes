@@ -25,18 +25,15 @@ function getTagDisplayName(fullPath: string): string {
 /**
  * Builds a hierarchical tree from a flat list of tags.
  * Tags with paths like "career/content" become children of "career".
- * Tags with 0 notes are excluded (matches Bear UI behavior).
+ * Caller is responsible for excluding zero-count tags before passing data here.
  */
 function buildTagHierarchy(
   flatTags: Array<{ name: string; displayName: string; noteCount: number; isRoot: boolean }>
 ): BearTag[] {
-  // Filter out tags with no notes (hidden in Bear UI)
-  const activeTags = flatTags.filter((t) => t.noteCount > 0);
-
   const tagMap = new Map<string, BearTag>();
 
   // Two-pass approach: first create nodes, then link parent-child relationships
-  for (const tag of activeTags) {
+  for (const tag of flatTags) {
     tagMap.set(tag.name, {
       name: tag.name,
       displayName: tag.displayName,
@@ -48,7 +45,7 @@ function buildTagHierarchy(
   const roots: BearTag[] = [];
 
   // Build parent-child relationships
-  for (const tag of activeTags) {
+  for (const tag of flatTags) {
     const tagNode = tagMap.get(tag.name)!;
 
     if (tag.isRoot) {
@@ -97,10 +94,15 @@ export function listTags(): { tags: BearTag[]; totalCount: number } {
     const query = `
       SELECT t.ZTITLE as name,
              t.ZISROOT as isRoot,
-             COUNT(nt.Z_5NOTES) as noteCount
+             COUNT(note.Z_PK) as noteCount
       FROM ZSFNOTETAG t
       LEFT JOIN Z_5TAGS nt ON nt.Z_13TAGS = t.Z_PK
+      LEFT JOIN ZSFNOTE note ON note.Z_PK = nt.Z_5NOTES
+        AND note.ZTRASHED = 0
+        AND note.ZARCHIVED = 0
+        AND note.ZENCRYPTED = 0
       GROUP BY t.Z_PK
+      HAVING noteCount > 0
       ORDER BY t.ZTITLE
     `;
 

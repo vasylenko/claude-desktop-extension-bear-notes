@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 
 import {
-  archiveNote,
+  trashNote,
   callTool,
   cleanupTestNotes,
   extractNoteBody,
@@ -51,7 +51,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       // Bear's replace mode preserves the note title
       expect(openResult).toContain(title);
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -97,7 +97,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       expect(noteBody).toContain('Original intro text');
       expect(noteBody).toContain('Original conclusion text');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -148,7 +148,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       expect(noteBody).toContain('Conclusion text');
       expect(noteBody).not.toContain('Original details');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -172,7 +172,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
 
       expect(result).toContain('Content replacement is not enabled');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -196,7 +196,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
 
       expect(result).toContain('"NonExistentSection" not found');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -238,7 +238,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       expect(noteBody).toContain('Updated details v2 content');
       expect(noteBody).toContain('Overview text');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -280,7 +280,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       expect(noteBody).toContain('Replaced via markdown header');
       expect(noteBody).toContain('First section text');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -315,7 +315,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       const noteBody = extractNoteBody(openResult);
       expect(noteBody).toContain('Case-insensitive replace');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -339,7 +339,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
 
       expect(result).toContain('scope is "section" but no header was provided');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -363,7 +363,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
 
       expect(result).toContain('scope is "full-note-body" but a header was provided');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -400,7 +400,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       const titleCount = (noteBody.match(titleRegex) || []).length;
       expect(titleCount).toBe(1);
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -462,7 +462,7 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       expect(noteBody).toContain('Services content here');
       expect(noteBody).toContain('Other content');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 

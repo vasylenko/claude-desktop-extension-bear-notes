@@ -112,6 +112,17 @@ export function archiveNote(id: string): void {
   }
 }
 
+/** Trash a note by ID via Bear URL scheme (no MCP tool exists for trashing). */
+export function trashNote(id: string): void {
+  try {
+    const url = `bear://x-callback-url/trash?id=${encodeURIComponent(id)}`;
+    spawnSync('open', ['-g', url]);
+    spawnSync('sleep', ['1']);
+  } catch {
+    // Best-effort — don't fail the test
+  }
+}
+
 /**
  * Archives all notes matching a search prefix.
  * Intended for afterAll cleanup to remove stray test notes from interrupted runs.

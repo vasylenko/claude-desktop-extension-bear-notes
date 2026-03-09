@@ -28,6 +28,8 @@ beforeAll(() => {
 });
 
 afterAll(() => {
+  // Only cleans up notes that weren't trashed during tests — trashed notes
+  // are excluded from search by design. Bear auto-empties trash after 7 days.
   cleanupTestNotes(TEST_PREFIX);
 });
 

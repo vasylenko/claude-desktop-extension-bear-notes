@@ -52,7 +52,7 @@ You are world-class NodeJS developer, senior engineer with a vast experience in 
 
 # Additional technical context
 
-1 - Project Specification - .claude/contexts/SPECIFICATION.md - use this to get the details about technologies and implementation of the features
+1 - Project Specification - .claude/contexts/SPECIFICATION.md - read this before making architectural changes; covers system boundaries, design constraints, safety gates, and the rationale behind the hybrid read/write model
 
 2 - Bear database schema brief - .claude/contexts/BEAR_DATABASE_SCHEMA.md - use this when working with tasks related to database access as a starting point
 

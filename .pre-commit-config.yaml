@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: eslint-fix
+        name: eslint --fix
+        entry: npx eslint --fix
+        language: system
+        types: [ts]
+      - id: prettier-fix
+        name: prettier --write
+        entry: npx prettier --write
+        language: system
+        types: [ts]

@@ -127,7 +127,12 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       // AI agents naturally include the header in replacement text — the server must strip it
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, scope: 'section', text: '## Details\nReplaced details content', header: 'Details' },
+        args: {
+          id: noteId,
+          scope: 'section',
+          text: '## Details\nReplaced details content',
+          header: 'Details',
+        },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -223,7 +228,12 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       // Header contains regex special chars: (, )
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, scope: 'section', text: 'Updated details v2 content', header: 'Details (v2)' },
+        args: {
+          id: noteId,
+          scope: 'section',
+          text: 'Updated details v2 content',
+          header: 'Details (v2)',
+        },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -265,7 +275,12 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       // LLMs commonly pass headers with markdown prefix — code should strip it
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, scope: 'section', text: 'Replaced via markdown header', header: '## Second' },
+        args: {
+          id: noteId,
+          scope: 'section',
+          text: 'Replaced via markdown header',
+          header: '## Second',
+        },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -301,7 +316,12 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       // Validation should pass case-insensitively
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, scope: 'section', text: 'Case-insensitive replace', header: 'my section' },
+        args: {
+          id: noteId,
+          scope: 'section',
+          text: 'Case-insensitive replace',
+          header: 'my section',
+        },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
 
@@ -465,5 +485,4 @@ describe('bear-replace-text via MCP Inspector CLI', () => {
       if (noteId) trashNote(noteId);
     }
   });
-
 });

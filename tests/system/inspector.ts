@@ -135,7 +135,7 @@ export function cleanupTestNotes(prefix: string): void {
     });
     const idMatches = searchResult.matchAll(new RegExp(NOTE_ID_REGEX, 'g'));
     for (const match of idMatches) {
-      archiveNote(match[1]);
+      trashNote(match[1]);
     }
   } catch {
     // Best-effort — test notes may already be archived

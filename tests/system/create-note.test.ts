@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 
 import {
-  archiveNote,
+  trashNote,
   callTool,
   cleanupTestNotes,
   findNoteId,
@@ -39,7 +39,7 @@ describe('bear-create-note returns note ID via MCP Inspector CLI', () => {
 
       expect(openResult).toContain(title);
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -59,7 +59,7 @@ describe('bear-create-note returns note ID via MCP Inspector CLI', () => {
       // Find the orphan note by its unique marker text so we can clean it up
       noteId = findNoteId(marker);
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 });

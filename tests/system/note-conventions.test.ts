@@ -3,7 +3,7 @@ import { resolve } from 'path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import {
-  archiveNote,
+  trashNote,
   callTool,
   cleanupTestNotes,
   extractNoteBody,
@@ -50,7 +50,7 @@ describe('note conventions via MCP Inspector CLI', () => {
       // The fixture content should be present in the body
       expect(noteBody).toContain('retention is set to 15 days');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -79,7 +79,7 @@ describe('note conventions via MCP Inspector CLI', () => {
         /#system-test #system test\/system test spaces#\n---\n[\s\S]*retention is set to 15 days/
       );
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -108,7 +108,7 @@ describe('note conventions via MCP Inspector CLI', () => {
       // No separator since there's no text content
       expect(noteBody).not.toContain('---\n');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -136,7 +136,7 @@ describe('note conventions via MCP Inspector CLI', () => {
       expect(noteBody).toContain('retention is set to 15 days');
       expect(noteBody).not.toMatch(/#\w+\n---/);
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 });

@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 
 import {
-  archiveNote,
+  trashNote,
   callTool,
   cleanupTestNotes,
   extractNoteBody,
@@ -47,7 +47,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
       expect(noteBody).toContain('Original content');
       expect(noteBody).toContain('Prepended text');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -87,7 +87,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
       expect(noteBody).toContain('New action item appended');
       expect(noteBody).toContain('Existing note text');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 
@@ -119,7 +119,7 @@ describe('bear-add-text via MCP Inspector CLI', () => {
       expect(noteBody).toContain('Original content');
       expect(noteBody).toContain('Appended text');
     } finally {
-      if (noteId) archiveNote(noteId);
+      if (noteId) trashNote(noteId);
     }
   });
 });

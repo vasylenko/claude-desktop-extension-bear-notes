@@ -743,6 +743,8 @@ server.registerTool(
       const url = buildBearUrl('rename-tag', {
         name,
         new_name,
+        open_note: 'no',
+        new_window: 'no',
         show_window: 'no',
       });
 
@@ -787,6 +789,8 @@ server.registerTool(
     try {
       const url = buildBearUrl('delete-tag', {
         name,
+        open_note: 'no',
+        new_window: 'no',
         show_window: 'no',
       });
 

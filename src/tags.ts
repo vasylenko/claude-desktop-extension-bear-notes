@@ -25,18 +25,15 @@ function getTagDisplayName(fullPath: string): string {
 /**
  * Builds a hierarchical tree from a flat list of tags.
  * Tags with paths like "career/content" become children of "career".
- * Tags with 0 notes are excluded (matches Bear UI behavior).
+ * Caller is responsible for excluding zero-count tags before passing data here.
  */
 function buildTagHierarchy(
   flatTags: Array<{ name: string; displayName: string; noteCount: number; isRoot: boolean }>
 ): BearTag[] {
-  // Filter out tags with no notes (hidden in Bear UI)
-  const activeTags = flatTags.filter((t) => t.noteCount > 0);
-
   const tagMap = new Map<string, BearTag>();
 
   // Two-pass approach: first create nodes, then link parent-child relationships
-  for (const tag of activeTags) {
+  for (const tag of flatTags) {
     tagMap.set(tag.name, {
       name: tag.name,
       displayName: tag.displayName,
@@ -48,7 +45,7 @@ function buildTagHierarchy(
   const roots: BearTag[] = [];
 
   // Build parent-child relationships
-  for (const tag of activeTags) {
+  for (const tag of flatTags) {
     const tagNode = tagMap.get(tag.name)!;
 
     if (tag.isRoot) {

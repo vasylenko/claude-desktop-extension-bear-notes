@@ -122,8 +122,11 @@ export function getNoteContent(identifier: string): BearNote | null {
       const filename = rowData.filename as string;
       const fileContent = rowData.fileContent as string;
 
-      if (filename && fileContent && fileContent.trim()) {
-        fileContents.push(`##${filename}\n\n${fileContent.trim()}`);
+      if (filename) {
+        const content = fileContent?.trim()
+          ? fileContent.trim()
+          : '*[File content not available — Bear has not extracted text from this file type]*';
+        fileContents.push(`##${filename}\n\n${content}`);
       }
     }
 

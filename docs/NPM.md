@@ -26,6 +26,8 @@ Search, read, create, and update your Bear Notes from any AI assistant.
 - **`bear-find-untagged-notes`** - Find notes in your Bear library that have no tags assigned
 - **`bear-add-tag`** - Add one or more tags to an existing Bear note
 - **`bear-archive-note`** - Archive a Bear note to remove it from active lists without deleting it
+- **`bear-rename-tag`** - Rename a tag across all notes in your Bear library
+- **`bear-delete-tag`** - Delete a tag from all notes in your Bear library without affecting the notes
 <!-- TOOLS:END -->
 
 **Requirements**: Node.js 24.13.0+

@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Attachments without OCR text no longer silently disappear** ([#79](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/79)): When a note had attachments that Bear could not extract text from (e.g., MHTML files), those attachments were omitted entirely — making it look like the note had no files. Attachment filenames now always appear, with a note indicating when file content is not available.
+
 ## [2.7.0] - 2026-03-06
 
 ### Changed

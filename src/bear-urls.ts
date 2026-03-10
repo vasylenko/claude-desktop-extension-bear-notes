@@ -16,6 +16,8 @@ export interface BearUrlParams {
   new_line?: 'yes' | 'no' | undefined;
   file?: string | undefined;
   filename?: string | undefined;
+  name?: string | undefined;
+  new_name?: string | undefined;
   open_note?: 'yes' | 'no' | undefined;
   new_window?: 'yes' | 'no' | undefined;
   show_window?: 'yes' | 'no' | undefined;
@@ -40,7 +42,17 @@ export function buildBearUrl(action: string, params: BearUrlParams = {}): string
   const urlParams = new URLSearchParams();
 
   // Add provided parameters with proper encoding
-  const stringParams = ['title', 'text', 'tags', 'id', 'header', 'file', 'filename'] as const;
+  const stringParams = [
+    'title',
+    'text',
+    'tags',
+    'id',
+    'header',
+    'file',
+    'filename',
+    'name',
+    'new_name',
+  ] as const;
   for (const key of stringParams) {
     const value = params[key];
     if (value !== undefined && value.trim()) {

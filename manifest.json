@@ -97,6 +97,14 @@
     {
       "name": "bear-archive-note",
       "description": "Archive a Bear note to remove it from active lists without deleting it"
+    },
+    {
+      "name": "bear-rename-tag",
+      "description": "Rename a tag across all notes in your Bear library"
+    },
+    {
+      "name": "bear-delete-tag",
+      "description": "Delete a tag from all notes in your Bear library without affecting the notes"
     }
   ],
   "keywords": [

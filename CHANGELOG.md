@@ -5,7 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [UNRELEASED]
+
+### Added
+- **`bear-rename-tag`** tool ([#63](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/63)) — rename a tag across all notes in your Bear library. Useful for reorganizing tag taxonomy, fixing typos, or restructuring tag hierarchies.
+- **`bear-delete-tag`** tool ([#64](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/64)) — delete a tag from all notes without affecting the notes themselves.
 
 ### Fixed
 - **`bear-list-tags` no longer shows ghost tags from excluded notes** ([#77](https://github.com/vasylenko/claude-desktop-extension-bear-notes/issues/77)): Tag counts previously included trashed, archived, and encrypted notes, causing tags that existed only on those notes to appear in the list with inflated counts. Tag results now match what Bear's UI shows.

@@ -1,210 +1,122 @@
 # Project Specification: Bear Notes MCP Bundle
 
-## Product Overview
+## What This Document Is For
 
-**Name:** Bear Notes MCP Bundle
-**Type:** MCP Bundle (.mcpb)
-**Platform:** macOS only
-**Repository:** https://github.com/vasylenko/claude-desktop-extension-bear-notes
-
-### Purpose
-Provides seamless integration between Claude Desktop and Bear Notes app, enabling AI-assisted note management through direct database access and Bear's native API.
-
-### Value Proposition
-- **Privacy-first**: All operations are local-only, zero network transmission
-- **Full-text search**: Includes OCR'd content from attached images and PDFs
-- **Type-safe**: Built with TypeScript for reliability
-- **Supply chain secure**: Uses Node.js native SQLite instead of third-party binaries
+Architecture decisions, system boundaries, and design constraints that shape how the codebase works. Tool descriptions and feature lists live in `manifest.json` and `README.md` — not here.
 
 ---
 
-## Core Capabilities
+## System Architecture
 
-### 1. Search Notes (`bear-search-notes`)
-**Purpose:** Find notes by content, tags, or date ranges
-**Implementation:** Direct SQLite database query with LEFT JOIN for file content
-**Features:**
-- Full-text search across note titles, content, and OCR'd attachments
-- Tag filtering (without # prefix)
-- Date filtering (created/modified before/after with relative date support)
-- Configurable result limit (default: 50)
-- Returns metadata only for performance
+### Hybrid Data Access Model
 
-**Technical Details:**
-- Read-only, idempotent operation
-- Searches ZSFNOTE and ZSFNOTEFILE tables
-- Excludes archived, trashed, and encrypted notes
-- Results sorted by modification date (DESC)
+The server uses two distinct paths to interact with Bear, chosen to avoid corrupting Bear's database while maximizing read performance:
 
-### 2. Read Note (`bear-open-note`)
-**Purpose:** Retrieve full content of a specific note
-**Implementation:** SQLite query with file content aggregation
-**Features:**
-- Returns complete note text with markdown formatting
-- Appends attached file content with clear labeling
-- Includes metadata (title, dates, ID)
+```
+  MCP Client (Claude Desktop)
+        │
+        ▼
+  MCP Server (main.ts)
+        │
+        ├── READ path ──▶ Bear SQLite DB (direct, read-only)
+        │                  notes.ts, tags.ts
+        │
+        └── WRITE path ──▶ Bear x-callback-url (fire-and-forget)
+                           bear-urls.ts → macOS `open -g` subprocess
+```
 
-**Technical Details:**
-- Read-only, idempotent operation
-- Aggregates multiple rows (note + files) into single response
-- File content labeled as `## filename` sections
+**Why not just use the database for everything?** Writing directly to Bear's Core Data SQLite would risk corruption — Bear doesn't expect external writers and could overwrite changes or crash.
 
-### 3. Create Note (`bear-create-note`)
-**Purpose:** Create new notes programmatically
-**Implementation:** Bear x-callback-url API via macOS `open` command
-**Features:**
-- Optional title, content, tags
-- Returns creation confirmation
-- Note available in Bear immediately
+**Why not just use x-callback-url for everything?** Bear's x-callback-url has no x-success callback that works without a running server to receive it. Reads via URL would require polling or a callback server. Direct SQLite is faster and simpler for reads.
 
-**Technical Details:**
-- Non-idempotent, open-world operation
-- Uses subprocess execution (spawn 'open' with -g flag to prevent focus steal)
-- URL parameter encoding via URLSearchParams
+### Fire-and-Forget Write Model
 
-### 4. Add Text (`bear-add-text`)
-**Purpose:** Add content to existing notes at beginning or end
-**Implementation:** Bear x-callback-url API with mode parameter
-**Features:**
-- Position parameter: 'beginning' (prepend) or 'end' (append, default)
-- Section targeting via header parameter
-- Automatic new line insertion
-- Requires note ID from search
+All write operations go through the URL path. This is intentionally one-way:
 
-**Technical Details:**
-- Destructive, non-idempotent operation
-- Uses `new_line=yes` parameter
-- Section targeting via header parameter
+- The server builds a URL, hands it to macOS, and gets back only an exit code
+- Bear processes the URL asynchronously — there's no confirmation that the operation succeeded inside Bear
+- For note-level writes, the server does pre-flight validation via the DB read path (note exists? section exists?) to catch errors early rather than letting Bear silently fail
+- For global operations (tag rename/delete), no pre-flight check is possible — Bear silently no-ops on missing targets
 
-### 5. Add File (`bear-add-file`)
-**Purpose:** Attach files to existing notes
-**Implementation:** Bear x-callback-url API with base64-encoded content
-**Features:**
-- Accepts base64-encoded file content
-- Supports all file types (images, PDFs, documents, etc.)
-- Can target note by ID or title
+### Background Execution
 
-**Technical Details:**
-- Destructive, non-idempotent operation
-- Base64 content cleaned of line breaks before URL encoding
-- Validates note existence before attempting attachment
-
-### 6. List Tags (`bear-list-tags`)
-**Purpose:** Display all tags in the Bear library
-**Implementation:** Direct SQLite query on ZSFNOTETAG table
-**Features:**
-- Returns hierarchical tree structure
-- Includes note counts per tag
-- Shows nested tags with proper indentation
-
-**Technical Details:**
-- Read-only, idempotent operation
-- Builds tree from flat tag list using path separators
-- Excludes system tags
-
-### 7. Find Untagged Notes (`bear-find-untagged-notes`)
-**Purpose:** Find notes without any tags
-**Implementation:** SQLite query with LEFT JOIN exclusion
-**Features:**
-- Returns notes that have no tags assigned
-- Configurable result limit (default: 50)
-- Useful for organization workflows
-
-**Technical Details:**
-- Read-only, idempotent operation
-- Excludes archived, trashed, and encrypted notes
-
-### 8. Add Tag (`bear-add-tag`)
-**Purpose:** Add tags to existing notes
-**Implementation:** Bear x-callback-url API with tags parameter
-**Features:**
-- Add one or more tags at once
-- Tags added at beginning of note
-- Supports nested tags (e.g., "work/meetings")
-
-**Technical Details:**
-- Non-destructive, non-idempotent operation
-- Validates note existence before adding tags
-- Uses prepend mode with tags parameter
+All write operations execute in the background without disrupting the user's Bear UI. The principle: the user is working in Claude Desktop, not Bear — writes should never steal focus, open windows, or switch the active note.
 
 ---
 
-## Technical Architecture
+## Safety Gates
 
-### Technology Stack
-- **Language:** TypeScript
-- **Runtime:** Node.js >=22.5.0
-- **MCP SDK:** @modelcontextprotocol/sdk
-- **Database:** Native Node.js SQLite (node:sqlite)
-- **Validation:** Zod
-- **Build:** TypeScript compiler (tsc)
-- **Bundling:** @anthropic-ai/mcpb
+### Content Replacement Is Opt-In
 
-### Key Design Decisions
+The ability to overwrite note content (full body or specific sections) is **disabled by default**. Users must explicitly enable "Content Replacement" in extension settings before `bear-replace-text` works. This prevents AI from accidentally destroying note content.
 
-1. **Native SQLite over third-party packages**
-   - Rationale: Avoid macOS security blocks on unsigned binaries
-   - Benefit: Supply chain security, no binary distribution
+### No Note Deletion
 
-2. **Hybrid approach (SQLite + x-callback-url)**
-   - Reads: Direct database (faster, no callback handling)
-   - Writes: x-callback-url (no DB corruption risk)
-   - Rationale: x-success callback would require server/binary
-
-3. **File content always included**
-   - OCR'd text from images/PDFs included in search and read
-   - Labeled clearly with filename headers
-   - Rationale: Maximize search comprehensiveness
-
-4. **Background execution for writes**
-   - Uses `open -g` flag to prevent Bear from stealing focus
-   - Better UX when working in Claude Desktop
-
-5. **Error handling strategy**
-   - Database errors thrown immediately
-   - URL execution errors captured from stderr
-   - All errors logged with debug logger
-   - User-friendly error messages via ERROR_MESSAGES config
+There is no delete tool. Too destructive for AI-assisted workflows — a misidentified note ID would mean permanent data loss. Archiving is the closest alternative and is reversible in Bear.
 
 ---
 
-## Known Limitations & Constraints
+## Key Design Constraints
 
-### Functional Limitations
-- No note deletion (intentional - destructive operation)
-- No support for encrypted notes (excluded from queries)
-- x-callback-url has no response parsing (fire-and-forget)
+### Bear's Database
 
-### Technical Constraints
-- No automated testing (database access requires real Bear DB)
-- No cross-platform support (Bear is macOS only)
+Bear uses Core Data with SQLite. The schema is undocumented — our understanding comes from reverse-engineering (see `BEAR_DATABASE_SCHEMA.md`). The database path is discovered via Bear's app container at `~/Library/Group Containers/group.com.shinyfrog.bear/`. Key fragility points:
 
-## Success Metrics
+- Tag name decoding logic exists in two places (SQL expression in `notes.ts` and TypeScript function in `tags.ts`) — these must produce identical results. Bidirectional comments link them.
+- Tag hierarchy is not stored relationally — it's reconstructed at query time by splitting slash-delimited paths.
+- All queries exclude trashed, archived, and encrypted notes to match what Bear's UI shows.
 
-### Adoption
-- GitHub stars/forks
-- Issue reports and feature requests
-- Download count from releases
+### Bear's URL Scheme Quirks
 
-### Quality
-- Zero supply chain vulnerabilities (Snyk badge)
-- Passing CI/CD workflows
-- Low bug report rate
+- **Space encoding**: Bear expects `%20`, not `+`. `URLSearchParams` encodes spaces as `+` by default, so a global replace is applied after encoding.
+- **No response data**: Unlike standard x-callback-url, Bear's implementation doesn't return data via x-success in a way the server can capture without a callback receiver.
+- **Note creation has no ID in response**: After creating a note, the server polls the database to find the new note's ID by title match. This is best-effort and may time out.
 
-### User Satisfaction
-- Positive feedback in discussions
-- Minimal support requests
-- Community contributions
+### Platform Constraints
+
+- **macOS only**: Bear is a macOS/iOS app; the database is at a macOS-specific path; `open -g` is a macOS command.
+- **Node.js native SQLite**: Uses `node:sqlite` (experimental) to avoid third-party binary dependencies that macOS Gatekeeper would block.
+
+### Intentional Exclusions
+
+- **Encrypted notes**: Bear encrypts content in the DB. Excluded from all queries.
+- **Per-tag pinning**: Bear's URL scheme supports `pin=yes` for global pinning but has no action for pinning within a specific tag.
+- **Write verification**: No way to confirm Bear processed a URL action. Exit code 0 from `open` only means macOS accepted the URL, not that Bear acted on it.
+
+---
+
+## Error Handling Contract
+
+Two tiers of errors, from the client's perspective:
+
+| Tier | When | What the client sees |
+|------|------|---------------------|
+| Soft error | Expected condition (note not found, section missing, feature disabled) | Normal text response describing the problem and suggesting a fix |
+| Hard error | Unexpected failure (subprocess crash, DB error) | MCP-level error response |
+
+Note-level write tools do pre-flight DB validation to turn silent Bear failures into clear soft errors. Global tag operations cannot be pre-validated.
+
+Neither tier uses the MCP SDK's `isError` field — this is a potential future improvement.
+
+---
+
+## Testing Constraints
+
+- **System tests require a live Bear installation** — they create real notes, modify them, and verify results. Cannot run in CI.
+- **System tests share Bear state** — they run sequentially, each suite managing its own test data with unique prefixes and cleanup in afterAll.
+- **Write operation timing** — after a URL write, tests pause briefly before reading back via SQLite, giving Bear time to process the callback.
+
+---
 
 ## References
 
 ### Documentation
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/README.md)
-- [MCPB Specification](https://github.com/modelcontextprotocol/mcpb/blob/main/README.md)
-- [MCPB Manifest](https://github.com/modelcontextprotocol/mcpb/blob/main/MANIFEST.md)
-- [MCPB CLI](https://github.com/modelcontextprotocol/mcpb/blob/main/CLI.md)
+- [MCPB Specification](https://github.com/anthropics/mcpb/blob/main/README.md)
+- [MCPB Manifest](https://github.com/anthropics/mcpb/blob/main/MANIFEST.md)
+- [MCPB CLI](https://github.com/anthropics/mcpb/blob/main/CLI.md)
 - [Taskfile Documentation](https://taskfile.dev/docs/guide)
 
 ### Bear Notes API
 - [Bear x-callback-url API](https://bear.app/faq/X-callback-url%20Scheme%20documentation/)
-- Bear Database Schema: Internal reverse-engineering
+- Bear Database Schema: see `.claude/contexts/BEAR_DATABASE_SCHEMA.md`

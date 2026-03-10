@@ -104,10 +104,11 @@ describe('bear-open-note by title', () => {
       });
 
       expect(openResult).toContain('Multiple notes found');
-      // Both IDs should appear in the disambiguation list
+      // Both IDs and modification dates should appear in the disambiguation list
       for (const id of noteIds) {
         expect(openResult).toContain(id);
       }
+      expect(openResult).toMatch(/modified:\s*\d{4}-\d{2}-\d{2}/);
     } finally {
       for (const id of noteIds) {
         trashNote(id);

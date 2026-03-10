@@ -82,10 +82,7 @@ Use bear-search-notes to find notes by partial text match.`);
 
         if (matches.length > 1) {
           const matchList = matches
-            .map(
-              (m, i) =>
-                `${i + 1}. ID: ${m.identifier} (modified: ${new Date(m.modification_date).toLocaleDateString()})`
-            )
+            .map((m, i) => `${i + 1}. ID: ${m.identifier} (modified: ${m.modification_date})`)
             .join('\n');
 
           return createToolResponse(`Multiple notes found with title "${title}":

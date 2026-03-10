@@ -111,4 +111,38 @@ describe('bear-open-note by title', () => {
       }
     }
   });
+
+  it('returns error when neither id nor title is provided', () => {
+    const openResult = callTool({
+      toolName: 'bear-open-note',
+      args: {},
+    });
+
+    expect(openResult).toContain('Either note ID or title is required');
+  });
+
+  it('opens a note by ID (regression)', () => {
+    const noteTitle = title('ByID');
+    const noteText = 'Regression test for ID-based lookup';
+    let noteId: string | undefined;
+
+    try {
+      const createResult = callTool({
+        toolName: 'bear-create-note',
+        args: { title: noteTitle, text: noteText },
+      });
+      noteId = tryExtractNoteId(createResult) ?? undefined;
+      expect(noteId).toBeDefined();
+
+      const openResult = callTool({
+        toolName: 'bear-open-note',
+        args: { id: noteId! },
+      });
+
+      expect(openResult).toContain(noteTitle);
+      expect(extractNoteBody(openResult)).toContain(noteText);
+    } finally {
+      if (noteId) trashNote(noteId);
+    }
+  });
 });

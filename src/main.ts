@@ -64,7 +64,7 @@ server.registerTool(
     );
 
     if (!id && !title) {
-      throw new Error(
+      return createToolResponse(
         'Either note ID or title is required. Use bear-search-notes to find the note ID, or provide the exact title.'
       );
     }
@@ -77,7 +77,7 @@ server.registerTool(
         if (matches.length === 0) {
           return createToolResponse(`No note found with title "${title}". The note may have been deleted, archived, or the title may be different.
 
-Use bear-search-notes to find the correct note.`);
+Use bear-search-notes to find notes by partial text match.`);
         }
 
         if (matches.length > 1) {

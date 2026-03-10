@@ -181,7 +181,7 @@ export function findNotesByTitle(title: string): NoteTitleMatch[] {
              ZUNIQUEIDENTIFIER as identifier,
              ZMODIFICATIONDATE as modificationDate
       FROM ZSFNOTE
-      WHERE LOWER(ZTITLE) = LOWER(?)
+      WHERE ZTITLE = ? COLLATE NOCASE
         AND ZARCHIVED = 0
         AND ZTRASHED = 0
         AND ZENCRYPTED = 0

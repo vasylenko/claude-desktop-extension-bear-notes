@@ -228,4 +228,34 @@ describe('tag name # prefix stripping via MCP Inspector CLI', () => {
       if (hashNoteId) trashNote(hashNoteId);
     }
   });
+
+  it('strips leading # from tag name in delete', async () => {
+    const TAG_HASH_DELETE = `stest-tag-mgmt-${RUN_ID}-hash-del`;
+    const hashDelTitle = uniqueTitle(TEST_PREFIX, 'HashTagDel', RUN_ID);
+
+    callTool({
+      toolName: 'bear-create-note',
+      args: { title: hashDelTitle, text: 'Hash prefix delete test', tags: TAG_HASH_DELETE },
+    });
+    const hashDelNoteId = findNoteId(hashDelTitle);
+
+    try {
+      // Pass with # prefix — the schema transform should strip it
+      callTool({
+        toolName: 'bear-delete-tag',
+        args: { name: `#${TAG_HASH_DELETE}` },
+      });
+
+      await sleep(PAUSE_AFTER_WRITE_OP);
+
+      const searchResult = callTool({
+        toolName: 'bear-search-notes',
+        args: { tag: TAG_HASH_DELETE },
+      });
+
+      expect(searchResult).toContain('No notes found');
+    } finally {
+      if (hashDelNoteId) trashNote(hashDelNoteId);
+    }
+  });
 });

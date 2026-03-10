@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
 
-import type { BearNote, DateFilter } from './types.js';
+import type { BearNote, DateFilter, NoteTitleMatch } from './types.js';
 import { DEFAULT_SEARCH_LIMIT } from './config.js';
 import {
   convertCoreDataTimestamp,
@@ -155,6 +155,65 @@ export function getNoteContent(identifier: string): BearNote | null {
     closeBearDatabase(db);
   }
   return null;
+}
+
+/**
+ * Finds Bear notes matching an exact title (case-insensitive).
+ * Returns lightweight match objects for disambiguation — call getNoteContent()
+ * with the chosen identifier to retrieve the full note.
+ *
+ * @param title - The exact note title to match
+ * @returns Array of matching notes (empty if none found)
+ * @throws Error if database access fails
+ */
+export function findNotesByTitle(title: string): NoteTitleMatch[] {
+  logger.info(`findNotesByTitle called with title: "${title}"`);
+
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    logAndThrow('Search error: Invalid note title provided');
+  }
+
+  const db = openBearDatabase();
+
+  try {
+    const query = `
+      SELECT ZTITLE as title,
+             ZUNIQUEIDENTIFIER as identifier,
+             ZMODIFICATIONDATE as modificationDate
+      FROM ZSFNOTE
+      WHERE LOWER(ZTITLE) = LOWER(?)
+        AND ZARCHIVED = 0
+        AND ZTRASHED = 0
+        AND ZENCRYPTED = 0
+      ORDER BY ZMODIFICATIONDATE DESC
+    `;
+    const stmt = db.prepare(query);
+    const rows = stmt.all(title.trim());
+
+    if (!rows || rows.length === 0) {
+      logger.info(`No notes found with title: "${title}"`);
+      return [];
+    }
+
+    logger.info(`Found ${rows.length} note(s) with title: "${title}"`);
+
+    return rows.map((row) => {
+      const r = row as Record<string, unknown>;
+      return {
+        identifier: r.identifier as string,
+        title: (r.title as string) || 'Untitled',
+        modification_date: convertCoreDataTimestamp(r.modificationDate as number),
+      };
+    });
+  } catch (error) {
+    logAndThrow(
+      `Database error: Failed to find notes by title: ${error instanceof Error ? error.message : String(error)}`
+    );
+  } finally {
+    closeBearDatabase(db);
+  }
+
+  return [];
 }
 
 /**

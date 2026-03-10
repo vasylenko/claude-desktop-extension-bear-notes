@@ -15,41 +15,32 @@ const PAUSE_AFTER_WRITE_OP = 100; // ms to wait after write operations for Bear 
 
 const TAG_ORIGINAL = `stest-tag-mgmt-${RUN_ID}-original`;
 const TAG_RENAMED = `stest-tag-mgmt-${RUN_ID}-renamed`;
+const TAG_TO_DELETE = `stest-tag-mgmt-${RUN_ID}-to-delete`;
 
 const TAG_NESTED_ORIGINAL = `stest-tag-mgmt-${RUN_ID}/nested-original`;
 const TAG_NESTED_RENAMED = `stest-tag-mgmt-${RUN_ID}/nested-renamed`;
-
-const NOTE_TITLE = uniqueTitle(TEST_PREFIX, 'TagOps', RUN_ID);
-const NOTE_TITLE_NESTED = uniqueTitle(TEST_PREFIX, 'TagOpsNested', RUN_ID);
-
-let noteId: string | undefined;
-let nestedNoteId: string | undefined;
-
-beforeAll(() => {
-  callTool({
-    toolName: 'bear-create-note',
-    args: { title: NOTE_TITLE, text: 'Tag management test note', tags: TAG_ORIGINAL },
-  });
-  noteId = findNoteId(NOTE_TITLE);
-
-  callTool({
-    toolName: 'bear-create-note',
-    args: {
-      title: NOTE_TITLE_NESTED,
-      text: 'Hierarchical tag test note',
-      tags: TAG_NESTED_ORIGINAL,
-    },
-  });
-  nestedNoteId = findNoteId(NOTE_TITLE_NESTED);
-});
+const TAG_NESTED_TO_DELETE = `stest-tag-mgmt-${RUN_ID}/nested-to-delete`;
 
 afterAll(() => {
-  if (noteId) trashNote(noteId);
-  if (nestedNoteId) trashNote(nestedNoteId);
   cleanupTestNotes(TEST_PREFIX);
 });
 
 describe('bear-rename-tag via MCP Inspector CLI', () => {
+  const RENAME_NOTE_TITLE = uniqueTitle(TEST_PREFIX, 'Rename', RUN_ID);
+  let renameNoteId: string | undefined;
+
+  beforeAll(() => {
+    callTool({
+      toolName: 'bear-create-note',
+      args: { title: RENAME_NOTE_TITLE, text: 'Rename tag test note', tags: TAG_ORIGINAL },
+    });
+    renameNoteId = findNoteId(RENAME_NOTE_TITLE);
+  });
+
+  afterAll(() => {
+    if (renameNoteId) trashNote(renameNoteId);
+  });
+
   it('renames a tag across notes', async () => {
     const result = callTool({
       toolName: 'bear-rename-tag',
@@ -60,13 +51,12 @@ describe('bear-rename-tag via MCP Inspector CLI', () => {
 
     await sleep(PAUSE_AFTER_WRITE_OP);
 
-    // The note should now appear under the renamed tag
     const searchResult = callTool({
       toolName: 'bear-search-notes',
       args: { tag: TAG_RENAMED },
     });
 
-    expect(searchResult).toContain(NOTE_TITLE);
+    expect(searchResult).toContain(RENAME_NOTE_TITLE);
   });
 
   it('old tag no longer returns results', () => {
@@ -80,36 +70,68 @@ describe('bear-rename-tag via MCP Inspector CLI', () => {
 });
 
 describe('bear-delete-tag via MCP Inspector CLI', () => {
+  const DELETE_NOTE_TITLE = uniqueTitle(TEST_PREFIX, 'Delete', RUN_ID);
+  let deleteNoteId: string | undefined;
+
+  beforeAll(() => {
+    callTool({
+      toolName: 'bear-create-note',
+      args: { title: DELETE_NOTE_TITLE, text: 'Delete tag test note', tags: TAG_TO_DELETE },
+    });
+    deleteNoteId = findNoteId(DELETE_NOTE_TITLE);
+  });
+
+  afterAll(() => {
+    if (deleteNoteId) trashNote(deleteNoteId);
+  });
+
   it('removes a tag without affecting the note', async () => {
     const result = callTool({
       toolName: 'bear-delete-tag',
-      args: { name: TAG_RENAMED },
+      args: { name: TAG_TO_DELETE },
     });
 
     expect(result).toContain('deleted successfully');
 
     await sleep(PAUSE_AFTER_WRITE_OP);
 
-    // Tag should no longer return results
     const searchResult = callTool({
       toolName: 'bear-search-notes',
-      args: { tag: TAG_RENAMED },
+      args: { tag: TAG_TO_DELETE },
     });
 
     expect(searchResult).toContain('No notes found');
 
-    // The note itself should still exist
     const openResult = callTool({
       toolName: 'bear-open-note',
-      args: { id: noteId! },
+      args: { id: deleteNoteId! },
     });
 
-    expect(openResult).toContain(NOTE_TITLE);
+    expect(openResult).toContain(DELETE_NOTE_TITLE);
   });
 });
 
 // Slashes in tag names encode as %2F in URLs — exercises a different code path than flat tags
-describe('hierarchical tag operations via MCP Inspector CLI', () => {
+describe('hierarchical tag rename via MCP Inspector CLI', () => {
+  const NESTED_RENAME_TITLE = uniqueTitle(TEST_PREFIX, 'NestedRename', RUN_ID);
+  let nestedRenameNoteId: string | undefined;
+
+  beforeAll(() => {
+    callTool({
+      toolName: 'bear-create-note',
+      args: {
+        title: NESTED_RENAME_TITLE,
+        text: 'Hierarchical rename test',
+        tags: TAG_NESTED_ORIGINAL,
+      },
+    });
+    nestedRenameNoteId = findNoteId(NESTED_RENAME_TITLE);
+  });
+
+  afterAll(() => {
+    if (nestedRenameNoteId) trashNote(nestedRenameNoteId);
+  });
+
   it('renames a hierarchical tag', async () => {
     const result = callTool({
       toolName: 'bear-rename-tag',
@@ -125,13 +147,34 @@ describe('hierarchical tag operations via MCP Inspector CLI', () => {
       args: { tag: TAG_NESTED_RENAMED },
     });
 
-    expect(searchResult).toContain(NOTE_TITLE_NESTED);
+    expect(searchResult).toContain(NESTED_RENAME_TITLE);
+  });
+});
+
+describe('hierarchical tag delete via MCP Inspector CLI', () => {
+  const NESTED_DELETE_TITLE = uniqueTitle(TEST_PREFIX, 'NestedDelete', RUN_ID);
+  let nestedDeleteNoteId: string | undefined;
+
+  beforeAll(() => {
+    callTool({
+      toolName: 'bear-create-note',
+      args: {
+        title: NESTED_DELETE_TITLE,
+        text: 'Hierarchical delete test',
+        tags: TAG_NESTED_TO_DELETE,
+      },
+    });
+    nestedDeleteNoteId = findNoteId(NESTED_DELETE_TITLE);
+  });
+
+  afterAll(() => {
+    if (nestedDeleteNoteId) trashNote(nestedDeleteNoteId);
   });
 
   it('deletes a hierarchical tag without affecting the note', async () => {
     const result = callTool({
       toolName: 'bear-delete-tag',
-      args: { name: TAG_NESTED_RENAMED },
+      args: { name: TAG_NESTED_TO_DELETE },
     });
 
     expect(result).toContain('deleted successfully');
@@ -140,16 +183,49 @@ describe('hierarchical tag operations via MCP Inspector CLI', () => {
 
     const searchResult = callTool({
       toolName: 'bear-search-notes',
-      args: { tag: TAG_NESTED_RENAMED },
+      args: { tag: TAG_NESTED_TO_DELETE },
     });
 
     expect(searchResult).toContain('No notes found');
 
     const openResult = callTool({
       toolName: 'bear-open-note',
-      args: { id: nestedNoteId! },
+      args: { id: nestedDeleteNoteId! },
     });
 
-    expect(openResult).toContain(NOTE_TITLE_NESTED);
+    expect(openResult).toContain(NESTED_DELETE_TITLE);
+  });
+});
+
+describe('tag name # prefix stripping via MCP Inspector CLI', () => {
+  it('strips leading # from tag names in rename', async () => {
+    const TAG_HASH = `stest-tag-mgmt-${RUN_ID}-hash`;
+    const TAG_HASH_RENAMED = `stest-tag-mgmt-${RUN_ID}-hash-renamed`;
+    const hashTitle = uniqueTitle(TEST_PREFIX, 'HashTag', RUN_ID);
+
+    callTool({
+      toolName: 'bear-create-note',
+      args: { title: hashTitle, text: 'Hash prefix test', tags: TAG_HASH },
+    });
+    const hashNoteId = findNoteId(hashTitle);
+
+    try {
+      // Pass with # prefix — the schema transform should strip it
+      callTool({
+        toolName: 'bear-rename-tag',
+        args: { name: `#${TAG_HASH}`, new_name: `#${TAG_HASH_RENAMED}` },
+      });
+
+      await sleep(PAUSE_AFTER_WRITE_OP);
+
+      const searchResult = callTool({
+        toolName: 'bear-search-notes',
+        args: { tag: TAG_HASH_RENAMED },
+      });
+
+      expect(searchResult).toContain(hashTitle);
+    } finally {
+      if (hashNoteId) trashNote(hashNoteId);
+    }
   });
 });

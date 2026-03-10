@@ -32,6 +32,7 @@ describe('bear-open-note by title', () => {
         args: { title: noteTitle, text: noteText },
       });
       noteId = tryExtractNoteId(createResult) ?? undefined;
+      expect(noteId).toBeDefined();
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -57,6 +58,7 @@ describe('bear-open-note by title', () => {
         args: { title: noteTitle, text: 'Case sensitivity test' },
       });
       noteId = tryExtractNoteId(createResult) ?? undefined;
+      expect(noteId).toBeDefined();
 
       const openResult = callTool({
         toolName: 'bear-open-note',
@@ -90,6 +92,7 @@ describe('bear-open-note by title', () => {
           args: { title: sharedTitle, text },
         });
         const id = tryExtractNoteId(createResult);
+        expect(id).toBeTruthy();
         if (id) noteIds.push(id);
       }
 

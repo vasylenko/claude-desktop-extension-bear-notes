@@ -96,7 +96,7 @@ describe('bear-open-note by title', () => {
         if (id) noteIds.push(id);
       }
 
-      expect(noteIds.length).toBe(2);
+      expect(new Set(noteIds).size).toBe(2);
 
       const openResult = callTool({
         toolName: 'bear-open-note',

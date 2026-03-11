@@ -125,6 +125,31 @@ describe('bear-open-note by title', () => {
     expect(openResult).toContain('Either note ID or title is required');
   });
 
+  it('excludes trashed notes from title lookup', () => {
+    const noteTitle = title('Trashed');
+    let noteId: string | undefined;
+
+    try {
+      const createResult = callTool({
+        toolName: 'bear-create-note',
+        args: { title: noteTitle, text: 'Will be trashed' },
+      });
+      noteId = tryExtractNoteId(createResult) ?? undefined;
+      expect(noteId).toBeDefined();
+
+      trashNote(noteId!);
+
+      const openResult = callTool({
+        toolName: 'bear-open-note',
+        args: { title: noteTitle },
+      });
+
+      expect(openResult).toContain('No note found with title');
+    } finally {
+      // trashNote already moved it out of active notes
+    }
+  });
+
   it('opens a note by ID (regression)', () => {
     const noteTitle = title('ByID');
     const noteText = 'Regression test for ID-based lookup';

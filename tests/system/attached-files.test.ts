@@ -14,8 +14,6 @@ import {
 const TEST_PREFIX = '[Bear-MCP-stest-attached-files]';
 const RUN_ID = Date.now();
 const PAUSE_AFTER_WRITE_OP = 100;
-// Bear needs a moment after create before the note is searchable
-const PAUSE_AFTER_CREATE = 500;
 // Bear's file indexing is asynchronous — wait for the ZSFNOTEFILE row to appear
 const PAUSE_AFTER_FILE_ATTACH = 2_000;
 
@@ -38,7 +36,6 @@ describe('attached files content separation', () => {
         args: { title, text: 'Note body text here', tags: 'system-test' },
       });
 
-      await sleep(PAUSE_AFTER_CREATE);
       noteId = findNoteId(title);
 
       callTool({
@@ -77,7 +74,6 @@ describe('attached files content separation', () => {
         args: { title, text: 'Just plain text', tags: 'system-test' },
       });
 
-      await sleep(PAUSE_AFTER_CREATE);
       noteId = findNoteId(title);
 
       const response = callToolRaw({
@@ -93,6 +89,45 @@ describe('attached files content separation', () => {
     }
   });
 
+  it('note with multiple attachments returns all files in a single second block', async () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Multi File', RUN_ID);
+    let noteId: string | undefined;
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: 'Multi-file note body', tags: 'system-test' },
+      });
+
+      noteId = findNoteId(title);
+
+      // Attach two files sequentially — Bear processes each via URL scheme
+      callTool({
+        toolName: 'bear-add-file',
+        args: { id: noteId, filename: 'first.png', base64_content: TINY_PNG_BASE64 },
+      });
+      callTool({
+        toolName: 'bear-add-file',
+        args: { id: noteId, filename: 'second.png', base64_content: TINY_PNG_BASE64 },
+      });
+
+      await sleep(PAUSE_AFTER_FILE_ATTACH);
+
+      const response = callToolRaw({
+        toolName: 'bear-open-note',
+        args: { id: noteId },
+      });
+
+      expect(response.content).toHaveLength(2);
+      expect(response.content[0].text).not.toContain('#Attached Files');
+      // Both filenames must appear in the files block
+      expect(response.content[1].text).toContain('first.png');
+      expect(response.content[1].text).toContain('second.png');
+    } finally {
+      if (noteId) trashNote(noteId);
+    }
+  });
+
   it('full-body replace with text from first content block does not corrupt note', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'No Corrupt', RUN_ID);
     let noteId: string | undefined;
@@ -103,7 +138,6 @@ describe('attached files content separation', () => {
         args: { title, text: 'Original body content', tags: 'system-test' },
       });
 
-      await sleep(PAUSE_AFTER_CREATE);
       noteId = findNoteId(title);
 
       callTool({
@@ -144,6 +178,7 @@ describe('attached files content separation', () => {
       // The note body may contain ![](test-pixel.png) — Bear's inline image reference —
       // but must NOT contain the synthetic file metadata section
       const afterBody = afterResponse.content[0].text;
+      expect(afterBody).toContain('Original body content');
       expect(afterBody).not.toContain('#Attached Files');
       expect(afterBody).not.toContain('File content not available');
     } finally {

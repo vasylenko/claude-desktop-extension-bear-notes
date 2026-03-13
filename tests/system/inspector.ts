@@ -70,7 +70,7 @@ export function callTool({ toolName, args, env }: CallToolOptions): string {
 /**
  * Extracts the note body from bear-open-note response text.
  * The response has metadata (title, modified, ID) separated by `---`,
- * then the actual note content, then `---` and the attached files section.
+ * then the actual note content.
  */
 export function extractNoteBody(openNoteResponse: string): string {
   const sections = openNoteResponse.split('\n\n---\n\n');
@@ -81,15 +81,7 @@ export function extractNoteBody(openNoteResponse: string): string {
     );
   }
 
-  const bodyWithFooter = sections.slice(1).join('\n\n---\n\n');
-
-  // Strip the attached files footer Bear always appends
-  const attachedFilesIndex = bodyWithFooter.indexOf('\n\n---\n\n#Attached Files');
-  if (attachedFilesIndex !== -1) {
-    return bodyWithFooter.substring(0, attachedFilesIndex);
-  }
-
-  return bodyWithFooter;
+  return sections.slice(1).join('\n\n---\n\n');
 }
 
 const NOTE_ID_REGEX = /ID:\s+([A-Fa-f0-9-]+)/;

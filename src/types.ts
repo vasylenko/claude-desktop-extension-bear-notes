@@ -9,6 +9,7 @@ export interface BearNote {
   creation_date: string;
   pin: 'yes' | 'no';
   text?: string; // Only present in content queries
+  files?: Array<{ filename: string; content: string }>; // Only present in getNoteContent()
 }
 
 /**

@@ -68,12 +68,32 @@ Use bear-search-notes to find the correct note identifier.`);
       ];
 
       const noteText = noteWithContent.text || '*This note appears to be empty.*';
+      const annotations: { audience: ('user' | 'assistant')[] } = {
+        audience: ['user', 'assistant'],
+      };
 
-      return createToolResponse(`${noteInfo.join('\n')}
+      // Body and file metadata are separate content blocks so the synthetic
+      // file section can never leak back during write operations (#86)
+      const content: CallToolResult['content'] = [
+        {
+          type: 'text' as const,
+          text: `${noteInfo.join('\n')}\n\n---\n\n${noteText}`,
+          annotations,
+        },
+      ];
 
----
+      if (noteWithContent.files?.length) {
+        const fileEntries = noteWithContent.files
+          .map((f) => `##${f.filename}\n\n${f.content}`)
+          .join('\n\n---\n\n');
+        content.push({
+          type: 'text' as const,
+          text: `#Attached Files\n\n${fileEntries}`,
+          annotations,
+        });
+      }
 
-${noteText}`);
+      return { content };
     } catch (error) {
       logger.error('bear-open-note failed:', error);
       throw error;

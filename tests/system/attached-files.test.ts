@@ -14,6 +14,8 @@ import {
 const TEST_PREFIX = '[Bear-MCP-stest-attached-files]';
 const RUN_ID = Date.now();
 const PAUSE_AFTER_WRITE_OP = 100;
+// Bear needs a moment after create before the note is searchable
+const PAUSE_AFTER_CREATE = 500;
 // Bear's file indexing is asynchronous — wait for the ZSFNOTEFILE row to appear
 const PAUSE_AFTER_FILE_ATTACH = 2_000;
 
@@ -36,6 +38,7 @@ describe('attached files content separation', () => {
         args: { title, text: 'Note body text here', tags: 'system-test' },
       });
 
+      await sleep(PAUSE_AFTER_CREATE);
       noteId = findNoteId(title);
 
       callTool({
@@ -64,7 +67,7 @@ describe('attached files content separation', () => {
     }
   });
 
-  it('note without attachment returns single content block with no files mention', () => {
+  it('note without attachment returns single content block with no files mention', async () => {
     const title = uniqueTitle(TEST_PREFIX, 'No File', RUN_ID);
     let noteId: string | undefined;
 
@@ -74,6 +77,7 @@ describe('attached files content separation', () => {
         args: { title, text: 'Just plain text', tags: 'system-test' },
       });
 
+      await sleep(PAUSE_AFTER_CREATE);
       noteId = findNoteId(title);
 
       const response = callToolRaw({
@@ -99,6 +103,7 @@ describe('attached files content separation', () => {
         args: { title, text: 'Original body content', tags: 'system-test' },
       });
 
+      await sleep(PAUSE_AFTER_CREATE);
       noteId = findNoteId(title);
 
       callTool({
@@ -136,9 +141,11 @@ describe('attached files content separation', () => {
         args: { id: noteId },
       });
 
+      // The note body may contain ![](test-pixel.png) — Bear's inline image reference —
+      // but must NOT contain the synthetic file metadata section
       const afterBody = afterResponse.content[0].text;
       expect(afterBody).not.toContain('#Attached Files');
-      expect(afterBody).not.toContain('test-pixel.png');
+      expect(afterBody).not.toContain('File content not available');
     } finally {
       if (noteId) trashNote(noteId);
     }

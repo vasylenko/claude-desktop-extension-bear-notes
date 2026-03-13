@@ -14,15 +14,16 @@ interface CallToolOptions {
   env?: Record<string, string>;
 }
 
-interface ToolResponse {
+export interface ToolResponse {
   content: { type: string; text: string }[];
 }
 
 /**
- * Invokes an MCP tool via the Inspector CLI and returns the text content.
+ * Invokes an MCP tool via the Inspector CLI and returns the full parsed response.
  * Each call spawns a fresh server process — no shared state between calls.
+ * Use this when you need to inspect multiple content blocks (e.g., note body + file metadata).
  */
-export function callTool({ toolName, args, env }: CallToolOptions): string {
+export function callToolRaw({ toolName, args, env }: CallToolOptions): ToolResponse {
   const cliArgs = ['@modelcontextprotocol/inspector', '--cli'];
 
   // Inspector's -e flag passes env vars to the spawned server process
@@ -55,7 +56,15 @@ export function callTool({ toolName, args, env }: CallToolOptions): string {
     throw new Error(`Inspector returned empty content for tool "${toolName}": ${result.stdout}`);
   }
 
-  return response.content[0].text;
+  return response;
+}
+
+/**
+ * Invokes an MCP tool via the Inspector CLI and returns the first content block's text.
+ * Convenience wrapper over callToolRaw() for tests that only need a single text result.
+ */
+export function callTool({ toolName, args, env }: CallToolOptions): string {
+  return callToolRaw({ toolName, args, env }).content[0].text;
 }
 
 /**

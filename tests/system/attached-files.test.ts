@@ -16,10 +16,15 @@ import {
 const TEST_PREFIX = '[Bear-MCP-stest-attached-files]';
 const RUN_ID = Date.now();
 const PAUSE_AFTER_WRITE_OP = 100;
-// 262x400 JPEG with bold "make it simple" text — Bear can OCR this
-const OCR_JPG_BASE64 = readFileSync(resolve(__dirname, '../fixtures/ocr-text.jpg')).toString(
-  'base64'
+// Realistic note body shared across tests — validates structural integrity, not just a single word
+const SAMPLE_NOTE_BODY = readFileSync(
+  resolve(import.meta.dirname, '../fixtures/sample-note.md'),
+  'utf-8'
 );
+// 262x400 JPEG with bold "make it simple" text — Bear can OCR this
+const OCR_JPG_BASE64 = readFileSync(
+  resolve(import.meta.dirname, '../fixtures/ocr-text.jpg')
+).toString('base64');
 
 // HTML file — Bear cannot OCR this file type
 const HTML_BASE64 = 'PGh0bWw+PGJvZHk+PHA+QmVhciBjYW5ub3QgT0NSIHRoaXM8L3A+PC9ib2R5PjwvaHRtbD4K';
@@ -129,55 +134,124 @@ describe('attached files content separation', () => {
     }
   });
 
-  it('full-body replace with text from first content block does not corrupt note', async () => {
-    const title = uniqueTitle(TEST_PREFIX, 'No Corrupt', RUN_ID);
+  it('full-body replace preserves note structure and mid-body file reference', async () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Preserve Ref', RUN_ID);
     let noteId: string | undefined;
 
     try {
       callTool({
         toolName: 'bear-create-note',
-        args: { title, text: 'Original body content', tags: 'system-test' },
+        args: { title, text: SAMPLE_NOTE_BODY, tags: 'system-test' },
       });
 
       noteId = findNoteId(title);
 
       callTool({
         toolName: 'bear-add-file',
-        args: {
-          id: noteId,
-          filename: 'test-pixel.png',
-          base64_content: TINY_PNG_BASE64,
-        },
+        args: { id: noteId, filename: 'architecture.png', base64_content: TINY_PNG_BASE64 },
       });
 
-      // Poll until Bear indexes the file — the test is meaningless without 2 content blocks
-      const response = await waitForFileContent(noteId, 'test-pixel.png');
+      const response = await waitForFileContent(noteId, 'architecture.png');
       expect(response.content).toHaveLength(2);
 
-      const bodyBlock = response.content[0].text;
-      const noteBody = extractNoteBody(bodyBlock);
+      // Bear appends ![](architecture.png) at the bottom. Relocate it between
+      // sections to simulate a realistic note with a mid-body image.
+      const originalBody = extractNoteBody(response.content[0].text);
+      const relocated = originalBody
+        .replace('![](architecture.png)\n\n', '')
+        .replace('## Open Issues', '![](architecture.png)\n\n## Open Issues');
 
-      // Replace the full note body with the extracted body text
       callTool({
         toolName: 'bear-replace-text',
-        args: { id: noteId, scope: 'full-note-body', text: noteBody },
+        args: { id: noteId, scope: 'full-note-body', text: relocated },
         env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
       });
-
       await sleep(PAUSE_AFTER_WRITE_OP);
 
-      // Re-read the note and verify no corruption
-      const afterResponse = callTool({
-        toolName: 'bear-open-note',
-        args: { id: noteId },
+      // Read the note with the mid-body image — this is our "original"
+      const withMidBodyImage = callTool({ toolName: 'bear-open-note', args: { id: noteId } });
+      const originalWithImage = extractNoteBody(withMidBodyImage.content[0].text);
+      expect(originalWithImage).toContain('![](architecture.png)\n\n## Open Issues');
+
+      // Simulate an AI editing the note: modify text around the image but keep it
+      const modified = originalWithImage.replace(
+        'We migrated three services to the new EKS cluster last quarter.',
+        'All three services are now running on the new EKS cluster.'
+      );
+
+      callTool({
+        toolName: 'bear-replace-text',
+        args: { id: noteId, scope: 'full-note-body', text: modified },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+      await sleep(PAUSE_AFTER_WRITE_OP);
+
+      const afterResponse = callTool({ toolName: 'bear-open-note', args: { id: noteId } });
+      const afterBody = extractNoteBody(afterResponse.content[0].text);
+
+      // Verify the full note structure survived
+      expect(afterBody).toContain('## Current State');
+      expect(afterBody).toContain('All three services are now running');
+      expect(afterBody).toContain('![](architecture.png)');
+      expect(afterBody).toContain('## Open Issues');
+      expect(afterBody).toContain('## Next Steps');
+      expect(afterBody).not.toContain('# Attached Files');
+
+      // File attachment still present in the separate content block
+      expect(afterResponse.content).toHaveLength(2);
+      expect(afterResponse.content[1].text).toContain('architecture.png');
+    } finally {
+      if (noteId) trashNote(noteId);
+    }
+  });
+
+  it('file attachment record survives even when inline reference is removed', async () => {
+    const title = uniqueTitle(TEST_PREFIX, 'Drop Ref', RUN_ID);
+    let noteId: string | undefined;
+
+    try {
+      callTool({
+        toolName: 'bear-create-note',
+        args: { title, text: SAMPLE_NOTE_BODY, tags: 'system-test' },
       });
 
-      // The note body may contain ![](test-pixel.png) — Bear's inline image reference —
-      // but must NOT contain the synthetic file metadata section
-      const afterBody = afterResponse.content[0].text;
-      expect(afterBody).toContain('Original body content');
+      noteId = findNoteId(title);
+
+      callTool({
+        toolName: 'bear-add-file',
+        args: { id: noteId, filename: 'architecture.png', base64_content: TINY_PNG_BASE64 },
+      });
+
+      const response = await waitForFileContent(noteId, 'architecture.png');
+      expect(response.content).toHaveLength(2);
+
+      // Replace body with entirely new content — no file reference at all.
+      // Simulates an AI that rewrites the note without preserving ![](…) markers.
+      const rewrittenBody =
+        '## Summary\n\nThe infrastructure review is complete. All services are stable.\n\n' +
+        '## Action Items\n\n- Review alerting thresholds with SRE team\n- Evaluate managed Prometheus options';
+
+      callTool({
+        toolName: 'bear-replace-text',
+        args: { id: noteId, scope: 'full-note-body', text: rewrittenBody },
+        env: { UI_ENABLE_CONTENT_REPLACEMENT: 'true' },
+      });
+      await sleep(PAUSE_AFTER_WRITE_OP);
+
+      const afterResponse = callTool({ toolName: 'bear-open-note', args: { id: noteId } });
+      const afterBody = extractNoteBody(afterResponse.content[0].text);
+
+      // Verify the rewritten body structure
+      expect(afterBody).toContain('## Summary');
+      expect(afterBody).toContain('infrastructure review is complete');
+      expect(afterBody).toContain('## Action Items');
+      expect(afterBody).not.toContain('![](architecture.png)');
       expect(afterBody).not.toContain('# Attached Files');
-      expect(afterBody).not.toContain('File content not available');
+
+      // Bear preserves the file record in ZSFNOTEFILE even when the inline
+      // reference is removed from the note body — the attachment is not orphaned
+      expect(afterResponse.content).toHaveLength(2);
+      expect(afterResponse.content[1].text).toContain('architecture.png');
     } finally {
       if (noteId) trashNote(noteId);
     }

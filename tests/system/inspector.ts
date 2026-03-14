@@ -141,8 +141,8 @@ export function uniqueTitle(prefix: string, label: string, runId: number): strin
 }
 
 /**
- * Polls bear-open-note until the file content block contains the expected marker text.
- * Bear's OCR is async — this avoids flaky fixed sleeps by waiting for actual completion.
+ * Polls bear-open-note until the attached-files content block contains the expected marker.
+ * Avoids flaky fixed sleeps by polling for actual content availability (e.g. OCR text or filename).
  */
 export async function waitForFileContent(
   noteId: string,

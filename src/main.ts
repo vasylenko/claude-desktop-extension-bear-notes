@@ -84,11 +84,11 @@ Use bear-search-notes to find the correct note identifier.`);
 
       if (noteWithContent.files?.length) {
         const fileEntries = noteWithContent.files
-          .map((f) => `##${f.filename}\n\n${f.content}`)
+          .map((f) => `## ${f.filename}\n\n${f.content}`)
           .join('\n\n---\n\n');
         content.push({
           type: 'text' as const,
-          text: `#Attached Files\n\n${fileEntries}`,
+          text: `# Attached Files\n\n${fileEntries}`,
           annotations,
         });
       }

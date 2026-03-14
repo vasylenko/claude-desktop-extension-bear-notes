@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
 
-import type { BearNote, DateFilter } from './types.js';
+import type { AttachedFile, BearNote, DateFilter } from './types.js';
 import { DEFAULT_SEARCH_LIMIT } from './config.js';
 import {
   convertCoreDataTimestamp,
@@ -117,7 +117,7 @@ export function getNoteContent(identifier: string): BearNote | null {
 
     // Collect file content into a structured array — kept separate from note text
     // to prevent the synthetic file section from leaking into write operations (#86)
-    const files: Array<{ filename: string; content: string }> = [];
+    const files: AttachedFile[] = [];
     for (const row of rows) {
       const rowData = row as Record<string, unknown>;
       const filename = rowData.filename as string;

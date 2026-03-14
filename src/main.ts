@@ -68,9 +68,7 @@ Use bear-search-notes to find the correct note identifier.`);
       ];
 
       const noteText = noteWithContent.text || '*This note appears to be empty.*';
-      const annotations: { audience: ('user' | 'assistant')[] } = {
-        audience: ['user', 'assistant'],
-      };
+      const annotations = { audience: ['user', 'assistant'] as ('user' | 'assistant')[] };
 
       // Body and file metadata are separate content blocks so the synthetic
       // file section can never leak back during write operations (#86)

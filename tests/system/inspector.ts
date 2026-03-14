@@ -21,9 +21,8 @@ export interface ToolResponse {
 /**
  * Invokes an MCP tool via the Inspector CLI and returns the full parsed response.
  * Each call spawns a fresh server process — no shared state between calls.
- * Use this when you need to inspect multiple content blocks (e.g., note body + file metadata).
  */
-export function callToolRaw({ toolName, args, env }: CallToolOptions): ToolResponse {
+export function callTool({ toolName, args, env }: CallToolOptions): ToolResponse {
   const cliArgs = ['@modelcontextprotocol/inspector', '--cli'];
 
   // Inspector's -e flag passes env vars to the spawned server process
@@ -57,14 +56,6 @@ export function callToolRaw({ toolName, args, env }: CallToolOptions): ToolRespo
   }
 
   return response;
-}
-
-/**
- * Invokes an MCP tool via the Inspector CLI and returns the first content block's text.
- * Convenience wrapper over callToolRaw() for tests that only need a single text result.
- */
-export function callTool({ toolName, args, env }: CallToolOptions): string {
-  return callToolRaw({ toolName, args, env }).content[0].text;
 }
 
 /**
@@ -133,7 +124,7 @@ export function cleanupTestNotes(prefix: string): void {
     const searchResult = callTool({
       toolName: 'bear-search-notes',
       args: { term: prefix },
-    });
+    }).content[0].text;
     const idMatches = searchResult.matchAll(new RegExp(NOTE_ID_REGEX, 'g'));
     for (const match of idMatches) {
       trashNote(match[1]);
@@ -153,6 +144,6 @@ export function findNoteId(noteTitle: string): string {
   const searchResult = callTool({
     toolName: 'bear-search-notes',
     args: { term: noteTitle },
-  });
+  }).content[0].text;
   return extractNoteId(searchResult);
 }

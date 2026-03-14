@@ -2,7 +2,6 @@ import { afterAll, describe, expect, it } from 'vitest';
 
 import {
   callTool,
-  callToolRaw,
   cleanupTestNotes,
   extractNoteBody,
   findNoteId,
@@ -58,7 +57,7 @@ describe('attached files content separation', () => {
 
       await sleep(PAUSE_FOR_OCR);
 
-      const response = callToolRaw({
+      const response = callTool({
         toolName: 'bear-open-note',
         args: { id: noteId },
       });
@@ -87,7 +86,7 @@ describe('attached files content separation', () => {
 
       noteId = findNoteId(title);
 
-      const response = callToolRaw({
+      const response = callTool({
         toolName: 'bear-open-note',
         args: { id: noteId },
       });
@@ -124,7 +123,7 @@ describe('attached files content separation', () => {
 
       await sleep(PAUSE_FOR_OCR);
 
-      const response = callToolRaw({
+      const response = callTool({
         toolName: 'bear-open-note',
         args: { id: noteId },
       });
@@ -167,7 +166,7 @@ describe('attached files content separation', () => {
       await sleep(PAUSE_AFTER_FILE_ATTACH);
 
       // Read the note — grab only the first content block (what AI would use for replacement)
-      const response = callToolRaw({
+      const response = callTool({
         toolName: 'bear-open-note',
         args: { id: noteId },
       });
@@ -185,7 +184,7 @@ describe('attached files content separation', () => {
       await sleep(PAUSE_AFTER_WRITE_OP);
 
       // Re-read the note and verify no corruption
-      const afterResponse = callToolRaw({
+      const afterResponse = callTool({
         toolName: 'bear-open-note',
         args: { id: noteId },
       });

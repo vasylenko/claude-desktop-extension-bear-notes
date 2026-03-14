@@ -1,7 +1,8 @@
 import { spawnSync } from 'child_process';
 import { resolve } from 'path';
 
-export { setTimeout as sleep } from 'node:timers/promises';
+import { setTimeout as sleep } from 'node:timers/promises';
+export { sleep };
 
 const SERVER_PATH = resolve(import.meta.dirname, '../../dist/main.js');
 
@@ -137,6 +138,31 @@ export function cleanupTestNotes(prefix: string): void {
 /** Generates a unique note title scoped to a test run, preventing cross-run collisions. */
 export function uniqueTitle(prefix: string, label: string, runId: number): string {
   return `${prefix} ${label} ${runId}`;
+}
+
+/**
+ * Polls bear-open-note until the file content block contains the expected marker text.
+ * Bear's OCR is async — this avoids flaky fixed sleeps by waiting for actual completion.
+ */
+export async function waitForFileContent(
+  noteId: string,
+  marker: string,
+  timeoutMs = 15_000
+): Promise<ToolResponse> {
+  const interval = 1_000;
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const response = callTool({ toolName: 'bear-open-note', args: { id: noteId } });
+    if (response.content.length > 1 && response.content[1].text.includes(marker)) {
+      return response;
+    }
+    await sleep(interval);
+  }
+
+  throw new Error(
+    `Timed out after ${timeoutMs}ms waiting for file content containing "${marker}" in note ${noteId}`
+  );
 }
 
 /** Search for a note by title and return its ID. */

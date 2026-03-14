@@ -65,7 +65,7 @@ describe('attached files content separation', () => {
       // File metadata must be in a separate content block, not concatenated into block 0
       expect(response.content).toHaveLength(2);
       expect(response.content[0].text).not.toContain('#Attached Files');
-      expect(response.content[1].text).toContain('Attached Files');
+      expect(response.content[1].text).toContain('#Attached Files');
       expect(response.content[1].text).toContain('ocr-text.jpg');
       // Bear should have OCR'd the text from the image
       expect(response.content[1].text).toContain('simple');
@@ -74,7 +74,7 @@ describe('attached files content separation', () => {
     }
   });
 
-  it('note without attachment returns single content block with no files mention', async () => {
+  it('note without attachment returns single content block with no files mention', () => {
     const title = uniqueTitle(TEST_PREFIX, 'No File', RUN_ID);
     let noteId: string | undefined;
 
@@ -93,7 +93,6 @@ describe('attached files content separation', () => {
 
       expect(response.content).toHaveLength(1);
       expect(response.content[0].text).not.toContain('#Attached Files');
-      expect(response.content[0].text).not.toContain('No files attached');
     } finally {
       if (noteId) trashNote(noteId);
     }

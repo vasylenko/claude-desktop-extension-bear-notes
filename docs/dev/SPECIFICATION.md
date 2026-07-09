@@ -200,7 +200,7 @@ Bear uses Core Data with SQLite. The schema is undocumented; the DB is small eno
 
 - **Encrypted notes**: Bear encrypts content in the DB. Excluded from all queries.
 - **Per-tag pinning**: Bear's URL scheme supports `pin=yes` for global pinning but has no action for pinning within a specific tag.
-- **Write verification**: No way to confirm Bear processed a URL action. Exit code 0 from `open` only means macOS accepted the URL, not that Bear acted on it.
+- **Write verification** _(partially lifted)_: For writes that bump `ZSFNOTE.Z_OPT`, OCC polling confirms the write landed — see _Safety Gates → Optimistic Concurrency Control → Inform half_. The constraint persists for writes that do not bump `Z_OPT` (global tag operations: `bear-rename-tag`, `bear-delete-tag`): exit code 0 from `open` only means macOS accepted the URL, not that Bear acted on it.
 
 ---
 
